@@ -1,3 +1,7 @@
+# Custom
+lib/*
+vulkan/*
+
 # Prerequisites
 *.d
 
