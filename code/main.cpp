@@ -7,7 +7,7 @@
 #include <cstring>
 #include <vector>
 #include <map>
-#include <optimal>
+#include <optional>
 
 const uint32_t WIDTH = 1200;
 const uint32_t HEIGHT = 800;
@@ -41,7 +41,7 @@ struct QueueFamilyIndices {
     bool isComplete() {
         return graphicsFamily.has_value();
     }
-}
+};
 
 
 class HelloTriangleApplication {
@@ -57,6 +57,8 @@ private:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
 
+    VkDevice device;
+    
     GLFWwindow* window;
     
     void initWindow() {
@@ -144,7 +146,7 @@ private:
             throw std::runtime_error("failed to find GPUs with Vulkan support!");
         }
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance, &deviceCount, &devices.data());
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
         
         std::multimap<int, VkPhysicalDevice> candidates;
         
@@ -171,8 +173,9 @@ private:
         
         score += deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ? 1000 : 0;
         score += deviceProperties.limits.maxImageDimension2D;
+        score += deviceFeatures.geometryShader ? 100 : 0;
         
-        return deviceFeatures.geometryShader ? score : 0;
+        return score;
     }
     
     bool isDeviceSuitable(VkPhysicalDevice device) {
