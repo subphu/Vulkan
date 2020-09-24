@@ -1,6 +1,9 @@
 # Custom
 lib/*
-vulkan/*
+.vs/*
+x64/*
+*.sln
+*.vcxproj*
 
 *.xcodeproj
 **/.DS_Store
