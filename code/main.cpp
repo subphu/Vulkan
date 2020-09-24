@@ -193,6 +193,8 @@ private:
     }
     
     void createCommandBuffer() {
+        commandBuffers.resize(swapChainFramebuffers.size());
+        
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = commandPool;
