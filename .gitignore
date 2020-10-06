@@ -1,4 +1,7 @@
 # Custom
+
+
+# IDE
 lib/*
 .vs/*
 x64/*
@@ -6,7 +9,16 @@ x64/*
 *.vcxproj*
 
 *.xcodeproj
+*.entitlements
 **/.DS_Store
+
+
+# Resources & Libraries
+textures/*
+code/stb_image/*
+*.spv
+
+
 
 # Prerequisites
 *.d
