@@ -14,8 +14,10 @@ x64/*
 
 
 # Resources & Libraries
+models/*
 textures/*
 code/stb_image/*
+code/tiny_obj_loader/*
 *.spv
 
 
