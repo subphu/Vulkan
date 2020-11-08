@@ -23,6 +23,7 @@
 #include <array>
 #include <unordered_map>
 
+#include "camera/camera.h"
 #include "stb_image/stb_image.h"
 #include "tiny_obj_loader/tiny_obj_loader.h"
 
@@ -217,6 +218,8 @@ private:
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     
+    Camera camera;
+    
     void initWindow() {
         glfwInit();
 
@@ -226,6 +229,8 @@ private:
         
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+        
+        camera = Camera();
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -696,10 +701,11 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
         
         UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj[1][1] *= -1;
+        ubo.model = glm::mat4(1.0f);
+        ubo.model = glm::rotate(ubo.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        ubo.model = glm::rotate(ubo.model, glm::radians(210.0f) + time * glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = camera.getViewMatrix();
+        ubo.proj = camera.getProjection(swapChainExtent.width / (float) swapChainExtent.height);
 
         void* data;
         vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
