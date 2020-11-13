@@ -1,8 +1,6 @@
-#define GLFW_INCLUDE_VULKAN
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONEx
 
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -23,6 +21,7 @@
 #include <array>
 #include <unordered_map>
 
+#include "window/window.h"
 #include "camera/camera.h"
 #include "stb_image/stb_image.h"
 #include "tiny_obj_loader/tiny_obj_loader.h"
@@ -160,7 +159,8 @@ public:
     }
 
 private:
-    GLFWwindow* window;
+    Window window;
+    Camera camera;
     
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -218,39 +218,12 @@ private:
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     
-    Camera camera;
-    
     void initWindow() {
-        glfwInit();
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-        
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-        
+        window = Window();
+        window.create(WIDTH, HEIGHT, "Vulkan");
         camera = Camera();
     }
-
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-        app->framebufferResized = true;
-    }
     
-    std::vector<const char*> getRequiredExtensions() {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-        if (enableValidationLayers) {
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
-
-        return extensions;
-    }
-
     bool checkValidationLayerSupport() {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -299,7 +272,8 @@ private:
     void initVulkan() {
         createInstance();
         setupDebugMessenger();
-        createSurface();
+//        createSurface();
+        window.createSurface(instance, &surface);
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
@@ -1251,12 +1225,6 @@ private:
     }
     
     void recreateSwapChain() {
-        int width = 0, height = 0;
-        while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window, &width, &height);
-            glfwWaitEvents();
-        }
-        
         vkDeviceWaitIdle(device);
 
         cleanupSwapChain();
@@ -1347,9 +1315,8 @@ private:
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
         } else {
-            int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
-            VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t> (height)};
+            Size<int> size = window.getSize();
+            VkExtent2D actualExtent = {static_cast<uint32_t>(size.width), static_cast<uint32_t> (size.height)};
             
             actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
@@ -1379,13 +1346,6 @@ private:
         }
         
         return details;
-    }
-    
-    
-    void createSurface() {
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
-        }
     }
     
     void createLogicalDevice() {
@@ -1551,7 +1511,7 @@ private:
         createInfo.pApplicationInfo = &appInfo;
         
         
-        auto extensions = getRequiredExtensions();
+        auto extensions = window.getRequiredExtensions();
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
         
@@ -1576,8 +1536,8 @@ private:
     }
 
     void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
+        while (window.isOpen()) {
+            window.pollEvents();
             drawFrame();
         }
 
@@ -1638,8 +1598,7 @@ private:
 
         result = vkQueuePresentKHR(presentQueue, &presentInfo);
         
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-            framebufferResized = false;
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.checkResized()) {
             recreateSwapChain();
         } else if (result != VK_SUCCESS) {
             throw std::runtime_error("failed to present swap chain image!");
@@ -1708,9 +1667,7 @@ private:
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
 
-        glfwDestroyWindow(window);
-
-        glfwTerminate();
+        window.close();
     }
 
     static std::vector<char> readFile(const std::string& filename) {
