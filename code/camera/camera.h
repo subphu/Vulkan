@@ -51,5 +51,6 @@ private:
     
     void updateVector();
     void updateRotation();
+    void adjustDistance(float distance);
 };
 

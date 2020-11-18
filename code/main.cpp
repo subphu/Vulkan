@@ -221,6 +221,7 @@ private:
     void initWindow() {
         window = Window();
         window.create(WIDTH, HEIGHT, "Vulkan");
+        window.enableInput();
         camera = Camera();
     }
     
@@ -1538,6 +1539,21 @@ private:
     void mainLoop() {
         while (window.isOpen()) {
             window.pollEvents();
+            glm::vec3 movement = glm::vec3(0.f, 0.f, 0.f);
+            movement.x += window.getKeyState(key_d) - window.getKeyState(key_a);
+            movement.y += window.getKeyState(key_q) - window.getKeyState(key_e);
+            movement.z += window.getKeyState(key_w) - window.getKeyState(key_s);
+            
+            if (window.getMouseBtnState(mouse_btn_left)) {
+                glm::vec2 cursorOffset = window.getCursorOffset();
+                movement.x += cursorOffset.x;
+                movement.y += cursorOffset.y;
+            }
+            movement.z += window.getScrollOffset().y;
+            
+            window.resetInput();
+            
+            camera.move(movement);
             drawFrame();
         }
 

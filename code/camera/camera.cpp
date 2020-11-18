@@ -106,11 +106,18 @@ void Camera::zoom(float delta) {
 
 void Camera::move(glm::vec3 direction) {
     glm::vec3 velocity = direction * speed;
+    float distance = glm::distance(position, focusPoint);
     position += front * velocity.z;
     position += right * velocity.x;
     position += up    * velocity.y;
     
+    if (lockFocus && direction.z == 0) adjustDistance(distance);
     if (lockFocus) lookAt(focusPoint);
+}
+
+void Camera::adjustDistance(float distance) {
+    float newDistance = glm::distance(position, focusPoint);
+    position = position * distance / newDistance;
 }
 
 void Camera::turn(glm::vec2 delta) {

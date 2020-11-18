@@ -63,10 +63,6 @@ std::vector<const char*> Window::getRequiredExtensions() {
     return extensions;
 }
 
-void Window::pollEvents() {
-    glfwPollEvents();
-}
-
 bool Window::isOpen() { return !glfwWindowShouldClose(m_window); }
 
 float Window::getRatio() { return m_ratio; }
@@ -96,6 +92,57 @@ bool Window::checkResized() {
 void Window::calcRatio(Size<int> size) {
     m_ratio = (float)size.width / (float)size.height;
 }
+
+void Window::enableInput() {
+    glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GLFW_TRUE);
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetMouseButtonCallback(m_window, this->mouseButtonCallback);
+    glfwSetScrollCallback(m_window, scrollCallback);
+    
+    double x, y;
+    glfwGetCursorPos(m_window, &x, &y);
+    m_cursorPos = glm::vec2(x, -y);
+}
+
+void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    auto app = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+    app->setMouseButton(button, action);
+}
+
+void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    auto app = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+    app->setScroll(xoffset, yoffset);
+}
+
+void Window::setMouseButton(int button, int action) {
+    m_mouseBtn[mouse_btn_left] = button == GLFW_MOUSE_BUTTON_LEFT ?
+        action == GLFW_PRESS : m_mouseBtn[mouse_btn_left];
+    m_mouseBtn[mouse_btn_right] = button == GLFW_MOUSE_BUTTON_LEFT ?
+        action == GLFW_PRESS : m_mouseBtn[mouse_btn_right];
+}
+
+void Window::setScroll(double xoffset, double yoffset) {
+    m_scrollOffset = glm::vec2(xoffset, yoffset);
+}
+
+void Window::pollEvents() {
+    glfwPollEvents();
+}
+
+void Window::resetInput() {
+    double x, y;
+    glfwGetCursorPos(m_window, &x, &y);
+    glm::vec2 cursorPos = glm::vec2(x, -y);
+    m_cursorOffset = m_cursorPos - cursorPos;
+    m_cursorPos = cursorPos;
+    m_scrollOffset = glm::vec2(0, 0);
+}
+
+bool Window::getKeyState(int key) { return glfwGetKey(m_window, key); }
+bool Window::getMouseBtnState(int idx) { return m_mouseBtn[idx]; }
+glm::vec2 Window::getCursorPosition() { return m_cursorPos; }
+glm::vec2 Window::getCursorOffset() { return m_cursorOffset; }
+glm::vec2 Window::getScrollOffset() { return m_scrollOffset; }
 
 void Window::settingUI() {
 //    IMGUI_CHECKVERSION();
