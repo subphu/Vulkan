@@ -23,8 +23,8 @@
 
 #include "window/window.h"
 #include "camera/camera.h"
-#include "stb_image/stb_image.h"
-#include "tiny_obj_loader/tiny_obj_loader.h"
+#include "libraries/stb_image/stb_image.h"
+#include "libraries/tiny_obj_loader/tiny_obj_loader.h"
 
 const uint32_t WIDTH = 1200;
 const uint32_t HEIGHT = 800;
@@ -273,7 +273,6 @@ private:
     void initVulkan() {
         createInstance();
         setupDebugMessenger();
-//        createSurface();
         window.createSurface(instance, &surface);
         pickPhysicalDevice();
         createLogicalDevice();
@@ -1546,8 +1545,8 @@ private:
             
             if (window.getMouseBtnState(mouse_btn_left)) {
                 glm::vec2 cursorOffset = window.getCursorOffset();
-                movement.x += cursorOffset.x;
-                movement.y += cursorOffset.y;
+                movement.x += cursorOffset.x * 0.2f;
+                movement.y += cursorOffset.y * 0.2f;
             }
             movement.z += window.getScrollOffset().y;
             
