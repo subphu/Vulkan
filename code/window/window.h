@@ -2,10 +2,7 @@
 //
 
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+#include "../common.h"
 
 #include <iostream>
 #include <vector>
@@ -26,9 +23,7 @@ enum key {
     mouse_btn_right = 1,
 };
 
-template<typename T> struct Size {
-    T width, height;
-};
+template<typename T> struct Size { T width, height; };
 
 class Window {
     
