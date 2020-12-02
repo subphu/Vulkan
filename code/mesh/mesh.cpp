@@ -10,7 +10,7 @@ Mesh::Mesh() {}
 Mesh::~Mesh() {}
 
 void Mesh::cleanup() {
-    System &system = System::instance();
+    System &system = System::singleton();
     vkDestroyBuffer(system.device, indexBuffer, nullptr);
     vkFreeMemory(system.device, indexBufferMemory, nullptr);
 
@@ -155,7 +155,7 @@ void Mesh::loadModel(const char* filename) {
 }
 
 void Mesh::createVertexBuffer() {
-    System &system = System::instance();
+    System &system = System::singleton();
     VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofTexCoords();
     
     VkBuffer tempBuffer = system.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -188,7 +188,7 @@ void Mesh::createVertexBuffer() {
 }
 
 void Mesh::createIndexBuffer() {
-    System &system = System::instance();
+    System &system = System::singleton();
     VkDeviceSize bufferSize = sizeofIndices();
     
     VkBuffer tempBuffer = system.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);

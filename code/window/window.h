@@ -38,7 +38,7 @@ public:
     bool isOpen();
     float getRatio();
     Size<int> getSize();
-    std::vector<const char*> getRequiredExtensions();
+    static std::vector<const char*> getRequiredExtensions();
     
     void setSize(Size<int> size);
     void notifyResize();
