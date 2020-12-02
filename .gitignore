@@ -16,7 +16,6 @@ x64/*
 # Resources & Libraries
 models/*
 textures/*
-code/libraries/*
 *.spv
 
 
