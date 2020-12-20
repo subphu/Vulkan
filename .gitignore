@@ -8,7 +8,6 @@ x64/*
 *.sln
 *.vcxproj*
 
-*.xcodeproj
 *.entitlements
 **/.DS_Store
 
