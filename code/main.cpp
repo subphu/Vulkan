@@ -21,6 +21,7 @@
 #include <unordered_map>
 
 #include "window/window.h"
+#include "renderer/renderer.h"
 #include "camera/camera.h"
 #include "libraries/stb_image/stb_image.h"
 #include "libraries/tiny_obj_loader/tiny_obj_loader.h"
@@ -56,7 +57,7 @@ struct SwapChainSupportDetails {
 };
 
 
-class HelloTriangleApplication {
+class App {
 public:
     void run() {
         initWindow();
@@ -117,6 +118,7 @@ private:
     VkImageView depthImageView;
     VkDeviceMemory depthImageMemory;
     
+    Renderer* renderer = new Renderer();
     Mesh model = Mesh();
     
     void initWindow() {
@@ -128,12 +130,29 @@ private:
     
     
     void initVulkan() {
+        renderer->setupValidation(IS_DEBUG);
+        renderer->createInstance(Window::getRequiredExtensions());
+        renderer->createDebugMessenger();
+        renderer->setSurface(window.createSurface(renderer->m_instance));
+        renderer->setDeviceExtensions();
+        renderer->pickPhysicalDevice();
+        renderer->createLogicalDevice();
+        
+        model.setRenderer(renderer);
+        
         System &system = System::singleton();
-        system.setValidation(IS_DEBUG);
-        system.createInstance();
-        window.createSurface(system.instance, &system.surface);
-        system.pickPhysicalDevice();
-        system.createLogicalDevice();
+//        system.setValidation(IS_DEBUG);
+//        system.createInstance();
+//        system.surface = *window.createSurface(system.instance);
+//        system.pickPhysicalDevice();
+//        system.createLogicalDevice();
+        
+        system.surface        = renderer->m_surface;
+        system.device         = renderer->m_device;
+        system.physicalDevice = renderer->m_physicalDevice;
+        system.graphicsQueue  = renderer->m_graphicQueue;
+        system.presentQueue   = renderer->m_presentQueue;
+        
         
         surface = system.surface;
         device = system.device;
@@ -1355,7 +1374,7 @@ private:
 };
 
 int main() {
-    HelloTriangleApplication app;
+    App app;
 
     try {
         app.run();

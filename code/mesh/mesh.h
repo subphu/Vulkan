@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <math.h>
 
+#include "../renderer/renderer.h"
 #include "../libraries/tiny_obj_loader/tiny_obj_loader.h"
 
 class Mesh {
@@ -40,6 +41,8 @@ public:
     void createCube();
     void createSphere(int wedge = 10, int segment = 20);
     void loadModel(const char* filename);
+    
+    void setRenderer(Renderer* renderer);
     void createVertexBuffer();
     void createIndexBuffer();
     
@@ -57,6 +60,7 @@ public:
     VkPipelineVertexInputStateCreateInfo* createVertexInputInfo();
     
 private:
+    Renderer* m_renderer;
     glm::mat4 m_model = glm::mat4(1.0f);
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
     VkPipelineVertexInputStateCreateInfo stateCreateInfo{};

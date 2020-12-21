@@ -4,7 +4,6 @@
 #pragma once
 #include "common.h"
 
-
 #include "window/window.h"
 
 class System {
@@ -25,13 +24,7 @@ public:
     VkQueue presentQueue;
     VkCommandPool commandPool;
     
-    void setValidation(bool isEnable);
-    void createInstance();
-    void pickPhysicalDevice();
-    void createLogicalDevice();
     
-    VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
-    VkDeviceMemory createBufferMemory(VkBuffer& buffer, VkMemoryPropertyFlags properties);
     
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);

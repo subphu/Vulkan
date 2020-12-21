@@ -154,16 +154,23 @@ void Mesh::loadModel(const char* filename) {
     }
 }
 
+void Mesh::setRenderer(Renderer* renderer) { m_renderer = renderer; }
+
 void Mesh::createVertexBuffer() {
-    System &system = System::singleton();
+    { CHECK_POINTER(m_renderer, "renderer undefined!"); }
     VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofTexCoords();
     
-    VkBuffer tempBuffer = system.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    VkDeviceMemory tempBufferMemory = system.createBufferMemory(tempBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkBindBufferMemory(system.device, tempBuffer, tempBufferMemory, 0);
+    VkMemoryRequirements requirements;
+    uint32_t memoryTypeIdx;
+    
+    VkBuffer tempBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    requirements = m_renderer->getBufferMemoryRequirements(tempBuffer);
+    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDeviceMemory tempBufferMemory = m_renderer->allocateBufferMemory(tempBuffer, requirements.size, memoryTypeIdx);
+    vkBindBufferMemory(m_renderer->m_device, tempBuffer, tempBufferMemory, 0);
     
     void* ptr;
-    vkMapMemory(system.device, tempBufferMemory, 0, bufferSize, 0, &ptr);
+    vkMapMemory(m_renderer->m_device, tempBufferMemory, 0, bufferSize, 0, &ptr);
     for (int i = 0; i < m_positions.size(); i++) {
         memcpy(ptr, &m_positions[i],    sizeofPosition);
         ptr = static_cast<char*>(ptr) + sizeofPosition;
@@ -172,12 +179,15 @@ void Mesh::createVertexBuffer() {
         memcpy(ptr, &m_texCoords[i],    sizeofTexCoord);
         ptr = static_cast<char*>(ptr) + sizeofTexCoord;
     }
-    vkUnmapMemory(system.device, tempBufferMemory);
+    vkUnmapMemory(m_renderer->m_device, tempBufferMemory);
     
-    vertexBuffer = system.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    vertexBufferMemory = system.createBufferMemory(vertexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkBindBufferMemory(system.device, vertexBuffer, vertexBufferMemory, 0);
+    vertexBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    requirements = m_renderer->getBufferMemoryRequirements(vertexBuffer);
+    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vertexBufferMemory = m_renderer->allocateBufferMemory(vertexBuffer, requirements.size, memoryTypeIdx);
+    vkBindBufferMemory(m_renderer->m_device, vertexBuffer, vertexBufferMemory, 0);
     
+    System &system = System::singleton();
     VkCommandBuffer commandBuffer = system.beginSingleTimeCommands();
     VkBufferCopy copyRegion = { 0, 0, bufferSize };
     vkCmdCopyBuffer(commandBuffer, tempBuffer, vertexBuffer, 1, &copyRegion);
@@ -188,22 +198,29 @@ void Mesh::createVertexBuffer() {
 }
 
 void Mesh::createIndexBuffer() {
-    System &system = System::singleton();
     VkDeviceSize bufferSize = sizeofIndices();
     
-    VkBuffer tempBuffer = system.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    VkDeviceMemory tempBufferMemory = system.createBufferMemory(tempBuffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkBindBufferMemory(system.device, tempBuffer, tempBufferMemory, 0);
+    VkMemoryRequirements requirements;
+    uint32_t memoryTypeIdx;
+    
+    VkBuffer tempBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    requirements = m_renderer->getBufferMemoryRequirements(tempBuffer);
+    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VkDeviceMemory tempBufferMemory = m_renderer->allocateBufferMemory(tempBuffer, requirements.size, memoryTypeIdx);
+    vkBindBufferMemory(m_renderer->m_device, tempBuffer, tempBufferMemory, 0);
     
     void* ptr;
-    vkMapMemory(system.device, tempBufferMemory, 0, bufferSize, 0, &ptr);
+    vkMapMemory(m_renderer->m_device, tempBufferMemory, 0, bufferSize, 0, &ptr);
     memcpy(ptr, m_indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(system.device, tempBufferMemory);
+    vkUnmapMemory(m_renderer->m_device, tempBufferMemory);
     
-    indexBuffer = system.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-    indexBufferMemory = system.createBufferMemory(indexBuffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkBindBufferMemory(system.device, indexBuffer, indexBufferMemory, 0);
+    indexBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    requirements = m_renderer->getBufferMemoryRequirements(indexBuffer);
+    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    indexBufferMemory = m_renderer->allocateBufferMemory(indexBuffer, requirements.size, memoryTypeIdx);
+    vkBindBufferMemory(m_renderer->m_device, indexBuffer, indexBufferMemory, 0);
     
+    System &system = System::singleton();
     VkCommandBuffer commandBuffer = system.beginSingleTimeCommands();
     VkBufferCopy copyRegion = { 0, 0, bufferSize };
     vkCmdCopyBuffer(commandBuffer, tempBuffer, indexBuffer, 1, &copyRegion);

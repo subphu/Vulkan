@@ -31,9 +31,11 @@ public:
     Window();
     ~Window();
     
+    VkSurfaceKHR* createSurface(VkInstance instance);
+    
     void create(GLuint width, GLuint height, const char* name);
-    void createSurface(VkInstance instance, VkSurfaceKHR* surface);
     void close();
+    
     
     bool isOpen();
     float getRatio();
