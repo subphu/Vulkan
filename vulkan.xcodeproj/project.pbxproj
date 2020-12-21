@@ -204,6 +204,7 @@
 		26BE145224ED699200F534B9 /* code */ = {
 			isa = PBXGroup;
 			children = (
+				26C308982590868D00D1BA7E /* commander */,
 				26536DDC256B89030079DC42 /* libraries */,
 				26C30894258F2A9700D1BA7E /* renderer */,
 				26536DDD256B8AB90079DC42 /* mesh */,
@@ -237,6 +238,13 @@
 			path = renderer;
 			sourceTree = "<group>";
 		};
+		26C308982590868D00D1BA7E /* commander */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = commander;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -263,7 +271,7 @@
 		2612195B24ED695900B2A2E3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1160;
+				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = subph;
 				TargetAttributes = {
 					2612196224ED695900B2A2E3 = {
@@ -334,6 +342,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -392,6 +401,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -422,6 +432,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_ENTITLEMENTS = vulkan.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 78ZW2C9N3C;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -442,6 +453,7 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_ENTITLEMENTS = vulkan.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 78ZW2C9N3C;
 				ENABLE_HARDENED_RUNTIME = YES;
