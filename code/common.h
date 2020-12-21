@@ -19,17 +19,28 @@
 #define IS_DEBUG true
 #endif
 
-#define CHECK_BOOL(r,m) if(!r)std::runtime_error(m)
-#define CHECK_VKRESULT(r,m) if(r!=VK_SUCCESS)std::runtime_error(m)
-#define CHECK_HANDLE(r,m) if(r==VK_NULL_HANDLE)std::runtime_error(m)
+#define USE_VAR(v) {}
+#define USE_FUNC(f) {}
 
-#define PRINT(v1) std::cout << v1
-#define PRINT(v1, v2) PRINT(v1) << " " << v2
-#define PRINT(v1, v2, v3) PRINT(v1, v2) << " " << v3
-#define PRINT(v1, v2, v3, v4) PRINT(v1, v2, v3) << " " << v4
-#define PRINTLN(v1) PRINT(v1) << std::endl
-#define PRINTLN(v1, v2) PRINT(v1, v2) << std::endl
-#define PRINTLN(v1, v2, v3) PRINT(v1, v2, v3) << std::endl
-#define PRINTLN(v1, v2, v3, v4) PRINT(v1, v2, v3, v4) << std::endl
+#define RUNTIME_ERROR(m) throw std::runtime_error(m)
+
+#define CHECK_BOOL(v,m) if(!v) RUNTIME_ERROR(m)
+#define CHECK_ZERO(v,m) if(!v) RUNTIME_ERROR(m)
+#define CHECK_HANDLE(v,m) if(v==VK_NULL_HANDLE) RUNTIME_ERROR(m)
+
+#define CHECK_OBJECT(v,m) if(v==nullptr) RUNTIME_ERROR(m)
+#define CHECK_POINTER(v,m) if(v==nullptr) RUNTIME_ERROR(m)
+
+#define CHECK_VKRESULT(r,m) if(r!=VK_SUCCESS) RUNTIME_ERROR(m)
+
+
+#define PRINT1(  v1            ) std::cout << v1
+#define PRINT2(  v1, v2        ) PRINT1(v1        ) << " " << v2
+#define PRINT3(  v1, v2, v3    ) PRINT2(v1, v2    ) << " " << v3
+#define PRINT4(  v1, v2, v3, v4) PRINT3(v1, v2, v3) << " " << v4
+#define PRINTLN1(v1            ) PRINT1(v1            ) << std::endl
+#define PRINTLN2(v1, v2        ) PRINT2(v1, v2        ) << std::endl
+#define PRINTLN3(v1, v2, v3    ) PRINT3(v1, v2, v3    ) << std::endl
+#define PRINTLN4(v1, v2, v3, v4) PRINT4(v1, v2, v3, v4) << std::endl
 
 
