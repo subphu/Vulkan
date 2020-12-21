@@ -140,25 +140,11 @@ private:
         
         model.setRenderer(renderer);
         
-        System &system = System::singleton();
-//        system.setValidation(IS_DEBUG);
-//        system.createInstance();
-//        system.surface = *window.createSurface(system.instance);
-//        system.pickPhysicalDevice();
-//        system.createLogicalDevice();
-        
-        system.surface        = renderer->m_surface;
-        system.device         = renderer->m_device;
-        system.physicalDevice = renderer->m_physicalDevice;
-        system.graphicsQueue  = renderer->m_graphicQueue;
-        system.presentQueue   = renderer->m_presentQueue;
-        
-        
-        surface = system.surface;
-        device = system.device;
-        physicalDevice = system.physicalDevice;
-        graphicsQueue = system.graphicsQueue;
-        presentQueue = system.presentQueue;
+        surface        = renderer->m_surface;
+        device         = renderer->m_device;
+        physicalDevice = renderer->m_physicalDevice;
+        graphicsQueue  = renderer->m_graphicQueue;
+        presentQueue   = renderer->m_presentQueue;
         
         createSwapChain();
         createImageViews();
@@ -167,8 +153,8 @@ private:
         createGraphicsPipeline();
         createCommandPool();
         
+        System &system = System::instance();
         system.device = device;
-        system.physicalDevice = physicalDevice;
         system.commandPool = commandPool;
         system.graphicsQueue = graphicsQueue;
         

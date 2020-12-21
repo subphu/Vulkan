@@ -10,7 +10,7 @@ Mesh::Mesh() {}
 Mesh::~Mesh() {}
 
 void Mesh::cleanup() {
-    System &system = System::singleton();
+    System &system = System::instance();
     vkDestroyBuffer(system.device, indexBuffer, nullptr);
     vkFreeMemory(system.device, indexBufferMemory, nullptr);
 
@@ -187,7 +187,7 @@ void Mesh::createVertexBuffer() {
     vertexBufferMemory = m_renderer->allocateBufferMemory(vertexBuffer, requirements.size, memoryTypeIdx);
     vkBindBufferMemory(m_renderer->m_device, vertexBuffer, vertexBufferMemory, 0);
     
-    System &system = System::singleton();
+    System &system = System::instance();
     VkCommandBuffer commandBuffer = system.beginSingleTimeCommands();
     VkBufferCopy copyRegion = { 0, 0, bufferSize };
     vkCmdCopyBuffer(commandBuffer, tempBuffer, vertexBuffer, 1, &copyRegion);
@@ -220,7 +220,7 @@ void Mesh::createIndexBuffer() {
     indexBufferMemory = m_renderer->allocateBufferMemory(indexBuffer, requirements.size, memoryTypeIdx);
     vkBindBufferMemory(m_renderer->m_device, indexBuffer, indexBufferMemory, 0);
     
-    System &system = System::singleton();
+    System &system = System::instance();
     VkCommandBuffer commandBuffer = system.beginSingleTimeCommands();
     VkBufferCopy copyRegion = { 0, 0, bufferSize };
     vkCmdCopyBuffer(commandBuffer, tempBuffer, indexBuffer, 1, &copyRegion);

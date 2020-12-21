@@ -9,28 +9,15 @@
 class System {
     
 public:
-    
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debugMessenger;
-    VkSurfaceKHR surface;
-    
-    uint32_t graphicsFamilyIndex;
-    uint32_t presentFamilyIndex;
-    
     VkDevice device;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    
     VkQueue graphicsQueue;
-    VkQueue presentQueue;
     VkCommandPool commandPool;
-    
-    
     
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     
     void cleanup();
-    static System& singleton() {
+    static System& instance() {
         static System instance; // Guaranteed to be destroyed. Instantiated on first use.
         return instance;
     }
@@ -38,10 +25,6 @@ public:
 private:
     System();
     ~System();
-
-    std::vector<const char*> validationLayers = {};
-    std::vector<const char*> deviceExtensions = {};
-    VkDebugUtilsMessengerCreateInfoEXT debugInfo = {};
     
     
     // C++ 03
