@@ -10,12 +10,11 @@ Mesh::Mesh() {}
 Mesh::~Mesh() {}
 
 void Mesh::cleanup() {
-    System &system = System::instance();
-    vkDestroyBuffer(system.device, indexBuffer, nullptr);
-    vkFreeMemory(system.device, indexBufferMemory, nullptr);
+    vkDestroyBuffer(m_renderer->m_device, indexBuffer, nullptr);
+    vkFreeMemory(m_renderer->m_device, indexBufferMemory, nullptr);
 
-    vkDestroyBuffer(system.device, vertexBuffer, nullptr);
-    vkFreeMemory(system.device, vertexBufferMemory, nullptr);
+    vkDestroyBuffer(m_renderer->m_device, vertexBuffer, nullptr);
+    vkFreeMemory(m_renderer->m_device, vertexBufferMemory, nullptr);
 }
 
 void Mesh::createPlane() {
@@ -187,14 +186,13 @@ void Mesh::createVertexBuffer() {
     vertexBufferMemory = m_renderer->allocateBufferMemory(vertexBuffer, requirements.size, memoryTypeIdx);
     vkBindBufferMemory(m_renderer->m_device, vertexBuffer, vertexBufferMemory, 0);
     
-    System &system = System::instance();
-    VkCommandBuffer commandBuffer = system.beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = m_renderer->beginSingleTimeCommands();
     VkBufferCopy copyRegion = { 0, 0, bufferSize };
     vkCmdCopyBuffer(commandBuffer, tempBuffer, vertexBuffer, 1, &copyRegion);
-    system.endSingleTimeCommands(commandBuffer);
+    m_renderer->endSingleTimeCommands(commandBuffer);
     
-    vkDestroyBuffer(system.device, tempBuffer, nullptr);
-    vkFreeMemory(system.device, tempBufferMemory, nullptr);
+    vkDestroyBuffer(m_renderer->m_device, tempBuffer, nullptr);
+    vkFreeMemory(m_renderer->m_device, tempBufferMemory, nullptr);
 }
 
 void Mesh::createIndexBuffer() {
@@ -220,14 +218,13 @@ void Mesh::createIndexBuffer() {
     indexBufferMemory = m_renderer->allocateBufferMemory(indexBuffer, requirements.size, memoryTypeIdx);
     vkBindBufferMemory(m_renderer->m_device, indexBuffer, indexBufferMemory, 0);
     
-    System &system = System::instance();
-    VkCommandBuffer commandBuffer = system.beginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = m_renderer->beginSingleTimeCommands();
     VkBufferCopy copyRegion = { 0, 0, bufferSize };
     vkCmdCopyBuffer(commandBuffer, tempBuffer, indexBuffer, 1, &copyRegion);
-    system.endSingleTimeCommands(commandBuffer);
+    m_renderer->endSingleTimeCommands(commandBuffer);
     
-    vkDestroyBuffer(system.device, tempBuffer, nullptr);
-    vkFreeMemory(system.device, tempBufferMemory, nullptr);
+    vkDestroyBuffer(m_renderer->m_device, tempBuffer, nullptr);
+    vkFreeMemory(m_renderer->m_device, tempBufferMemory, nullptr);
 }
 
 VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {

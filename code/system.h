@@ -9,12 +9,6 @@
 class System {
     
 public:
-    VkDevice device;
-    VkQueue graphicsQueue;
-    VkCommandPool commandPool;
-    
-    VkCommandBuffer beginSingleTimeCommands();
-    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     
     void cleanup();
     static System& instance() {

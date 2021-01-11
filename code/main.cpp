@@ -153,12 +153,8 @@ private:
         createRenderPass();
         createDescriptorSetLayout();
         createGraphicsPipeline();
-        createCommandPool();
-        
-        System &system = System::instance();
-        system.device = device;
-        system.commandPool = commandPool;
-        system.graphicsQueue = graphicsQueue;
+        renderer->createCommandPool();
+        commandPool = renderer->m_commandPool;
         
         createDepthResources();
         createFramebuffer();
