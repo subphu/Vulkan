@@ -118,7 +118,7 @@ private:
     VkImageView depthImageView;
     VkDeviceMemory depthImageMemory;
     
-    Renderer* renderer = new Renderer();
+    Renderer* renderer;
     Mesh model = Mesh();
     
     void initWindow() {
@@ -130,6 +130,7 @@ private:
     
     
     void initVulkan() {
+        renderer = new Renderer();
         renderer->setupValidation(IS_DEBUG);
         renderer->createInstance(Window::getRequiredExtensions());
         renderer->createDebugMessenger();
@@ -137,6 +138,7 @@ private:
         renderer->setDeviceExtensions();
         renderer->pickPhysicalDevice();
         renderer->createLogicalDevice();
+        renderer->createDeviceQueue();
         
         model.setRenderer(renderer);
         

@@ -29,14 +29,24 @@ public:
     void setSurface(VkSurfaceKHR* pSurface);
     
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    std::vector<VkSurfaceFormatKHR> m_surfaceFormats;
+    std::vector<VkPresentModeKHR> m_surfaceModes;
+    uint32_t m_graphicFamilyIndex = 0;
+    uint32_t m_presentFamilyIndex = 0;
     void pickPhysicalDevice();
-
+    
     VkDevice m_device = VK_NULL_HANDLE;
-    VkQueue m_graphicQueue = VK_NULL_HANDLE;
-    VkQueue m_presentQueue = VK_NULL_HANDLE;
     void createLogicalDevice();
     
-    VkCommandPool m_commandPool;
+    VkQueue m_graphicQueue = VK_NULL_HANDLE;
+    VkQueue m_presentQueue = VK_NULL_HANDLE;
+    void createDeviceQueue();
+    
+    VkCommandPool m_commandPool = VK_NULL_HANDLE;
+    void createCommandPool();
+    
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     
     VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
     VkDeviceMemory allocateBufferMemory(VkBuffer& buffer, VkDeviceSize size, uint32_t memoryTypeIndex);
@@ -47,47 +57,3 @@ private:
     
     
 };
-
-static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData) {
-    std::cerr << " \nValidation layer: \n" << pCallbackData->pMessage << std::endl;
-
-    return VK_FALSE;
-}
-
-static VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-}
-
-static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        func(instance, debugMessenger, pAllocator);
-    }
-}
-
-static int FindGraphicFamilyIndex(VkPhysicalDevice physicalDevice) {
-    std::vector<VkQueueFamilyProperties> queueFamilies = getQueueFamilyProperties(physicalDevice);
-    for (int i = 0; i < queueFamilies.size(); i++) {
-        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) return i;
-    }
-    return -1;
-}
-
-static int FindPresentFamilyIndex(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
-    std::vector<VkQueueFamilyProperties> queueFamilies = getQueueFamilyProperties(physicalDevice);
-    for (int i = 0; i < queueFamilies.size(); i++) {
-        VkBool32 supported = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &supported);
-        if (supported) return i;
-    }
-    return -1;
-}

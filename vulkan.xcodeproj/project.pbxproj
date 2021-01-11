@@ -204,7 +204,6 @@
 		26BE145224ED699200F534B9 /* code */ = {
 			isa = PBXGroup;
 			children = (
-				26C308982590868D00D1BA7E /* commander */,
 				26536DDC256B89030079DC42 /* libraries */,
 				26C30894258F2A9700D1BA7E /* renderer */,
 				26536DDD256B8AB90079DC42 /* mesh */,
@@ -236,13 +235,6 @@
 				26C30895258F2AB900D1BA7E /* renderer.cpp */,
 			);
 			path = renderer;
-			sourceTree = "<group>";
-		};
-		26C308982590868D00D1BA7E /* commander */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = commander;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

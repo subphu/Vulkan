@@ -26,6 +26,7 @@
 
 #define CHECK_BOOL(v,m) if(!v) RUNTIME_ERROR(m)
 #define CHECK_ZERO(v,m) if(!v) RUNTIME_ERROR(m)
+#define CHECK_MINUS(v,m) if(v<0) RUNTIME_ERROR(m)
 #define CHECK_HANDLE(v,m) if(v==VK_NULL_HANDLE) RUNTIME_ERROR(m)
 
 #define CHECK_OBJECT(v,m) if(v==nullptr) RUNTIME_ERROR(m)
