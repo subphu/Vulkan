@@ -23,8 +23,6 @@ enum key {
     mouse_btn_right = 1,
 };
 
-template<typename T> struct Size { T width, height; };
-
 class Window {
     
 public:

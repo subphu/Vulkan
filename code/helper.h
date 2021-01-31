@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <vector>
 #include <set>
 
@@ -40,11 +41,11 @@ static std::vector<VkLayerProperties> GetLayerProperties() {
     return layers;
 }
 
-static std::vector<VkExtensionProperties> GetExtensionProperties(VkPhysicalDevice device) {
+static std::vector<VkExtensionProperties> GetExtensionProperties(VkPhysicalDevice physicalDevice) {
     uint32_t count;
-    vkEnumerateDeviceExtensionProperties(device, nullptr, &count, nullptr);
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
     std::vector<VkExtensionProperties> extensions(count);
-    vkEnumerateDeviceExtensionProperties(device, nullptr, &count, extensions.data());
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, extensions.data());
     return extensions;
 }
 
@@ -54,6 +55,15 @@ static std::vector<VkQueueFamilyProperties> GetQueueFamilyProperties(VkPhysicalD
     std::vector<VkQueueFamilyProperties> queueFamilies(count);
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &count, queueFamilies.data());
     return queueFamilies;
+}
+
+
+static std::vector<VkImage> GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapChain) {
+    uint32_t count = 0;
+    vkGetSwapchainImagesKHR(device, swapChain, &count, nullptr);
+    std::vector<VkImage> swapChainImages(count);
+    vkGetSwapchainImagesKHR(device, swapChain, &count, swapChainImages.data());
+    return swapChainImages;
 }
 
 static bool CheckLayerSupport(std::vector<const char*> layers) {
@@ -147,4 +157,68 @@ static bool IsDeviceSuitable(VkPhysicalDevice physicalDevice, VkSurfaceKHR surfa
     return hasGraphicFamilyIndex && hasPresentFamilyIndex &&
     extensionSupported && swapChainAdequate &&
     supportedFeatures.samplerAnisotropy;
+}
+
+static VkFormat ChooseDepthFormat(VkPhysicalDevice physicalDevice) {
+    const std::vector<VkFormat>& candidates = {
+        VK_FORMAT_D32_SFLOAT,
+        VK_FORMAT_D32_SFLOAT_S8_UINT,
+        VK_FORMAT_D24_UNORM_S8_UINT
+    };
+    for (VkFormat format : candidates) {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+        
+        if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+            return format;
+        }
+    }
+    
+    throw std::runtime_error("failed to find depth format!");
+}
+
+static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    for (const auto& availableFormat : availableFormats) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            return availableFormat;
+        }
+    }
+    return availableFormats[0];
+}
+
+static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    for (const auto& availablePresentMode : availablePresentModes) {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            return availablePresentMode;
+        }
+    }
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+static VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Size<int> size) {
+    if (capabilities.currentExtent.width != UINT32_MAX) {
+        return capabilities.currentExtent;
+    }
+    
+    VkExtent2D actualExtent = {static_cast<uint32_t>(size.width), static_cast<uint32_t> (size.height)};
+    
+    actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+    actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+    return actualExtent;
+}
+
+static std::vector<char> readFile(const std::string& filename) {
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+    if (!file.is_open()) throw std::runtime_error("failed to open file!");
+
+    size_t fileSize = (size_t) file.tellg();
+    std::vector<char> buffer(fileSize);
+    file.seekg(0);
+    file.read(buffer.data(), fileSize);
+    file.close();
+    return buffer;
+}
+
+static uint32_t MaxMapLevel(int width, int height) {
+    return static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 }

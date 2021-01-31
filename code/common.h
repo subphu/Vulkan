@@ -9,8 +9,6 @@
 #include <glm/glm.hpp>
 #include <iostream>
 
-#include "helper.h"
-
 #define PI 3.14159265358979323846
 
 #ifdef NDEBUG
@@ -35,6 +33,7 @@
 #define CHECK_VKRESULT(r,m) if(r!=VK_SUCCESS) RUNTIME_ERROR(m)
 
 
+#define LOG(v) std::cout << v << std::endl
 #define PRINT1(  v1            ) std::cout << v1
 #define PRINT2(  v1, v2        ) PRINT1(v1        ) << " " << v2
 #define PRINT3(  v1, v2, v3    ) PRINT2(v1, v2    ) << " " << v3
@@ -44,4 +43,4 @@
 #define PRINTLN3(v1, v2, v3    ) PRINT3(v1, v2, v3    ) << std::endl
 #define PRINTLN4(v1, v2, v3, v4) PRINT4(v1, v2, v3, v4) << std::endl
 
-
+template<typename T> struct Size { T width, height; };

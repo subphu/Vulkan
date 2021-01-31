@@ -156,7 +156,7 @@ void Mesh::loadModel(const char* filename) {
 void Mesh::setRenderer(Renderer* renderer) { m_renderer = renderer; }
 
 void Mesh::createVertexBuffer() {
-    { CHECK_POINTER(m_renderer, "renderer undefined!"); }
+    { CHECK_HANDLE(m_renderer, "renderer undefined!"); }
     VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofTexCoords();
     
     VkMemoryRequirements requirements;
@@ -196,6 +196,7 @@ void Mesh::createVertexBuffer() {
 }
 
 void Mesh::createIndexBuffer() {
+    { CHECK_HANDLE(m_renderer, "renderer undefined!"); }
     VkDeviceSize bufferSize = sizeofIndices();
     
     VkMemoryRequirements requirements;

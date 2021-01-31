@@ -2,7 +2,11 @@
 //
 
 #pragma once
+
+#include <array>
+
 #include "../common.h"
+#include "../helper.h"
 
 class Renderer {
     
@@ -30,7 +34,7 @@ public:
     
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     std::vector<VkSurfaceFormatKHR> m_surfaceFormats;
-    std::vector<VkPresentModeKHR> m_surfaceModes;
+    std::vector<VkPresentModeKHR> m_presentModes;
     uint32_t m_graphicFamilyIndex = 0;
     uint32_t m_presentFamilyIndex = 0;
     void pickPhysicalDevice();
@@ -45,6 +49,38 @@ public:
     VkCommandPool m_commandPool = VK_NULL_HANDLE;
     void createCommandPool();
     
+    VkSwapchainKHR m_swapChain = VK_NULL_HANDLE;
+    std::vector<VkImage> m_swapChainImages;
+    VkFormat m_swapChainImageFormat;
+    VkExtent2D m_swapChainExtent;
+    void createSwapChain(Size<int> windowSize);
+    
+    std::vector<VkImageView> m_swapChainImageViews;
+    void createImageViews();
+    
+    VkRenderPass m_renderPass = VK_NULL_HANDLE;
+    void createRenderPass();
+    
+    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+    void createDescriptorSetLayout();
+    
+    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+    void createPipelineLayout();
+    
+    VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
+    void createGraphicsPipeline(VkPipelineShaderStageCreateInfo* shaderStages, VkPipelineVertexInputStateCreateInfo* vertexInputInfo);
+    
+    uint32_t m_mipLevels = 1;
+    VkImage m_depthImage = VK_NULL_HANDLE;
+    VkDeviceMemory m_depthImageMemory = VK_NULL_HANDLE;
+    VkImageView m_depthImageView = VK_NULL_HANDLE;
+    void createDepthResources();
+    
+    std::vector<VkFramebuffer> m_swapChainFramebuffers;
+    void createFramebuffer();
+    
+    
+public:
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     
@@ -52,7 +88,24 @@ public:
     VkDeviceMemory allocateBufferMemory(VkBuffer& buffer, VkDeviceSize size, uint32_t memoryTypeIndex);
     VkMemoryRequirements getBufferMemoryRequirements(VkBuffer& buffer);
     VkMemoryRequirements getImageMemoryRequirements(VkImage& image);
+    
     uint32_t findMemoryTypeIdx(uint32_t typeFilter, VkMemoryPropertyFlags flags);
+    
+    VkShaderModule createShaderModule(const std::vector<char> & code);
+    VkPipelineShaderStageCreateInfo createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage);
+    
+    VkImage createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
+    VkDeviceMemory bindImageMemory(VkImage image, VkMemoryPropertyFlags properties);
+    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+    
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
+    
+    VkImage createTextureImage(unsigned char* rawTexture, int width, int height, int channels, uint32_t mipLevels);
+    
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+    
+    void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t width, int32_t height, uint32_t mipLevels);
+    VkSampler createTextureSampler(uint32_t mipLevels);
 private:
     
     
