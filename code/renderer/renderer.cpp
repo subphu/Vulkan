@@ -4,10 +4,49 @@
 #include "renderer.h"
 
 Renderer::Renderer() { }
-Renderer::~Renderer() { cleanUp(); }
+Renderer::~Renderer() { }
+
+void Renderer::cleanUpSwapChain() {
+    vkDestroyImageView(m_device, m_depthImageView, nullptr);
+    vkDestroyImage(m_device, m_depthImage, nullptr);
+    vkFreeMemory(m_device, m_depthImageMemory, nullptr);
+    
+    for (size_t i = 0; i < m_swapChainFramebuffers.size(); i++) {
+        vkDestroyFramebuffer(m_device, m_swapChainFramebuffers[i], nullptr);
+    }
+    
+    vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+    
+    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+    vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+    
+    for (size_t i = 0; i < m_swapChainImageViews.size(); i++) {
+        vkDestroyImageView(m_device, m_swapChainImageViews[i], nullptr);
+    }
+    
+    vkDestroySwapchainKHR(m_device, m_swapChain, nullptr);
+    
+    for (size_t i = 0; i < m_swapChainImages.size(); i++) {
+        vkDestroyBuffer(m_device, m_uniformBuffers[i], nullptr);
+        vkFreeMemory(m_device, m_uniformBuffersMemory[i], nullptr);
+    }
+    
+    vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
+}
 
 void Renderer::cleanUp() {
+    cleanUpSwapChain();
+    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
+    
+    for (size_t i = 0; i < m_inFlightFences.size(); i++) {
+        vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+    }
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+    vkDestroyDevice(m_device, nullptr);
+    
     DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
     vkDestroyInstance(m_instance, nullptr);
@@ -245,7 +284,7 @@ void Renderer::createSwapChain(Size<int> windowSize) {
     m_swapChainImageFormat = surfaceFormat.format;
     {
         CHECK_VKRESULT(result, "failed to create swap chain!");
-        CHECK_HANDLE(m_swapChain, "logical device undefined!");
+        CHECK_HANDLE(m_swapChain, "failed to create swap chain!");
         CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
         CHECK_ZERO(m_swapChainImageFormat, "swap chain images format undefined!");
         CHECK_ZERO(m_swapChainExtent.height, "swap chain extent size zero!");
@@ -589,6 +628,20 @@ void Renderer::createUniformBuffers(VkDeviceSize bufferSize) {
         CHECK_ZERO(m_uniformBuffersMemory.size(), "failed to create uniform buffer memory!");
     }
 }
+
+
+void Renderer::updateUniformBuffer(void* address, size_t size, uint32_t index) {
+    {
+        LOG("updateUniformBuffer");
+        CHECK_HANDLE(m_device, "logical device undefined");
+        CHECK_ZERO(m_uniformBuffersMemory.size(), "swap chain images empty!");
+    }
+    void* data;
+    vkMapMemory(m_device, m_uniformBuffersMemory[index], 0, size, 0, &data);
+    memcpy(data, address, size);
+    vkUnmapMemory(m_device, m_uniformBuffersMemory[index]);
+}
+
 
 void Renderer::createDescriptorPool() {
     {

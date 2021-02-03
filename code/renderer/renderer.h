@@ -15,6 +15,7 @@ public:
     ~Renderer();
     
     void cleanUp();
+    void cleanUpSwapChain();
     
     std::vector<const char*> m_validationLayers = {};
     VkDebugUtilsMessengerCreateInfoEXT m_debugInfo = {};
@@ -82,6 +83,7 @@ public:
     std::vector<VkBuffer> m_uniformBuffers;
     std::vector<VkDeviceMemory> m_uniformBuffersMemory;
     void createUniformBuffers(VkDeviceSize bufferSize);
+    void updateUniformBuffer(void* address, size_t size, uint32_t index);
     
     VkDescriptorPool m_descriptorPool;
     void createDescriptorPool();
