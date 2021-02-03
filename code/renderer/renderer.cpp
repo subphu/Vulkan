@@ -15,6 +15,7 @@ void Renderer::cleanUp() {
 
 void Renderer::setupValidation(bool isEnable) {
     {
+        LOG("setupValidation");
         if (!isEnable) return;
         USE_FUNC(DebugCallback);
     }
@@ -36,6 +37,7 @@ void Renderer::setupValidation(bool isEnable) {
 
 void Renderer::createInstance(std::vector<const char*> extensions) {
     {
+        LOG("createInstance");
         CHECK_ZERO(extensions.size(), "extension empty!");
         USE_VAR(m_debugInfo);
         USE_VAR(m_validationLayers);
@@ -67,6 +69,7 @@ void Renderer::createInstance(std::vector<const char*> extensions) {
 
 void Renderer::createDebugMessenger() {
     {
+        LOG("createDebugMessenger");
         USE_VAR(m_debugInfo);
         CHECK_HANDLE(m_instance, "instance undefined!");
     }
@@ -86,6 +89,7 @@ void Renderer::setSurface(VkSurfaceKHR* pSurface) { m_surface = *pSurface; }
 
 void Renderer::pickPhysicalDevice() {
     {
+        LOG("pickPhysicalDevice");
         CHECK_HANDLE(m_instance, "instance undefined!");
         CHECK_HANDLE(m_surface, "surface undefined!");
         CHECK_ZERO(m_deviceExtensions.size(), "device extensions empty!");
@@ -124,6 +128,7 @@ void Renderer::pickPhysicalDevice() {
 
 void Renderer::createLogicalDevice() {
     {
+        LOG("createLogicalDevice");
         CHECK_HANDLE(m_physicalDevice, "physical device undefined!");
         CHECK_HANDLE(m_surface, "surface undefined!");
         CHECK_ZERO(m_deviceExtensions.size(), "device extensions empty!");
@@ -168,6 +173,7 @@ void Renderer::createDeviceQueue() {
 
 void Renderer::createCommandPool() {
     {
+        LOG("createCommandPool");
         CHECK_HANDLE(m_device, "logical device undefined!");
         USE_VAR(m_graphicFamilyIndex);
     }
@@ -186,6 +192,7 @@ void Renderer::createCommandPool() {
 
 void Renderer::createSwapChain(Size<int> windowSize) {
     {
+        LOG("createSwapChain");
         CHECK_HANDLE(m_device, "logical device undefined!");
         CHECK_HANDLE(m_physicalDevice, "physical device undefined!");
         CHECK_HANDLE(m_surface, "surface undefined!");
@@ -237,7 +244,6 @@ void Renderer::createSwapChain(Size<int> windowSize) {
     m_swapChainImages = GetSwapchainImagesKHR(m_device, m_swapChain);
     m_swapChainImageFormat = surfaceFormat.format;
     {
-        LOG("createSwapChain");
         CHECK_VKRESULT(result, "failed to create swap chain!");
         CHECK_HANDLE(m_swapChain, "logical device undefined!");
         CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
@@ -249,6 +255,7 @@ void Renderer::createSwapChain(Size<int> windowSize) {
 
 void Renderer::createImageViews() {
     {
+        LOG("createImageViews");
         CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
         CHECK_ZERO(m_swapChainImageFormat, "swap chain images format undefined!");
     }
@@ -258,12 +265,12 @@ void Renderer::createImageViews() {
         m_swapChainImageViews[i] = createImageView(m_swapChainImages[i], m_swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
     
-    { LOG("createImageViews");
-      CHECK_ZERO(m_swapChainImageViews.size(), "swap chain image view empty!"); }
+    { CHECK_ZERO(m_swapChainImageViews.size(), "swap chain image view empty!"); }
 }
 
 void Renderer::createRenderPass() {
     {
+        LOG("createRenderPass");
         CHECK_ZERO(m_swapChainImageFormat, "swap chain images format undefined!");
         CHECK_HANDLE(m_physicalDevice, "physical device undefined!");
     }
@@ -323,14 +330,16 @@ void Renderer::createRenderPass() {
     
     VkResult result = vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &m_renderPass);
     {
-        LOG("createRenderPass");
         CHECK_VKRESULT(result, "failed to create render pass!");
         CHECK_HANDLE(m_renderPass, "failed to create render pass!");
     }
 }
 
 void Renderer::createDescriptorSetLayout() {
-    { CHECK_HANDLE(m_device, "logical device undefined!"); }
+    {
+        LOG("createDescriptorSetLayout");
+        CHECK_HANDLE(m_device, "logical device undefined!");
+    }
     
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
@@ -355,38 +364,9 @@ void Renderer::createDescriptorSetLayout() {
     
     VkResult result = vkCreateDescriptorSetLayout(m_device, &layoutInfo, nullptr, &m_descriptorSetLayout);
     {
-        LOG("createDescriptorSetLayout");
         CHECK_VKRESULT(result, "failed to create descriptor set layout!");
         CHECK_HANDLE(m_descriptorSetLayout, "failed to create descriptor set layout!");
     }
-}
-
-VkShaderModule Renderer::createShaderModule(const std::vector<char> & code) {
-    { CHECK_HANDLE(m_device, "logical device undefined!"); }
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-    
-    VkShaderModule shaderModule;
-    VkResult result = vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule);
-    {
-        CHECK_VKRESULT(result, "failed to create shader modul!");
-        return shaderModule;
-    }
-}
-
-VkPipelineShaderStageCreateInfo Renderer::createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage) {
-    auto shaderCode = readFile(filename);
-    VkShaderModule shaderModule = createShaderModule(shaderCode);
-    
-    VkPipelineShaderStageCreateInfo shaderStageInfo{};
-    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStageInfo.stage = stage;
-    shaderStageInfo.module = shaderModule;
-    shaderStageInfo.pName = "main";
-    
-    return shaderStageInfo;
 }
 
 void Renderer::createPipelineLayout(){
@@ -588,6 +568,206 @@ void Renderer::createFramebuffer() {
     
 }
 
+void Renderer::createUniformBuffers(VkDeviceSize bufferSize) {
+    {
+        LOG("createUniformBuffers");
+        CHECK_HANDLE(m_device, "logical device undefined");
+        CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
+    }
+    m_uniformBuffers.resize(m_swapChainImages.size());
+    m_uniformBuffersMemory.resize(m_swapChainImages.size());
+    
+    for (size_t i = 0; i < m_swapChainImages.size(); i++) {
+        m_uniformBuffers[i] = createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        VkMemoryRequirements requirements = getBufferMemoryRequirements(m_uniformBuffers[i]);
+        uint32_t memoryTypeIdx = findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        m_uniformBuffersMemory[i] = allocateBufferMemory(m_uniformBuffers[i], requirements.size, memoryTypeIdx);
+        vkBindBufferMemory(m_device, m_uniformBuffers[i], m_uniformBuffersMemory[i], 0);
+    }
+    {
+        CHECK_ZERO(m_uniformBuffers.size(), "failed to create uniform buffer!");
+        CHECK_ZERO(m_uniformBuffersMemory.size(), "failed to create uniform buffer memory!");
+    }
+}
+
+void Renderer::createDescriptorPool() {
+    {
+        LOG("createDescriptorPool");
+        CHECK_HANDLE(m_device, "logical device undefined");
+        CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
+    }
+    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(m_swapChainImages.size());
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(m_swapChainImages.size());
+    
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    poolInfo.pPoolSizes = poolSizes.data();
+    poolInfo.maxSets = static_cast<uint32_t>(m_swapChainImages.size());
+    
+    VkResult result = vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &m_descriptorPool);
+    {
+        CHECK_VKRESULT(result, "failed to create descriptor pool!");
+        CHECK_HANDLE(m_descriptorPool, "failed to create descriptor pool");
+    }
+}
+
+void Renderer::createDescriptorSets(VkDeviceSize uniformBufferSize, VkImageView textureImageView, VkSampler textureSampler) {
+    {
+        LOG("createDescriptorSets");
+        CHECK_HANDLE(m_device, "logical device undefined!");
+        CHECK_HANDLE(m_descriptorSetLayout, "descriptor set layout not defined!");
+        CHECK_HANDLE(m_descriptorPool, "descriptor pool undefined!");
+        CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
+        CHECK_ZERO(m_uniformBuffers.size(), "uniform buffer empty!");
+    }
+    std::vector<VkDescriptorSetLayout> layouts(m_swapChainImages.size(), m_descriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = m_descriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(m_swapChainImages.size());
+    allocInfo.pSetLayouts = layouts.data();
+    
+    m_descriptorSets.resize(m_swapChainImages.size());
+    VkResult result = vkAllocateDescriptorSets(m_device, &allocInfo, m_descriptorSets.data());
+    CHECK_VKRESULT(result, "failed to allocate descriptor sets!");
+    
+    for (size_t i = 0; i < m_swapChainImages.size(); i++) {
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = m_uniformBuffers[i];
+        bufferInfo.offset = 0;
+        bufferInfo.range = uniformBufferSize;
+        
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = textureImageView;
+        imageInfo.sampler = textureSampler;
+        
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = m_descriptorSets[i];
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorCount = 1;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
+        
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = m_descriptorSets[i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[1].pImageInfo = &imageInfo;
+        
+        vkUpdateDescriptorSets(m_device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    }
+    {
+        CHECK_ZERO(m_descriptorSets.size(), "failed to allocate descriptor sets!");
+    }
+
+}
+
+void Renderer::createCommandBuffers(VkBuffer vertexBuffer, VkBuffer indexBuffer, uint32_t indexSize) {
+    {
+        LOG("createCommandBuffers");
+        CHECK_HANDLE(m_device, "logical device undefined!");
+        CHECK_HANDLE(m_commandPool, "command pool undefined!");
+        CHECK_HANDLE(m_renderPass, "render pass undefined!");
+        CHECK_HANDLE(m_pipelineLayout, "pipeline layout undefined!");
+        CHECK_HANDLE(m_graphicsPipeline, "graphics pipeline undefined!");
+        CHECK_ZERO(m_swapChainFramebuffers.size(), "swap chain framebuffer empty!");
+        CHECK_ZERO(m_swapChainExtent.height, "swap chain extent size zero!");
+        CHECK_ZERO(m_swapChainExtent.width, "swap chain extent size zero!");
+        CHECK_ZERO(m_descriptorSets.size(), "descriptor sets empty!");
+    }
+    m_commandBuffers.resize(m_swapChainFramebuffers.size());
+    
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = m_commandPool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = (uint32_t) m_commandBuffers.size();
+    
+    VkResult result = vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data());
+    CHECK_VKRESULT(result, "failed to allocate command buffers!");
+    
+    for (size_t i = 0; i < m_commandBuffers.size(); i++) {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = 0;
+        beginInfo.pInheritanceInfo = nullptr;
+        
+        result = vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo);
+        CHECK_VKRESULT(result, "failed to begin recording command buffer!");
+        
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_renderPass;
+        renderPassInfo.framebuffer = m_swapChainFramebuffers[i];
+        renderPassInfo.renderArea.offset = {0,0};
+        renderPassInfo.renderArea.extent = m_swapChainExtent;
+        
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
+        
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+        renderPassInfo.pClearValues = clearValues.data();
+        
+        vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+        
+        VkBuffer vertexBuffers[] = {vertexBuffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffers, offsets);
+        
+        vkCmdBindIndexBuffer(m_commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        
+        vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[i], 0, nullptr);
+        
+        vkCmdDrawIndexed(m_commandBuffers[i], indexSize, 1, 0, 0, 0);
+        
+        vkCmdEndRenderPass(m_commandBuffers[i]);
+        
+        result = vkEndCommandBuffer(m_commandBuffers[i]);
+        CHECK_VKRESULT(result, "failed to record command buffer!");
+    }
+    
+}
+
+void Renderer::createSyncObjects() {
+    {
+        LOG("createSyncObjects");
+        CHECK_HANDLE(m_device, "logical device undefined!");
+        CHECK_ZERO(m_swapChainImages.size(), "swap chain images empty!");
+    }
+    const int MAX_FRAME_IN_FLIGHT = 2;
+    m_imageAvailableSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+    m_renderFinishedSemaphores.resize(MAX_FRAME_IN_FLIGHT);
+    m_inFlightFences.resize(MAX_FRAME_IN_FLIGHT);
+    m_imagesInFlight.resize(m_swapChainImages.size(), VK_NULL_HANDLE);
+
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (size_t i = 0; i < MAX_FRAME_IN_FLIGHT; i++) {
+        VkResult result1 = vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+        VkResult result2 = vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+        VkResult result3 = vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFences[i]);
+        CHECK_VKRESULT(result1, "failed to create image available semaphores!");
+        CHECK_VKRESULT(result2, "failed to create render finished semaphores!");
+        CHECK_VKRESULT(result3, "failed to create in flight fences!");
+    }
+}
+
 // ==================================================
 
 
@@ -632,6 +812,38 @@ void Renderer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     vkQueueWaitIdle(m_graphicQueue);
     
     vkFreeCommandBuffers(m_device, m_commandPool, 1, &commandBuffer);
+}
+
+VkShaderModule Renderer::createShaderModule(const std::vector<char> & code) {
+    {
+        LOG("createShaderModule");
+        CHECK_HANDLE(m_device, "logical device undefined!");
+    }
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+    
+    VkShaderModule shaderModule;
+    VkResult result = vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule);
+    {
+        CHECK_VKRESULT(result, "failed to create shader modul!");
+        return shaderModule;
+    }
+}
+
+VkPipelineShaderStageCreateInfo Renderer::createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage) {
+    { LOG("createShaderStageInfo"); }
+    auto shaderCode = readFile(filename);
+    VkShaderModule shaderModule = createShaderModule(shaderCode);
+    
+    VkPipelineShaderStageCreateInfo shaderStageInfo{};
+    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStageInfo.stage = stage;
+    shaderStageInfo.module = shaderModule;
+    shaderStageInfo.pName = "main";
+    
+    return shaderStageInfo;
 }
 
 VkBuffer Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage) {

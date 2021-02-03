@@ -79,10 +79,31 @@ public:
     std::vector<VkFramebuffer> m_swapChainFramebuffers;
     void createFramebuffer();
     
+    std::vector<VkBuffer> m_uniformBuffers;
+    std::vector<VkDeviceMemory> m_uniformBuffersMemory;
+    void createUniformBuffers(VkDeviceSize bufferSize);
+    
+    VkDescriptorPool m_descriptorPool;
+    void createDescriptorPool();
+    
+    std::vector<VkDescriptorSet> m_descriptorSets;
+    void createDescriptorSets(VkDeviceSize uniformBufferSize, VkImageView textureImageView, VkSampler textureSampler);
+    
+    std::vector<VkCommandBuffer> m_commandBuffers;
+    void createCommandBuffers(VkBuffer vertexBuffer, VkBuffer indexBuffer, uint32_t indexSize);
+    
+    std::vector<VkSemaphore> m_imageAvailableSemaphores;
+    std::vector<VkSemaphore> m_renderFinishedSemaphores;
+    std::vector<VkFence> m_inFlightFences;
+    std::vector<VkFence> m_imagesInFlight;
+    void createSyncObjects();
     
 public:
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+    
+    VkShaderModule createShaderModule(const std::vector<char> & code);
+    VkPipelineShaderStageCreateInfo createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage);
     
     VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
     VkDeviceMemory allocateBufferMemory(VkBuffer& buffer, VkDeviceSize size, uint32_t memoryTypeIndex);
@@ -90,9 +111,6 @@ public:
     VkMemoryRequirements getImageMemoryRequirements(VkImage& image);
     
     uint32_t findMemoryTypeIdx(uint32_t typeFilter, VkMemoryPropertyFlags flags);
-    
-    VkShaderModule createShaderModule(const std::vector<char> & code);
-    VkPipelineShaderStageCreateInfo createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage);
     
     VkImage createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage);
     VkDeviceMemory bindImageMemory(VkImage image, VkMemoryPropertyFlags properties);
