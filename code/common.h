@@ -3,11 +3,18 @@
 
 #pragma once
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdocumentation"
+
 #define GLFW_INCLUDE_VULKAN
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <vector>
+#include <math.h>
+
+#pragma clang diagnostic pop
 
 #define PI 3.14159265358979323846
 
@@ -44,3 +51,6 @@
 #define PRINTLN4(v1, v2, v3, v4) PRINT4(v1, v2, v3, v4) << std::endl
 
 template<typename T> struct Size { T width, height; };
+
+typedef std::chrono::high_resolution_clock Time;
+typedef std::chrono::duration<float, std::chrono::seconds::period> TimeDif;

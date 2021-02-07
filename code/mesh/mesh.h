@@ -3,20 +3,8 @@
 
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_ENABLE_EXPERIMENTAL
-
-#include <glm/gtx/hash.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <math.h>
-
+#include "../common.h"
 #include "../renderer/renderer.h"
-#include "../libraries/tiny_obj_loader/tiny_obj_loader.h"
 
 class Mesh {
     
@@ -51,10 +39,10 @@ public:
     
     glm::mat4 getMatrix();
     
-    unsigned long sizeofPositions();
-    unsigned long sizeofNormals();
-    unsigned long sizeofTexCoords();
-    unsigned long sizeofIndices();
+    uint32_t sizeofPositions();
+    uint32_t sizeofNormals();
+    uint32_t sizeofTexCoords();
+    uint32_t sizeofIndices();
     
     VkPipelineVertexInputStateCreateInfo* createVertexInputInfo();
     
@@ -65,9 +53,9 @@ private:
     VkPipelineVertexInputStateCreateInfo stateCreateInfo{};
     VkVertexInputBindingDescription bindingDescription{};
     
-    const unsigned long sizeofPosition = sizeof(glm::vec3);
-    const unsigned long sizeofNormal   = sizeof(glm::vec3);
-    const unsigned long sizeofTexCoord = sizeof(glm::vec2);
-    const unsigned long sizeofIndex    = sizeof(int);
+    const uint32_t sizeofPosition = sizeof(glm::vec3);
+    const uint32_t sizeofNormal   = sizeof(glm::vec3);
+    const uint32_t sizeofTexCoord = sizeof(glm::vec2);
+    const uint32_t sizeofIndex    = sizeof(int);
     
 };

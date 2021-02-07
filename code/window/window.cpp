@@ -32,12 +32,12 @@ void Window::resizeCallback(GLFWwindow* window, int width, int height) {
     app->notifyResize();
 }
 
-VkSurfaceKHR* Window::createSurface(VkInstance instance) {
+VkSurfaceKHR Window::createSurface(VkInstance instance) {
     VkSurfaceKHR surface;
     if (glfwCreateWindowSurface(instance, m_window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
-    return &surface;
+    return surface;
 }
 
 void Window::close() {

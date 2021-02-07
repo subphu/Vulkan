@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2600EA8A256E724F00224798 /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2600EA89256E724F00224798 /* system.cpp */; };
 		261EE5C8254E91E100572666 /* models in CopyFiles */ = {isa = PBXBuildFile; fileRef = 265FA2C0254E7102009E5428 /* models */; };
 		26450CD524FBCB1700841546 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26450CD324FBCB1700841546 /* libvulkan.1.dylib */; };
 		26450CD624FBCB1700841546 /* libvulkan.1.2.148.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26450CD424FBCB1700841546 /* libvulkan.1.2.148.dylib */; };
@@ -18,10 +17,12 @@
 		26592FEB252C578E00150894 /* textures in CopyFiles */ = {isa = PBXBuildFile; fileRef = 26592FEA252C575A00150894 /* textures */; };
 		26592FEC252C578E00150894 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = 266FAC0B25165303004F42AA /* shaders */; };
 		265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */; };
+		266C0BFC25CFFDBE00BAF0C7 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266C0BFA25CFFDBE00BAF0C7 /* app.cpp */; };
+		266C0BFE25D0085400BAF0C7 /* helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266C0BFD25D0085400BAF0C7 /* helper.cpp */; };
 		267D8904255EC6C7002E918C /* camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267D8902255EC6C7002E918C /* camera.cpp */; };
 		267D8907255EC8AB002E918C /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267D8906255EC8AB002E918C /* window.cpp */; };
 		26BE145424ED699200F534B9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BE145324ED699200F534B9 /* main.cpp */; };
-		26BE14A824ED852C00F534B9 /* libglfw.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26BE14A724ED852C00F534B9 /* libglfw.3.dylib */; };
+		26BE14A824ED852C00F534B9 /* libglfw.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26BE14A724ED852C00F534B9 /* libglfw.3.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		26BE14A924ED853200F534B9 /* libglfw.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 26BE14A724ED852C00F534B9 /* libglfw.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		26C30897258F2AB900D1BA7E /* renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26C30895258F2AB900D1BA7E /* renderer.cpp */; };
 /* End PBXBuildFile section */
@@ -46,8 +47,6 @@
 
 /* Begin PBXFileReference section */
 		2600EA84256E5CFB00224798 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
-		2600EA88256E724F00224798 /* system.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = system.h; sourceTree = "<group>"; };
-		2600EA89256E724F00224798 /* system.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = system.cpp; sourceTree = "<group>"; };
 		2612196324ED695900B2A2E3 /* vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		26450CD324FBCB1700841546 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = "../vulkansdk-1.2.148.1/macOS/lib/libvulkan.1.dylib"; sourceTree = "<group>"; };
 		26450CD424FBCB1700841546 /* libvulkan.1.2.148.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.2.148.dylib; path = "../vulkansdk-1.2.148.1/macOS/lib/libvulkan.1.2.148.dylib"; sourceTree = "<group>"; };
@@ -60,6 +59,9 @@
 		265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cpp; sourceTree = "<group>"; };
 		265FA2BE254E7002009E5428 /* tiny_obj_loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		265FA2C0254E7102009E5428 /* models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = models; sourceTree = "<group>"; };
+		266C0BFA25CFFDBE00BAF0C7 /* app.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = app.cpp; sourceTree = "<group>"; };
+		266C0BFB25CFFDBE00BAF0C7 /* app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app.h; sourceTree = "<group>"; };
+		266C0BFD25D0085400BAF0C7 /* helper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = helper.cpp; sourceTree = "<group>"; };
 		266FAC0B25165303004F42AA /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shaders; sourceTree = "<group>"; };
 		267C24522558559300A9F07C /* imgui.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		267C24532558559300A9F07C /* imstb_textedit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
@@ -209,11 +211,12 @@
 				26536DDD256B8AB90079DC42 /* mesh */,
 				267C243C25584FE000A9F07C /* window */,
 				267C2433255815A900A9F07C /* camera */,
-				26BE145324ED699200F534B9 /* main.cpp */,
-				2600EA88256E724F00224798 /* system.h */,
-				2600EA89256E724F00224798 /* system.cpp */,
-				2600EA84256E5CFB00224798 /* common.h */,
+				266C0BFA25CFFDBE00BAF0C7 /* app.cpp */,
+				266C0BFB25CFFDBE00BAF0C7 /* app.h */,
+				266C0BFD25D0085400BAF0C7 /* helper.cpp */,
 				267E55C82577E46100651094 /* helper.h */,
+				2600EA84256E5CFB00224798 /* common.h */,
+				26BE145324ED699200F534B9 /* main.cpp */,
 			);
 			path = code;
 			sourceTree = "<group>";
@@ -231,8 +234,8 @@
 		26C30894258F2A9700D1BA7E /* renderer */ = {
 			isa = PBXGroup;
 			children = (
-				26C30896258F2AB900D1BA7E /* renderer.h */,
 				26C30895258F2AB900D1BA7E /* renderer.cpp */,
+				26C30896258F2AB900D1BA7E /* renderer.h */,
 			);
 			path = renderer;
 			sourceTree = "<group>";
@@ -263,7 +266,7 @@
 		2612195B24ED695900B2A2E3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = subph;
 				TargetAttributes = {
 					2612196224ED695900B2A2E3 = {
@@ -294,9 +297,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				266C0BFC25CFFDBE00BAF0C7 /* app.cpp in Sources */,
 				267D8904255EC6C7002E918C /* camera.cpp in Sources */,
 				26BE145424ED699200F534B9 /* main.cpp in Sources */,
-				2600EA8A256E724F00224798 /* system.cpp in Sources */,
+				266C0BFE25D0085400BAF0C7 /* helper.cpp in Sources */,
 				26536DE5256BA08D0079DC42 /* mesh.cpp in Sources */,
 				26C30897258F2AB900D1BA7E /* renderer.cpp in Sources */,
 				267D8907255EC8AB002E918C /* window.cpp in Sources */,

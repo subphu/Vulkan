@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <array>
-
 #include "../common.h"
 #include "../helper.h"
 
@@ -31,7 +29,7 @@ public:
     void createDebugMessenger();
     
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
-    void setSurface(VkSurfaceKHR* pSurface);
+    void setSurface(VkSurfaceKHR pSurface);
     
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     std::vector<VkSurfaceFormatKHR> m_surfaceFormats;
@@ -105,7 +103,7 @@ public:
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     
     VkShaderModule createShaderModule(const std::vector<char> & code);
-    VkPipelineShaderStageCreateInfo createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage);
+    VkPipelineShaderStageCreateInfo createShaderStageInfo(const std::string filename, VkShaderStageFlagBits stage);
     
     VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
     VkDeviceMemory allocateBufferMemory(VkBuffer& buffer, VkDeviceSize size, uint32_t memoryTypeIndex);

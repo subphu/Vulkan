@@ -1,10 +1,18 @@
 //  Copyright © 2020 Subph. All rights reserved.
 //
 
-#include "mesh.h"
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
 
-#include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <unordered_map>
+
+#include "../libraries/tiny_obj_loader/tiny_obj_loader.h"
+
+#include "mesh.h"
 
 Mesh::Mesh() {}
 Mesh::~Mesh() {}
@@ -229,7 +237,7 @@ void Mesh::createIndexBuffer() {
 }
 
 VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {
-    unsigned long stride = sizeofPosition + sizeofNormal + sizeofTexCoord;
+    uint32_t stride = sizeofPosition + sizeofNormal + sizeofTexCoord;
     
     bindingDescription.binding = 0;
     bindingDescription.stride = stride;
@@ -266,7 +274,7 @@ void Mesh::rotate(float angle, glm::vec3 axis) { m_model = glm::rotate(m_model, 
 void Mesh::translate(glm::vec3 translation)    { m_model = glm::translate(m_model, translation); }
 glm::mat4 Mesh::getMatrix() { return m_model; }
 
-unsigned long Mesh::sizeofPositions() { return sizeofPosition * m_positions.size(); }
-unsigned long Mesh::sizeofNormals  () { return sizeofNormal   * m_normals.size(); }
-unsigned long Mesh::sizeofTexCoords() { return sizeofTexCoord * m_texCoords.size(); }
-unsigned long Mesh::sizeofIndices  () { return sizeofIndex    * m_indices.size(); }
+uint32_t Mesh::sizeofPositions() { return sizeofPosition * (uint32_t) m_positions.size(); }
+uint32_t Mesh::sizeofNormals  () { return sizeofNormal   * (uint32_t) m_normals.size(); }
+uint32_t Mesh::sizeofTexCoords() { return sizeofTexCoord * (uint32_t) m_texCoords.size(); }
+uint32_t Mesh::sizeofIndices  () { return sizeofIndex    * (uint32_t) m_indices.size(); }

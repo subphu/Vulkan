@@ -1,7 +1,11 @@
 //  Copyright © 2020 Subph. All rights reserved.
 //
 
+#include <array>
+#include <set>
+
 #include "renderer.h"
+#include "../helper.h"
 
 Renderer::Renderer() { }
 Renderer::~Renderer() { }
@@ -124,7 +128,7 @@ void Renderer::setDeviceExtensions() {
     CHECK_ZERO(m_deviceExtensions.size(), "device extensions empty!");
 }
 
-void Renderer::setSurface(VkSurfaceKHR* pSurface) { m_surface = *pSurface; }
+void Renderer::setSurface(VkSurfaceKHR surface) { m_surface = surface; }
 
 void Renderer::pickPhysicalDevice() {
     {
@@ -632,7 +636,7 @@ void Renderer::createUniformBuffers(VkDeviceSize bufferSize) {
 
 void Renderer::updateUniformBuffer(void* address, size_t size, uint32_t index) {
     {
-        LOG("updateUniformBuffer");
+        //LOG("updateUniformBuffer");
         CHECK_HANDLE(m_device, "logical device undefined");
         CHECK_ZERO(m_uniformBuffersMemory.size(), "swap chain images empty!");
     }
@@ -765,7 +769,7 @@ void Renderer::createCommandBuffers(VkBuffer vertexBuffer, VkBuffer indexBuffer,
         renderPassInfo.renderArea.extent = m_swapChainExtent;
         
         std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[0].color = {0.8f, 0.8f, 0.8f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -885,9 +889,9 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char> & code) {
     }
 }
 
-VkPipelineShaderStageCreateInfo Renderer::createShaderStageInfo(const std::string& filename, VkShaderStageFlagBits stage) {
+VkPipelineShaderStageCreateInfo Renderer::createShaderStageInfo(const std::string filename, VkShaderStageFlagBits stage) {
     { LOG("createShaderStageInfo"); }
-    auto shaderCode = readFile(filename);
+    auto shaderCode = ReadFile(filename);
     VkShaderModule shaderModule = createShaderModule(shaderCode);
     
     VkPipelineShaderStageCreateInfo shaderStageInfo{};

@@ -3,8 +3,6 @@
 
 #include "camera.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-
 #define FRONT    glm::vec3(0.0f, 0.0f, 0.0f)
 #define WORLD_UP glm::vec3(0.0f, 1.0f, 0.0f)
 #define POSITION glm::vec3(0.0f, 1.0f, 3.0f)

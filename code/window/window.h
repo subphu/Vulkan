@@ -2,10 +2,8 @@
 //
 
 #pragma once
-#include "../common.h"
 
-#include <iostream>
-#include <vector>
+#include "../common.h"
 
 enum key {
     key_esc = GLFW_KEY_ESCAPE,
@@ -29,7 +27,7 @@ public:
     Window();
     ~Window();
     
-    VkSurfaceKHR* createSurface(VkInstance instance);
+    VkSurfaceKHR createSurface(VkInstance instance);
     
     void create(GLuint width, GLuint height, const char* name);
     void close();
