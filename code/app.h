@@ -35,20 +35,21 @@ public:
     void run();
 
 private:
-    Window m_window;
-    Camera m_camera;
+    Window* m_window;
+    Camera* m_camera;
     Renderer* m_renderer;
+    Mesh* m_model;
+    Texture m_texture;
     
     size_t m_currentFrame = 0;
     UniformBufferObject m_ubo{};
     
-    Mesh m_model = Mesh();
-    Texture m_texture;
     
     void initWindow();
     void initVulkan();
     
     void recreateSwapChain();
+    void recordCommandBuffer();
     
     void createTexture();
     void createModel();

@@ -728,18 +728,12 @@ void Renderer::createDescriptorSets(VkDeviceSize uniformBufferSize, VkImageView 
 
 }
 
-void Renderer::createCommandBuffers(VkBuffer vertexBuffer, VkBuffer indexBuffer, uint32_t indexSize) {
+void Renderer::createCommandBuffers() {
     {
         LOG("createCommandBuffers");
         CHECK_HANDLE(m_device, "logical device undefined!");
         CHECK_HANDLE(m_commandPool, "command pool undefined!");
-        CHECK_HANDLE(m_renderPass, "render pass undefined!");
-        CHECK_HANDLE(m_pipelineLayout, "pipeline layout undefined!");
-        CHECK_HANDLE(m_graphicsPipeline, "graphics pipeline undefined!");
         CHECK_ZERO(m_swapChainFramebuffers.size(), "swap chain framebuffer empty!");
-        CHECK_ZERO(m_swapChainExtent.height, "swap chain extent size zero!");
-        CHECK_ZERO(m_swapChainExtent.width, "swap chain extent size zero!");
-        CHECK_ZERO(m_descriptorSets.size(), "descriptor sets empty!");
     }
     m_commandBuffers.resize(m_swapChainFramebuffers.size());
     
@@ -751,48 +745,6 @@ void Renderer::createCommandBuffers(VkBuffer vertexBuffer, VkBuffer indexBuffer,
     
     VkResult result = vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data());
     CHECK_VKRESULT(result, "failed to allocate command buffers!");
-    
-    for (size_t i = 0; i < m_commandBuffers.size(); i++) {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0;
-        beginInfo.pInheritanceInfo = nullptr;
-        
-        result = vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo);
-        CHECK_VKRESULT(result, "failed to begin recording command buffer!");
-        
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_renderPass;
-        renderPassInfo.framebuffer = m_swapChainFramebuffers[i];
-        renderPassInfo.renderArea.offset = {0,0};
-        renderPassInfo.renderArea.extent = m_swapChainExtent;
-        
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = {0.8f, 0.8f, 0.8f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-        
-        vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-        
-        VkBuffer vertexBuffers[] = {vertexBuffer};
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(m_commandBuffers[i], 0, 1, vertexBuffers, offsets);
-        
-        vkCmdBindIndexBuffer(m_commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        
-        vkCmdBindDescriptorSets(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSets[i], 0, nullptr);
-        
-        vkCmdDrawIndexed(m_commandBuffers[i], indexSize, 1, 0, 0, 0);
-        
-        vkCmdEndRenderPass(m_commandBuffers[i]);
-        
-        result = vkEndCommandBuffer(m_commandBuffers[i]);
-        CHECK_VKRESULT(result, "failed to record command buffer!");
-    }
     
 }
 

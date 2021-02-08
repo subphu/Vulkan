@@ -4,7 +4,6 @@
 #pragma once
 
 #include "../common.h"
-#include "../helper.h"
 
 class Renderer {
     
@@ -90,7 +89,7 @@ public:
     void createDescriptorSets(VkDeviceSize uniformBufferSize, VkImageView textureImageView, VkSampler textureSampler);
     
     std::vector<VkCommandBuffer> m_commandBuffers;
-    void createCommandBuffers(VkBuffer vertexBuffer, VkBuffer indexBuffer, uint32_t indexSize);
+    void createCommandBuffers();
     
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkSemaphore> m_renderFinishedSemaphores;
