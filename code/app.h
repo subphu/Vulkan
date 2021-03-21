@@ -5,8 +5,11 @@
 
 #include "window/window.h"
 #include "renderer/renderer.h"
+#include "renderer/commander.h"
+#include "renderer/swapchain.h"
 #include "camera/camera.h"
 #include "mesh/mesh.h"
+#include "renderer/shader.h"
 
 struct UniformBufferObject {
     glm::mat4 model;
@@ -15,9 +18,7 @@ struct UniformBufferObject {
 };
 
 struct Texture {
-    VkImage image;
     VkImageView imageView;
-    VkDeviceMemory imageMemory;
     VkSampler sampler;
 };
 
@@ -37,9 +38,13 @@ public:
 private:
     Window* m_window;
     Camera* m_camera;
+    
     Renderer* m_renderer;
+    Swapchain* m_swapchain;
+    Commander* m_commander;
+    
     Mesh* m_model;
-    Texture m_texture;
+    ResourceImage *m_texture;
     
     size_t m_currentFrame = 0;
     UniformBufferObject m_ubo{};
@@ -48,7 +53,7 @@ private:
     void initWindow();
     void initVulkan();
     
-    void recreateSwapChain();
+    void recreateSwapchain();
     void recordCommandBuffer();
     
     void createTexture();

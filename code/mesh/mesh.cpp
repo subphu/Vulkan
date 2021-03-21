@@ -14,15 +14,14 @@
 
 #include "mesh.h"
 
+#include "../system.h"
+
 Mesh::Mesh() {}
 Mesh::~Mesh() {}
 
 void Mesh::cleanup() {
-    vkDestroyBuffer(m_renderer->m_device, indexBuffer, nullptr);
-    vkFreeMemory(m_renderer->m_device, indexBufferMemory, nullptr);
-
-    vkDestroyBuffer(m_renderer->m_device, vertexBuffer, nullptr);
-    vkFreeMemory(m_renderer->m_device, vertexBufferMemory, nullptr);
+    m_indexBuffer->cleanup();
+    m_vertexBuffer->cleanup();
 }
 
 void Mesh::createPlane() {
@@ -150,7 +149,7 @@ void Mesh::loadModel(const char* filename) {
             size_t hash = std::hash<glm::vec3>()(position) ^
                          (std::hash<glm::vec2>()(texCoord) << 1);
             if (uniqueVertices.count(hash) == 0) {
-                uniqueVertices[hash] = static_cast<uint32_t>(m_positions.size());
+                uniqueVertices[hash] = UINT32(m_positions.size());
                 m_positions.emplace_back(glm::vec3(position.x, position.y, position.z));
                 m_normals  .emplace_back(glm::vec3(normal.x, normal.y, normal.z));
                 m_texCoords.emplace_back(glm::vec2(texCoord.x, texCoord.y));
@@ -161,79 +160,50 @@ void Mesh::loadModel(const char* filename) {
     }
 }
 
-void Mesh::setRenderer(Renderer* renderer) { m_renderer = renderer; }
-
-void Mesh::createVertexBuffer() {
-    { CHECK_HANDLE(m_renderer, "renderer undefined!"); }
+void Mesh::cmdCreateVertexBuffer() {
     VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofTexCoords();
     
-    VkMemoryRequirements requirements;
-    uint32_t memoryTypeIdx;
+    Buffer* tempBuffer = new Buffer();
+    tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    tempBuffer->create();
     
-    VkBuffer tempBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    requirements = m_renderer->getBufferMemoryRequirements(tempBuffer);
-    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    VkDeviceMemory tempBufferMemory = m_renderer->allocateBufferMemory(tempBuffer, requirements.size, memoryTypeIdx);
-    vkBindBufferMemory(m_renderer->m_device, tempBuffer, tempBufferMemory, 0);
-    
-    void* ptr;
-    vkMapMemory(m_renderer->m_device, tempBufferMemory, 0, bufferSize, 0, &ptr);
+    uint32_t shift = 0;
     for (int i = 0; i < m_positions.size(); i++) {
-        memcpy(ptr, &m_positions[i],    sizeofPosition);
-        ptr = static_cast<char*>(ptr) + sizeofPosition;
-        memcpy(ptr, &m_normals[i],      sizeofNormal);
-        ptr = static_cast<char*>(ptr) + sizeofNormal;
-        memcpy(ptr, &m_texCoords[i],    sizeofTexCoord);
-        ptr = static_cast<char*>(ptr) + sizeofTexCoord;
+        tempBuffer->fillBuffer(&m_positions[i], sizeofPosition, shift);
+        shift += sizeofPosition;
+        tempBuffer->fillBuffer(&m_normals  [i], sizeofNormal  , shift);
+        shift += sizeofNormal;
+        tempBuffer->fillBuffer(&m_texCoords[i], sizeofTexCoord, shift);
+        shift += sizeofTexCoord;
     }
-    vkUnmapMemory(m_renderer->m_device, tempBufferMemory);
     
-    vertexBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    requirements = m_renderer->getBufferMemoryRequirements(vertexBuffer);
-    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vertexBufferMemory = m_renderer->allocateBufferMemory(vertexBuffer, requirements.size, memoryTypeIdx);
-    vkBindBufferMemory(m_renderer->m_device, vertexBuffer, vertexBufferMemory, 0);
+    Buffer* vertexBuffer = new Buffer();
+    vertexBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vertexBuffer->create();
+    vertexBuffer->cmdCopyFromBuffer(tempBuffer->m_buffer, bufferSize);
     
-    VkCommandBuffer commandBuffer = m_renderer->beginSingleTimeCommands();
-    VkBufferCopy copyRegion = { 0, 0, bufferSize };
-    vkCmdCopyBuffer(commandBuffer, tempBuffer, vertexBuffer, 1, &copyRegion);
-    m_renderer->endSingleTimeCommands(commandBuffer);
     
-    vkDestroyBuffer(m_renderer->m_device, tempBuffer, nullptr);
-    vkFreeMemory(m_renderer->m_device, tempBufferMemory, nullptr);
+    tempBuffer->cleanup();
+    
+    { m_vertexBuffer = vertexBuffer; }
 }
 
-void Mesh::createIndexBuffer() {
-    { CHECK_HANDLE(m_renderer, "renderer undefined!"); }
+void Mesh::cmdCreateIndexBuffer() {
     VkDeviceSize bufferSize = sizeofIndices();
     
-    VkMemoryRequirements requirements;
-    uint32_t memoryTypeIdx;
+    Buffer* tempBuffer = new Buffer();
+    tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    tempBuffer->create();
+    tempBuffer->fillBufferFull(m_indices.data());
     
-    VkBuffer tempBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    requirements = m_renderer->getBufferMemoryRequirements(tempBuffer);
-    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    VkDeviceMemory tempBufferMemory = m_renderer->allocateBufferMemory(tempBuffer, requirements.size, memoryTypeIdx);
-    vkBindBufferMemory(m_renderer->m_device, tempBuffer, tempBufferMemory, 0);
+    Buffer* indexBuffer = new Buffer();
+    indexBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    indexBuffer->create();
+    indexBuffer->cmdCopyFromBuffer(tempBuffer->m_buffer, bufferSize);
     
-    void* ptr;
-    vkMapMemory(m_renderer->m_device, tempBufferMemory, 0, bufferSize, 0, &ptr);
-    memcpy(ptr, m_indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(m_renderer->m_device, tempBufferMemory);
+    tempBuffer->cleanup();
     
-    indexBuffer = m_renderer->createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-    requirements = m_renderer->getBufferMemoryRequirements(indexBuffer);
-    memoryTypeIdx = m_renderer->findMemoryTypeIdx(requirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    indexBufferMemory = m_renderer->allocateBufferMemory(indexBuffer, requirements.size, memoryTypeIdx);
-    vkBindBufferMemory(m_renderer->m_device, indexBuffer, indexBufferMemory, 0);
-    
-    VkCommandBuffer commandBuffer = m_renderer->beginSingleTimeCommands();
-    VkBufferCopy copyRegion = { 0, 0, bufferSize };
-    vkCmdCopyBuffer(commandBuffer, tempBuffer, indexBuffer, 1, &copyRegion);
-    m_renderer->endSingleTimeCommands(commandBuffer);
-    
-    vkDestroyBuffer(m_renderer->m_device, tempBuffer, nullptr);
-    vkFreeMemory(m_renderer->m_device, tempBufferMemory, nullptr);
+    { m_indexBuffer = indexBuffer; }
 }
 
 VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {
@@ -262,7 +232,7 @@ VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {
     
     stateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     stateCreateInfo.vertexBindingDescriptionCount = 1;
-    stateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    stateCreateInfo.vertexAttributeDescriptionCount = UINT32(attributeDescriptions.size());
     stateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
     stateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
     

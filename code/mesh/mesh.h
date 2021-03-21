@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../renderer/renderer.h"
+#include "../renderer/buffer.h"
 
 class Mesh {
     
@@ -15,12 +15,7 @@ public:
     std::vector<glm::vec3> m_positions;
     std::vector<glm::vec3> m_normals;
     std::vector<glm::vec2> m_texCoords;
-    std::vector<int>   m_indices;
-    
-    VkBuffer vertexBuffer = {};
-    VkBuffer indexBuffer = {};
-    VkDeviceMemory vertexBufferMemory = {};
-    VkDeviceMemory indexBufferMemory = {};
+    std::vector<int>       m_indices;
     
     void cleanup();
     void createPlane();
@@ -29,9 +24,10 @@ public:
     void createSphere(int wedge = 10, int segment = 20);
     void loadModel(const char* filename);
     
-    void setRenderer(Renderer* renderer);
-    void createVertexBuffer();
-    void createIndexBuffer();
+    Buffer* m_vertexBuffer = nullptr;
+    Buffer* m_indexBuffer  = nullptr;
+    void cmdCreateVertexBuffer();
+    void cmdCreateIndexBuffer ();
     
     void scale(glm::vec3 size);
     void rotate(float angle, glm::vec3 axis);
@@ -47,7 +43,6 @@ public:
     VkPipelineVertexInputStateCreateInfo* createVertexInputInfo();
     
 private:
-    Renderer* m_renderer;
     glm::mat4 m_model = glm::mat4(1.0f);
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
     VkPipelineVertexInputStateCreateInfo stateCreateInfo{};

@@ -5,6 +5,7 @@
 
 #include "app.h"
 #include "helper.h"
+#include "system.h"
 
 void App::run() {
     initWindow();
@@ -12,6 +13,7 @@ void App::run() {
     m_camera = new Camera();
     mainLoop();
     m_model->cleanup();
+    m_texture->cleanup();
     m_renderer->cleanUp();
     m_window->close();
 }
@@ -25,59 +27,68 @@ void App::initWindow() {
 
 
 void App::initVulkan() {
+    System &system = System::instance();
     m_renderer = new Renderer();
+    system.m_renderer  = m_renderer;
     m_renderer->setupValidation(IS_DEBUG);
     m_renderer->createInstance(Window::getRequiredExtensions());
     m_renderer->createDebugMessenger();
     m_renderer->setSurface(m_window->createSurface(m_renderer->m_instance));
-    m_renderer->setDeviceExtensions();
+    m_renderer->setupDeviceExtensions();
     m_renderer->pickPhysicalDevice();
     m_renderer->createLogicalDevice();
     m_renderer->createDeviceQueue();
-    m_renderer->createCommandPool();
+    
+    m_renderer->createCommander();
+    m_renderer->createSwapchain();
+    
+    m_commander = m_renderer->getCommander();
+    m_swapchain = m_renderer->getSwapchain();
+    
     
     createTexture();
     createModel();
     
-    m_renderer->createDescriptorSetLayout();
+    recreateSwapchain();
     
-    recreateSwapChain();
-
-    m_renderer->createSyncObjects();
+    
+    
 }
 
-void App::recreateSwapChain() {
+void App::recreateSwapchain() {
     vkDeviceWaitIdle(m_renderer->m_device);
-
-    m_renderer->cleanUpSwapChain();
+    Swapchain *swapchain = m_swapchain;
+    swapchain->cleanup();
+    swapchain->createDescriptorSetLayout();
     
-    m_renderer->createSwapChain(m_window->getSize());
-    m_renderer->createImageViews();
-    m_renderer->createRenderPass();
-    m_renderer->createPipelineLayout();
+    swapchain->setup(m_window->getSize());
+    swapchain->create();
     
-    VkPipelineShaderStageCreateInfo shaderStages[] = {
-        m_renderer->createShaderStageInfo(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
-        m_renderer->createShaderStageInfo(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
+    swapchain->createRenderPass();
+    swapchain->createSwapchainImages();
+    
+    std::vector<Shader*> shaders = {
+        new Shader(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
     };
+    swapchain->createPipeline(shaders, m_model->createVertexInputInfo());
     
-    m_renderer->createGraphicsPipeline(shaderStages, m_model->createVertexInputInfo());
-    
-    m_renderer->createDepthResources();
-    m_renderer->createFramebuffer();
-    m_renderer->createUniformBuffers(sizeof(UniformBufferObject));
-    m_renderer->createDescriptorPool();
-    m_renderer->createDescriptorSets(sizeof(UniformBufferObject), m_texture.imageView, m_texture.sampler);
+    swapchain->createDepthResources();
+    swapchain->createFramebuffer();
+    swapchain->createUniformBuffers(sizeof(UniformBufferObject));
+    swapchain->createDescriptorPool();
+    swapchain->createDescriptorSets(sizeof(UniformBufferObject), m_texture->m_imageView, m_texture->m_sampler);
     recordCommandBuffer();
+    m_swapchain->createSyncObjects();
 }
 
 void App::recordCommandBuffer() {
-    m_renderer->createCommandBuffers();
+    m_swapchain->m_commandBuffers = m_commander->createCommandBuffers(m_swapchain->m_framebuffers.size());
 
-    for (size_t i = 0; i < m_renderer->m_commandBuffers.size(); i++) {
-        VkCommandBuffer commandBuffer= m_renderer->m_commandBuffers[i];
-        VkFramebuffer framebuffer = m_renderer->m_swapChainFramebuffers[i];
-        VkDescriptorSet descriptorSet = m_renderer->m_descriptorSets[i];
+    for (size_t i = 0; i < m_swapchain->m_commandBuffers.size(); i++) {
+        VkCommandBuffer commandBuffer= m_swapchain->m_commandBuffers[i];
+        VkFramebuffer framebuffer = m_swapchain->m_framebuffers[i];
+        VkDescriptorSet descriptorSet = m_swapchain->m_descriptorSets[i];
         
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -90,25 +101,35 @@ void App::recordCommandBuffer() {
         
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_renderer->m_renderPass;
+        renderPassInfo.renderPass = m_swapchain->m_renderPass;
         renderPassInfo.framebuffer = framebuffer;
-        renderPassInfo.renderArea.extent = m_renderer->m_swapChainExtent;
+        renderPassInfo.renderArea.extent = m_swapchain->m_swapchainExtent;
         renderPassInfo.renderArea.offset = {0,0};
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+        renderPassInfo.clearValueCount = UINT32(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderer->m_graphicsPipeline);
-
-        VkBuffer vertexBuffers[] = {m_model->vertexBuffer};
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_swapchain->m_pipelineGraphics->m_pipeline);
+        
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width  = (float) m_swapchain->m_swapchainExtent.width;
+        viewport.height = (float) m_swapchain->m_swapchainExtent.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        
+        VkBuffer vertexBuffers[] = {m_model->m_vertexBuffer->m_buffer};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-        vkCmdBindIndexBuffer(commandBuffer, m_model->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(commandBuffer, m_model->m_indexBuffer->m_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderer->m_pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_swapchain->m_pipelineGraphics->m_pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-        uint32_t indexSize = static_cast<uint32_t>(m_model->m_indices.size());
+        uint32_t indexSize = UINT32(m_model->m_indices.size());
         vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);
 
         vkCmdEndRenderPass(commandBuffer);
@@ -119,23 +140,20 @@ void App::recordCommandBuffer() {
 }
 
 void App::createTexture() {
-    int width, height, channels;
-    unsigned char* data = ReadImage(TEXTURE_PATH, &width, &height, &channels);
-    uint32_t maxMipLevels = MaxMapLevel(width, height);
+    ResourceImage *texture = new ResourceImage();
 
-    m_texture.image = m_renderer->createTextureImage(data, width, height, channels, maxMipLevels);
-
-    m_texture.imageView = m_renderer->createImageView(m_texture.image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, maxMipLevels);
-
-    m_texture.sampler = m_renderer->createTextureSampler(maxMipLevels);
+    texture->setupForTexture(TEXTURE_PATH);
+    texture->createForTexture();
+    texture->copyRawDataToImage();
+    
+    m_texture = texture;
 }
 
 void App::createModel() {
     m_model = new Mesh();
-    m_model->setRenderer(m_renderer);
     m_model->createPlane();
-    m_model->createVertexBuffer();
-    m_model->createIndexBuffer();
+    m_model->cmdCreateVertexBuffer();
+    m_model->cmdCreateIndexBuffer ();
 }
 
 void App::mainLoop() {
@@ -181,48 +199,48 @@ void App::update(long iteration) {
 //    m_ubo.model = glm::rotate(m_ubo.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 //        m_ubo.m_model = glm::rotate(m_ubo.m_model, glm::radians(210.0f) + iteration * glm::radians(.4f), glm::vec3(0.0f, 0.0f, 1.0f));
     m_ubo.view = m_camera->getViewMatrix();
-    m_ubo.proj = m_camera->getProjection(m_renderer->m_swapChainExtent.width / (float) m_renderer->m_swapChainExtent.height);
+    m_ubo.proj = m_camera->getProjection(m_swapchain->m_swapchainExtent.width / (float) m_swapchain->m_swapchainExtent.height);
 }
 
 void App::draw(long iteration) {
-    vkWaitForFences(m_renderer->m_device, 1, &m_renderer->m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(m_renderer->m_device, 1, &m_swapchain->m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
     
     uint32_t imageIndex;
-    VkResult result =  vkAcquireNextImageKHR(m_renderer->m_device, m_renderer->m_swapChain, UINT64_MAX, m_renderer->m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result =  vkAcquireNextImageKHR(m_renderer->m_device, m_swapchain->m_swapchain, UINT64_MAX, m_swapchain->m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
     
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        recreateSwapChain();
+        recreateSwapchain();
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
     
-    if (m_renderer->m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-        vkWaitForFences(m_renderer->m_device, 1, &m_renderer->m_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+    if (m_swapchain->m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+        vkWaitForFences(m_renderer->m_device, 1, &m_swapchain->m_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     }
     
-    m_renderer->m_imagesInFlight[imageIndex] = m_renderer->m_inFlightFences[m_currentFrame];
+    m_swapchain->m_imagesInFlight[imageIndex] = m_swapchain->m_inFlightFences[m_currentFrame];
     
-    m_renderer->updateUniformBuffer(&m_ubo, sizeof(m_ubo), imageIndex);
+    m_swapchain->updateUniformBuffer(&m_ubo, sizeof(m_ubo), imageIndex);
     
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphore[] = { m_renderer->m_imageAvailableSemaphores[m_currentFrame] };
+    VkSemaphore waitSemaphore[] = { m_swapchain->m_imageAvailableSemaphores[m_currentFrame] };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphore;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_renderer->m_commandBuffers[imageIndex];
+    submitInfo.pCommandBuffers = &m_swapchain->m_commandBuffers[imageIndex];
 
-    VkSemaphore signalSemaphors[] = { m_renderer->m_renderFinishedSemaphores[m_currentFrame] };
+    VkSemaphore signalSemaphors[] = { m_swapchain->m_renderFinishedSemaphores[m_currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphors;
     
-    vkResetFences(m_renderer->m_device, 1, &m_renderer->m_inFlightFences[m_currentFrame]);
+    vkResetFences(m_renderer->m_device, 1, &m_swapchain->m_inFlightFences[m_currentFrame]);
     
-    if (vkQueueSubmit(m_renderer->m_graphicQueue, 1, &submitInfo, m_renderer->m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
+    if (vkQueueSubmit(m_renderer->m_graphicQueue, 1, &submitInfo, m_swapchain->m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -231,15 +249,15 @@ void App::draw(long iteration) {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphors;
 
-    VkSwapchainKHR swapChains[] = { m_renderer->m_swapChain };
+    VkSwapchainKHR swapchains[] = { m_swapchain->m_swapchain };
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
+    presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &imageIndex;
 
     result = vkQueuePresentKHR(m_renderer->m_presentQueue, &presentInfo);
     
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_window->checkResized()) {
-        recreateSwapChain();
+        recreateSwapchain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
