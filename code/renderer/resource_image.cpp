@@ -33,7 +33,7 @@ void ResourceImage::cleanupImageView() {
 VkImage         ResourceImage::getImage      () { return m_image;       }
 VkImageView     ResourceImage::getImageView  () { return m_imageView;   }
 VkDeviceMemory  ResourceImage::getImageMemory() { return m_imageMemory; }
-
+VkSampler       ResourceImage::getSampler    () { return m_sampler;     }
 unsigned int    ResourceImage::getChannelSize() { return GetChannelSize(m_imageInfo.format); }
 VkDeviceSize    ResourceImage::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize(); }
 

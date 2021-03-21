@@ -21,6 +21,7 @@ void Buffer::cleanup() {
 
 VkBuffer       Buffer::getBuffer      () { return m_buffer;       }
 VkDeviceMemory Buffer::getBufferMemory() { return m_bufferMemory; }
+VkDeviceSize   Buffer::getBufferSize  () { return m_bufferInfo.size; }
 
 void Buffer::setup(VkDeviceSize size, VkBufferUsageFlags usage) {
     VkBufferCreateInfo bufferInfo = m_bufferInfo;

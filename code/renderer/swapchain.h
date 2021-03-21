@@ -9,6 +9,7 @@
 #include "buffer.h"
 #include "shader.h"
 #include "pipeline_graphics.h"
+#include "frame.h"
 
 class Swapchain {
     
@@ -21,49 +22,33 @@ public:
     VkDevice         m_device         = VK_NULL_HANDLE;
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     
-    std::vector<VkCommandBuffer> m_commandBuffers;
+    uint32_t m_mipLevels = 1;
     
     VkSwapchainCreateInfoKHR m_swapchainInfo{};
-    VkExtent2D m_swapchainExtent;
-    VkFormat m_swapchainSurfaceFormat;
+    VkExtent2D m_extent;
+    VkFormat m_surfaceFormat;
     void setup(Size<int> size);
     
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     void create();
     
-    uint32_t m_totalFrame = 0;
-    std::vector<ResourceImage*> m_swapchainImageResources;
-    void createSwapchainImages();
-    
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
     void createRenderPass();
     
+    std::vector<Frame*> m_frames;
+    void createFrames(VkDeviceSize uniformBufferSize, ResourceImage* texture);
     
     PipelineGraphics* m_pipelineGraphics = nullptr;
     void createPipeline(std::vector<Shader*> shaders, VkPipelineVertexInputStateCreateInfo* vertexInputInfo);
     
-    uint32_t m_mipLevels = 1;
-    
-    ResourceImage *m_depthResource = nullptr;
-    void createDepthResources();
-    
-    std::vector<VkFramebuffer> m_framebuffers;
-    void createFramebuffer();
-    
-    std::vector<Buffer*> m_uniformBuffers;
-    void createUniformBuffers(VkDeviceSize bufferSize);
-    void updateUniformBuffer(void* address, size_t size, uint32_t index);
-    
-    
+    std::vector<VkDescriptorSetLayoutBinding> m_layoutBindings;
     
     VkDescriptorPool m_descriptorPool;
-    void createDescriptorPool();
     
     VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
     void createDescriptorSetLayout();
     
     std::vector<VkDescriptorSet> m_descriptorSets;
-    void createDescriptorSets(VkDeviceSize uniformBufferSize, VkImageView textureImageView, VkSampler textureSampler);
     
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkSemaphore> m_renderFinishedSemaphores;
@@ -74,4 +59,12 @@ public:
 private:
     
     
+    static VkDescriptorPool CreateDescriptorPool(uint32_t count,
+                                                 std::vector<VkDescriptorSetLayoutBinding> layoutBindings);
+    
+    static std::vector<VkDescriptorSet> AllocateDescriptorSets(uint32_t count,
+                                                               VkDescriptorSetLayout descriptorSetLayout,
+                                                               VkDescriptorPool descriptorPool);
+    
+    static std::vector<VkImage> GetSwapchainImages(VkSwapchainKHR swapchain);
 };

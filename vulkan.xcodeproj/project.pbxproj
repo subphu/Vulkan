@@ -10,6 +10,7 @@
 		261EE5C8254E91E100572666 /* models in CopyFiles */ = {isa = PBXBuildFile; fileRef = 265FA2C0254E7102009E5428 /* models */; };
 		2634877825F60B5E00C5657D /* resource_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2634877625F60B5E00C5657D /* resource_image.cpp */; };
 		26361312260450BC005DBA36 /* pipeline_graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26361310260450BC005DBA36 /* pipeline_graphics.cpp */; };
+		263613152607365A005DBA36 /* frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 263613132607365A005DBA36 /* frame.cpp */; };
 		26450CD524FBCB1700841546 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26450CD324FBCB1700841546 /* libvulkan.1.dylib */; };
 		26450CD624FBCB1700841546 /* libvulkan.1.2.148.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26450CD424FBCB1700841546 /* libvulkan.1.2.148.dylib */; };
 		26450CD724FBCB1C00841546 /* libvulkan.1.2.148.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 26450CD424FBCB1700841546 /* libvulkan.1.2.148.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -59,6 +60,8 @@
 		2634877725F60B5E00C5657D /* resource_image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = resource_image.h; sourceTree = "<group>"; };
 		26361310260450BC005DBA36 /* pipeline_graphics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipeline_graphics.cpp; sourceTree = "<group>"; };
 		26361311260450BC005DBA36 /* pipeline_graphics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipeline_graphics.h; sourceTree = "<group>"; };
+		263613132607365A005DBA36 /* frame.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = frame.cpp; sourceTree = "<group>"; };
+		263613142607365A005DBA36 /* frame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = frame.h; sourceTree = "<group>"; };
 		26450CD324FBCB1700841546 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = "../vulkansdk-1.2.148.1/macOS/lib/libvulkan.1.dylib"; sourceTree = "<group>"; };
 		26450CD424FBCB1700841546 /* libvulkan.1.2.148.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.2.148.dylib; path = "../vulkansdk-1.2.148.1/macOS/lib/libvulkan.1.2.148.dylib"; sourceTree = "<group>"; };
 		26450CD924FBD3F900841546 /* vulkan.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = vulkan.entitlements; sourceTree = "<group>"; };
@@ -271,6 +274,8 @@
 				26FF06262601D8BD006FB68C /* shader.h */,
 				26361310260450BC005DBA36 /* pipeline_graphics.cpp */,
 				26361311260450BC005DBA36 /* pipeline_graphics.h */,
+				263613132607365A005DBA36 /* frame.cpp */,
+				263613142607365A005DBA36 /* frame.h */,
 			);
 			path = renderer;
 			sourceTree = "<group>";
@@ -343,6 +348,7 @@
 				267D8907255EC8AB002E918C /* window.cpp in Sources */,
 				2634877825F60B5E00C5657D /* resource_image.cpp in Sources */,
 				267949CE25FCE966001FA569 /* buffer.cpp in Sources */,
+				263613152607365A005DBA36 /* frame.cpp in Sources */,
 				267949D425FFB2B8001FA569 /* system.cpp in Sources */,
 				26361312260450BC005DBA36 /* pipeline_graphics.cpp in Sources */,
 				265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */,

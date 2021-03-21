@@ -45,6 +45,7 @@ private:
     
     Mesh* m_model;
     ResourceImage *m_texture;
+    std::vector<Shader*> m_shaders;
     
     size_t m_currentFrame = 0;
     UniformBufferObject m_ubo{};
@@ -58,6 +59,7 @@ private:
     
     void createTexture();
     void createModel();
+    void createShaders();
     
     void mainLoop();
     void update(long iteration);

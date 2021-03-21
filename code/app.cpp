@@ -45,13 +45,11 @@ void App::initVulkan() {
     m_commander = m_renderer->getCommander();
     m_swapchain = m_renderer->getSwapchain();
     
-    
     createTexture();
     createModel();
+    createShaders();
     
     recreateSwapchain();
-    
-    
     
 }
 
@@ -59,36 +57,25 @@ void App::recreateSwapchain() {
     vkDeviceWaitIdle(m_renderer->m_device);
     Swapchain *swapchain = m_swapchain;
     swapchain->cleanup();
-    swapchain->createDescriptorSetLayout();
     
+    swapchain->createDescriptorSetLayout();
     swapchain->setup(m_window->getSize());
     swapchain->create();
-    
     swapchain->createRenderPass();
-    swapchain->createSwapchainImages();
+    swapchain->createPipeline(m_shaders, m_model->createVertexInputInfo());
     
-    std::vector<Shader*> shaders = {
-        new Shader(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
-        new Shader(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
-    };
-    swapchain->createPipeline(shaders, m_model->createVertexInputInfo());
+    swapchain->createFrames(sizeof(UniformBufferObject), m_texture);
     
-    swapchain->createDepthResources();
-    swapchain->createFramebuffer();
-    swapchain->createUniformBuffers(sizeof(UniformBufferObject));
-    swapchain->createDescriptorPool();
-    swapchain->createDescriptorSets(sizeof(UniformBufferObject), m_texture->m_imageView, m_texture->m_sampler);
     recordCommandBuffer();
     m_swapchain->createSyncObjects();
 }
 
 void App::recordCommandBuffer() {
-    m_swapchain->m_commandBuffers = m_commander->createCommandBuffers(m_swapchain->m_framebuffers.size());
-
-    for (size_t i = 0; i < m_swapchain->m_commandBuffers.size(); i++) {
-        VkCommandBuffer commandBuffer= m_swapchain->m_commandBuffers[i];
-        VkFramebuffer framebuffer = m_swapchain->m_framebuffers[i];
-        VkDescriptorSet descriptorSet = m_swapchain->m_descriptorSets[i];
+    for (size_t i = 0; i < m_swapchain->m_frames.size(); i++) {
+        Frame*          frame         = m_swapchain->m_frames[i];
+        VkCommandBuffer commandBuffer = frame->m_commandBuffer;
+        VkFramebuffer   framebuffer   = frame->m_framebuffer;
+        VkDescriptorSet descriptorSet = frame->m_descriptorSet;
         
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -103,7 +90,7 @@ void App::recordCommandBuffer() {
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_swapchain->m_renderPass;
         renderPassInfo.framebuffer = framebuffer;
-        renderPassInfo.renderArea.extent = m_swapchain->m_swapchainExtent;
+        renderPassInfo.renderArea.extent = m_swapchain->m_extent;
         renderPassInfo.renderArea.offset = {0,0};
         renderPassInfo.clearValueCount = UINT32(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
@@ -114,8 +101,8 @@ void App::recordCommandBuffer() {
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width  = (float) m_swapchain->m_swapchainExtent.width;
-        viewport.height = (float) m_swapchain->m_swapchainExtent.height;
+        viewport.width  = (float) m_swapchain->m_extent.width;
+        viewport.height = (float) m_swapchain->m_extent.height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         
@@ -140,13 +127,10 @@ void App::recordCommandBuffer() {
 }
 
 void App::createTexture() {
-    ResourceImage *texture = new ResourceImage();
-
-    texture->setupForTexture(TEXTURE_PATH);
-    texture->createForTexture();
-    texture->copyRawDataToImage();
-    
-    m_texture = texture;
+    m_texture = new ResourceImage();
+    m_texture->setupForTexture(TEXTURE_PATH);
+    m_texture->createForTexture();
+    m_texture->copyRawDataToImage();
 }
 
 void App::createModel() {
@@ -154,6 +138,13 @@ void App::createModel() {
     m_model->createPlane();
     m_model->cmdCreateVertexBuffer();
     m_model->cmdCreateIndexBuffer ();
+}
+
+void App::createShaders() {
+    m_shaders = {
+        new Shader(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
 }
 
 void App::mainLoop() {
@@ -199,7 +190,7 @@ void App::update(long iteration) {
 //    m_ubo.model = glm::rotate(m_ubo.model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 //        m_ubo.m_model = glm::rotate(m_ubo.m_model, glm::radians(210.0f) + iteration * glm::radians(.4f), glm::vec3(0.0f, 0.0f, 1.0f));
     m_ubo.view = m_camera->getViewMatrix();
-    m_ubo.proj = m_camera->getProjection(m_swapchain->m_swapchainExtent.width / (float) m_swapchain->m_swapchainExtent.height);
+    m_ubo.proj = m_camera->getProjection(m_swapchain->m_extent.width / (float) m_swapchain->m_extent.height);
 }
 
 void App::draw(long iteration) {
@@ -221,7 +212,7 @@ void App::draw(long iteration) {
     
     m_swapchain->m_imagesInFlight[imageIndex] = m_swapchain->m_inFlightFences[m_currentFrame];
     
-    m_swapchain->updateUniformBuffer(&m_ubo, sizeof(m_ubo), imageIndex);
+    m_swapchain->m_frames[imageIndex]->updateUniformBuffer(&m_ubo, sizeof(m_ubo));
     
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -232,7 +223,7 @@ void App::draw(long iteration) {
     submitInfo.pWaitSemaphores = waitSemaphore;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_swapchain->m_commandBuffers[imageIndex];
+    submitInfo.pCommandBuffers = &m_swapchain->m_frames[imageIndex]->m_commandBuffer;
 
     VkSemaphore signalSemaphors[] = { m_swapchain->m_renderFinishedSemaphores[m_currentFrame] };
     submitInfo.signalSemaphoreCount = 1;

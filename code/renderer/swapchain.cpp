@@ -15,7 +15,7 @@ Swapchain::Swapchain() {
 }
 
 void Swapchain::cleanup() {
-    if (m_totalFrame == 0) return;
+    if (m_frames.size() == 0) return;
     
     for (size_t i = 0; i < m_inFlightFences.size(); i++) {
         vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
@@ -23,26 +23,16 @@ void Swapchain::cleanup() {
         vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
     }
     
-    vkFreeCommandBuffers(m_device, System::instance().m_renderer->getCommander()->m_commandPool, UINT32(m_commandBuffers.size()), m_commandBuffers.data());
-    
+    for (size_t i = 0; i < m_frames.size(); i++)
+        m_frames[i]->cleanup();
+    m_frames = {};
+
     vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
     vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
-    
-    for (size_t i = 0; i < m_totalFrame; i++)
-        m_uniformBuffers[i]->cleanup();
-    
-    for (size_t i = 0; i < m_framebuffers.size(); i++)
-        vkDestroyFramebuffer(m_device, m_framebuffers[i], nullptr);
-    
-    m_depthResource->cleanup();
     m_pipelineGraphics->cleanup();
-    
-    for (size_t i = 0; i < m_totalFrame; i++)
-        m_swapchainImageResources[i]->cleanupImageView();
     
     vkDestroyRenderPass(m_device, m_renderPass, nullptr);
     vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
-    m_totalFrame = 0;
 }
 
 void Swapchain::setup(Size<int> size) {
@@ -91,9 +81,9 @@ void Swapchain::setup(Size<int> size) {
         swapchainInfo.pQueueFamilyIndices   = nullptr; // Optional
     }
     {
-        m_swapchainInfo          = swapchainInfo;
-        m_swapchainExtent        = extent;
-        m_swapchainSurfaceFormat = surfaceFormat.format;
+        m_extent        = extent;
+        m_swapchainInfo = swapchainInfo;
+        m_surfaceFormat = surfaceFormat.format;
     }
 }
 
@@ -108,7 +98,7 @@ void Swapchain::createRenderPass() {
     VkDevice device = m_device;
     
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format          = m_swapchainSurfaceFormat;
+    colorAttachment.format          = m_surfaceFormat;
     colorAttachment.samples         = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp          = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp         = VK_ATTACHMENT_STORE_OP_STORE;
@@ -168,7 +158,7 @@ void Swapchain::createRenderPass() {
 }
 
 void Swapchain::createPipeline(std::vector<Shader*> shaders, VkPipelineVertexInputStateCreateInfo* vertexInputInfo) {
-    VkExtent2D   swapchainExtent = m_swapchainExtent;
+    VkExtent2D   swapchainExtent = m_extent;
     VkRenderPass renderPass      = m_renderPass;
     VkDescriptorSetLayout descriptorSetLayout = m_descriptorSetLayout;
     
@@ -190,198 +180,10 @@ void Swapchain::createPipeline(std::vector<Shader*> shaders, VkPipelineVertexInp
     { m_pipelineGraphics = pipelineGraphics; }
 }
 
-void Swapchain::createSwapchainImages() {
-    LOG("createSwapchainImages");
-    
-    VkDevice       device                 = m_device;
-    VkSwapchainKHR swapchain              = m_swapchain;
-    VkFormat       swapchainSurfaceFormat = m_swapchainSurfaceFormat;
-    
-    uint32_t totalFrame = 0;
-    vkGetSwapchainImagesKHR(device, swapchain, &totalFrame, nullptr);
-    std::vector<VkImage> swapchainImages(totalFrame);
-    vkGetSwapchainImagesKHR(device, swapchain, &totalFrame, swapchainImages.data());
-    
-    std::vector<ResourceImage*> swapchainImageResources;
-    for (size_t i = 0; i < totalFrame; i++) {
-        ResourceImage *resourceImage = new ResourceImage();
-        resourceImage->setupForSwapchain(swapchainImages[i], swapchainSurfaceFormat);
-        resourceImage->createForSwapchain();
-        swapchainImageResources.push_back(resourceImage);
-    }
-    {
-        m_totalFrame = totalFrame;
-        m_swapchainImageResources = swapchainImageResources;
-    }
-}
-
-void Swapchain::createDepthResources() {
-    LOG("createDepthResources");
-    m_depthResource = new ResourceImage();
-    m_depthResource->setupForDepth({m_swapchainExtent.width, m_swapchainExtent.height}, m_mipLevels);
-    m_depthResource->create();
-}
-
-void Swapchain::createFramebuffer() {
-    LOG("createFramebuffer");
-    VkDevice       device          = m_device;
-    VkRenderPass   renderPass      = m_renderPass;
-    VkExtent2D     swapchainExtent = m_swapchainExtent;
-    uint32_t       totalFrame      = m_totalFrame;
-    ResourceImage* depthResource   = m_depthResource;
-    std::vector<ResourceImage*> swapchainImageResources = m_swapchainImageResources;
-    
-    std::vector<VkFramebuffer> framebuffers(totalFrame);
-    for (size_t i = 0; i < totalFrame; i++) {
-        std::array<VkImageView, 2> attachments = {swapchainImageResources[i]->getImageView(), depthResource->getImageView()};
-        
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass      = renderPass;
-        framebufferInfo.attachmentCount = UINT32(attachments.size());
-        framebufferInfo.pAttachments    = attachments.data();
-        framebufferInfo.width           = swapchainExtent.width;
-        framebufferInfo.height          = swapchainExtent.height;
-        framebufferInfo.layers          = 1;
-        
-        VkResult result = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]);
-        CHECK_VKRESULT(result, "failed to create framebuffer!");
-    }
-    { m_framebuffers = framebuffers; }
-}
-
-void Swapchain::createUniformBuffers(VkDeviceSize bufferSize) {
-    LOG("createUniformBuffers");
-    uint32_t totalFrame = m_totalFrame;
-    
-    std::vector<Buffer*> uniformBuffers;
-    for (size_t i = 0; i < totalFrame; i++) {
-        Buffer* uniformBuffer = new Buffer();
-        uniformBuffer->setup(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-        uniformBuffer->create();
-        uniformBuffers.push_back(uniformBuffer);
-    }
-    { m_uniformBuffers = uniformBuffers; }
-}
-
-
-void Swapchain::updateUniformBuffer(void* address, size_t size, uint32_t index) {
-    m_uniformBuffers[index]->fillBuffer(address, size);
-}
-
-void Swapchain::createDescriptorPool() {
-    LOG("createDescriptorPool");
-    VkDevice device     = m_device;
-    uint32_t totalFrame = m_totalFrame;
-    
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = totalFrame;
-    poolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = totalFrame;
-    
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = UINT32(poolSizes.size());
-    poolInfo.pPoolSizes    = poolSizes.data();
-    poolInfo.maxSets       = totalFrame;
-    
-    VkDescriptorPool descriptorPool;
-    VkResult result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
-    CHECK_VKRESULT(result, "failed to create descriptor pool!");
-  
-    { m_descriptorPool = descriptorPool; }
-}
-
-void Swapchain::createDescriptorSetLayout() {
-    LOG("createDescriptorSetLayout");
-    VkDevice device = m_device;
-    
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding         = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-            
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding         = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-    
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = UINT32(bindings.size());
-    layoutInfo.pBindings    = bindings.data();
-    
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
-    CHECK_VKRESULT(result, "failed to create descriptor set layout!");
-    
-    { m_descriptorSetLayout = descriptorSetLayout; }
-}
-
-void Swapchain::createDescriptorSets(VkDeviceSize uniformBufferSize, VkImageView textureImageView, VkSampler textureSampler) {
-    LOG("createDescriptorSets");
-    VkDevice device     = m_device;
-    uint32_t totalFrame = m_totalFrame;
-    VkDescriptorPool      descriptorPool      = m_descriptorPool;
-    VkDescriptorSetLayout descriptorSetLayout = m_descriptorSetLayout;
-    std::vector<Buffer*>  uniformBuffers      = m_uniformBuffers;
-    
-    std::vector<VkDescriptorSetLayout> layouts(totalFrame, descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool     = descriptorPool;
-    allocInfo.descriptorSetCount = totalFrame;
-    allocInfo.pSetLayouts        = layouts.data();
-    
-    std::vector<VkDescriptorSet> descriptorSets(totalFrame);
-    VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data());
-    CHECK_VKRESULT(result, "failed to allocate descriptor sets!");
-    
-    for (size_t i = 0; i < totalFrame; i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i]->getBuffer();
-        bufferInfo.offset = 0;
-        bufferInfo.range  = uniformBufferSize;
-        
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView   = textureImageView;
-        imageInfo.sampler     = textureSampler;
-        
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-        descriptorWrites[0].sType  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding      = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].pBufferInfo     = &bufferInfo;
-        
-        descriptorWrites[1].sType  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSets[i];
-        descriptorWrites[1].dstBinding      = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].pImageInfo      = &imageInfo;
-        
-        vkUpdateDescriptorSets(device, UINT32(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-    }
-    { m_descriptorSets = descriptorSets; }
-
-}
-
 void Swapchain::createSyncObjects() {
     LOG("createSyncObjects");
     VkDevice device     = m_device;
-    uint32_t totalFrame = m_totalFrame;
+    uint32_t totalFrame = UINT32(m_frames.size());
     
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -417,3 +219,133 @@ void Swapchain::createSyncObjects() {
     
 }
 
+void Swapchain::createDescriptorSetLayout() {
+    LOG("createDescriptorSetLayout");
+    VkDevice device = m_device;
+    
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding         = 0;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
+    uboLayoutBinding.pImmutableSamplers = nullptr;
+            
+    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    samplerLayoutBinding.binding         = 1;
+    samplerLayoutBinding.descriptorCount = 1;
+    samplerLayoutBinding.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerLayoutBinding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    
+    std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding, samplerLayoutBinding };
+    
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = UINT32(bindings.size());
+    layoutInfo.pBindings    = bindings.data();
+    
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
+    CHECK_VKRESULT(result, "failed to create descriptor set layout!");
+    
+    {
+        m_layoutBindings = bindings;
+        m_descriptorSetLayout = descriptorSetLayout;
+    }
+}
+
+void Swapchain::createFrames(VkDeviceSize uniformBufferSize, ResourceImage* texture) {
+    System &system   = System::instance();
+    Commander*     commander  = system.getCommander();
+    
+    VkSwapchainKHR swapchain     = m_swapchain;
+    VkRenderPass   renderPass    = m_renderPass;
+    VkExtent2D     extent        = m_extent;
+    uint32_t       mipLevels     = m_mipLevels;
+    VkFormat       surfaceFormat = m_surfaceFormat;
+    VkDescriptorSetLayout descriptorSetLayout = m_descriptorSetLayout;
+    std::vector<VkDescriptorSetLayoutBinding> layoutBindings = m_layoutBindings;
+    
+    std::vector<VkImage> swapchainImages = GetSwapchainImages(swapchain);
+    uint32_t totalFrame = UINT32(swapchainImages.size());
+    
+    VkDescriptorPool descriptorPool = CreateDescriptorPool(totalFrame, layoutBindings);
+    std::vector<VkDescriptorSet> descriptorSets = AllocateDescriptorSets(totalFrame, descriptorSetLayout, descriptorPool);
+    std::vector<VkCommandBuffer> commandBuffers = commander->createCommandBuffers(totalFrame);
+    
+    std::vector<Frame*> frames;
+    for (size_t i = 0; i < totalFrame; i++) {
+        Frame* frame = new Frame();
+        frame->setSize({extent.width, extent.height});
+        frame->setTexture(texture);
+        frame->setCommandBuffer(commandBuffers[i]);
+        frame->createImageResource(swapchainImages[i], surfaceFormat);
+        frame->createDepthResource(mipLevels);
+        frame->createFramebuffer(renderPass);
+        frame->createUniformBuffer(uniformBufferSize);
+        frame->updateDescriptorSet(descriptorSets[i]);
+        frames.push_back(frame);
+    }
+    {
+        m_descriptorPool = descriptorPool;
+        m_frames = frames;
+    }
+}
+
+// ==================================================
+
+VkDescriptorPool Swapchain::CreateDescriptorPool(uint32_t count, std::vector<VkDescriptorSetLayoutBinding> layoutBindings) {
+    LOG("CreateDescriptorPool");
+    System &system  = System::instance();
+    VkDevice device = system.m_renderer->m_device;
+    
+    std::vector<VkDescriptorPoolSize> poolSizes;
+    for (int i = 0; i < layoutBindings.size(); i++) {
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = layoutBindings[i].descriptorType;
+        poolSize.descriptorCount = count;
+        poolSizes.push_back(poolSize);
+    }
+    
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = UINT32(poolSizes.size());
+    poolInfo.pPoolSizes    = poolSizes.data();
+    poolInfo.maxSets       = count;
+    
+    VkDescriptorPool descriptorPool;
+    VkResult result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
+    CHECK_VKRESULT(result, "failed to create descriptor pool!");
+  
+    return descriptorPool;
+}
+
+std::vector<VkDescriptorSet> Swapchain::AllocateDescriptorSets(uint32_t count, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool) {
+    LOG("CreateDescriptorSets");
+    System &system  = System::instance();
+    VkDevice device = system.m_renderer->m_device;
+    
+    std::vector<VkDescriptorSetLayout> layouts(count, descriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool     = descriptorPool;
+    allocInfo.descriptorSetCount = count;
+    allocInfo.pSetLayouts        = layouts.data();
+    
+    std::vector<VkDescriptorSet> descriptorSets(count);
+    VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data());
+    CHECK_VKRESULT(result, "failed to allocate descriptor sets!");
+    
+    return descriptorSets;
+}
+
+std::vector<VkImage> Swapchain::GetSwapchainImages(VkSwapchainKHR swapchain) {
+    System &system  = System::instance();
+    VkDevice device = system.m_renderer->m_device;
+    
+    uint32_t count;
+    vkGetSwapchainImagesKHR(device, swapchain, &count, nullptr);
+    std::vector<VkImage> swapchainImages(count);
+    vkGetSwapchainImagesKHR(device, swapchain, &count, swapchainImages.data());
+    return swapchainImages;
+}

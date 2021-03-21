@@ -55,6 +55,7 @@ public:
     VkImageView      getImageView  ();
     VkDeviceMemory   getImageMemory();
     VkDeviceSize     getImageSize  ();
+    VkSampler        getSampler    ();
     unsigned int     getChannelSize();
     
     

@@ -25,6 +25,7 @@ public:
     
     VkBuffer       getBuffer();
     VkDeviceMemory getBufferMemory();
+    VkDeviceSize   getBufferSize();
     
     void setup (VkDeviceSize size, VkBufferUsageFlags usage);
     void create();
