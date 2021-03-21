@@ -35,20 +35,16 @@ public:
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
     void createRenderPass();
     
-    std::vector<Frame*> m_frames;
-    void createFrames(VkDeviceSize uniformBufferSize, ResourceImage* texture);
+    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+    void createDescriptorSetLayout();
     
     PipelineGraphics* m_pipelineGraphics = nullptr;
     void createPipeline(std::vector<Shader*> shaders, VkPipelineVertexInputStateCreateInfo* vertexInputInfo);
     
     std::vector<VkDescriptorSetLayoutBinding> m_layoutBindings;
-    
     VkDescriptorPool m_descriptorPool;
-    
-    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
-    void createDescriptorSetLayout();
-    
-    std::vector<VkDescriptorSet> m_descriptorSets;
+    std::vector<Frame*> m_frames;
+    void createFrames(VkDeviceSize uniformBufferSize, ResourceImage* texture);
     
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkSemaphore> m_renderFinishedSemaphores;

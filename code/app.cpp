@@ -87,26 +87,19 @@ void App::recordCommandBuffer() {
         clearValues[1].depthStencil = {1.0f, 0};
         
         VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_swapchain->m_renderPass;
+        renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass  = m_swapchain->m_renderPass;
         renderPassInfo.framebuffer = framebuffer;
         renderPassInfo.renderArea.extent = m_swapchain->m_extent;
         renderPassInfo.renderArea.offset = {0,0};
-        renderPassInfo.clearValueCount = UINT32(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
+        renderPassInfo.clearValueCount   = UINT32(clearValues.size());
+        renderPassInfo.pClearValues      = clearValues.data();
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_swapchain->m_pipelineGraphics->m_pipeline);
         
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width  = (float) m_swapchain->m_extent.width;
-        viewport.height = (float) m_swapchain->m_extent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
         
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetViewport(commandBuffer, 0, 1, m_swapchain->m_pipelineGraphics->m_viewport);
         
         VkBuffer vertexBuffers[] = {m_model->m_vertexBuffer->m_buffer};
         VkDeviceSize offsets[] = {0};

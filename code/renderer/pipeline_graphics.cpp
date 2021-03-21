@@ -58,7 +58,11 @@ void PipelineGraphics::setupViewportInfo(VkExtent2D swapchainExtent) {
     viewportInfo->scissorCount  = 1;
     viewportInfo->pScissors     = scissor;
     
-    { m_viewportInfo = viewportInfo; }
+    {
+        m_scissor  = scissor;
+        m_viewport = viewport;
+        m_viewportInfo = viewportInfo;
+    }
 }
 
 void PipelineGraphics::setupInputAssemblyInfo() {
