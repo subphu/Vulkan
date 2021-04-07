@@ -142,12 +142,12 @@ void App::recreateSwapchain() {
     swapchain->create();
     swapchain->createRenderPass();
     swapchain->createFrames(sizeof(UniformBufferObject));
+    swapchain->createSyncObjects();
 
     createDescriptor();
     createPipelineGraphic();
-    
     recordCommandBuffer();
-    m_swapchain->createSyncObjects();
+    
 }
 
 void App::recordCommandBuffer() {
@@ -160,34 +160,34 @@ void App::recordCommandBuffer() {
         VkFramebuffer   framebuffer   = frame->m_framebuffer;
         VkDescriptorSet descriptorSet = frame->m_descriptorSet;
         
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+        VkCommandBufferBeginInfo commandBeginInfo{};
+        commandBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        VkResult result = vkBeginCommandBuffer(commandBuffer, &commandBeginInfo);
         CHECK_VKRESULT(result, "failed to begin recording command buffer!");
             
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = {0.8f, 0.8f, 0.8f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
         
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass  = m_swapchain->m_renderPass;
-        renderPassInfo.framebuffer = framebuffer;
-        renderPassInfo.renderArea.extent = m_swapchain->m_extent;
-        renderPassInfo.renderArea.offset = {0,0};
-        renderPassInfo.clearValueCount   = UINT32(clearValues.size());
-        renderPassInfo.pClearValues      = clearValues.data();
+        VkRenderPassBeginInfo renderBeginInfo{};
+        renderBeginInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderBeginInfo.renderPass  = m_swapchain->m_renderPass;
+        renderBeginInfo.framebuffer = framebuffer;
+        renderBeginInfo.renderArea.extent = m_swapchain->m_extent;
+        renderBeginInfo.renderArea.offset = {0,0};
+        renderBeginInfo.clearValueCount   = UINT32(clearValues.size());
+        renderBeginInfo.pClearValues      = clearValues.data();
 
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipeline);
+        vkCmdBeginRenderPass(commandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipeline);
         
         vkCmdSetViewport(commandBuffer, 0, 1, m_pipelineGraphic->m_viewport);
         
         VkBuffer vertexBuffers[] = {m_model->m_vertexBuffer->m_buffer};
         VkDeviceSize offsets[] = {0};
+        
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
         vkCmdBindIndexBuffer(commandBuffer, m_model->m_indexBuffer->m_buffer, 0, VK_INDEX_TYPE_UINT32);
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, S0, 1, &descriptorSet, 0, nullptr);
