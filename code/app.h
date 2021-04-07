@@ -13,6 +13,7 @@
 
 #include "renderer/descriptor.h"
 #include "renderer/pipeline_graphics.h"
+#include "renderer/pipeline_compute.h"
 
 struct UniformBufferObject {
     glm::mat4 model;
@@ -33,6 +34,7 @@ public:
     
     const std::string VERT_SHADER_PATH = "shaders/vert.spv";
     const std::string FRAG_SHADER_PATH = "shaders/frag.spv";
+    const std::string COMP_SHADER_PATH = "shaders/comp.spv";
     const std::string MODEL_PATH   = "models/viking_room/viking_room.obj";
     const std::string TEXTURE_PATH = "textures/rustediron/rustediron_albedo.png";
     
@@ -49,6 +51,7 @@ private:
     Descriptor* m_descriptor;
     
     PipelineGraphics* m_pipelineGraphic;
+    PipelineCompute*  m_pipelineCompute;
     
     
     

@@ -15,6 +15,7 @@ void App::run() {
     m_model->cleanup();
     m_texture->cleanup();
     m_pipelineGraphic->cleanup();
+    m_pipelineCompute->cleanup();
     m_descriptor->cleanup();
     m_renderer->cleanUp();
     m_window->close();
@@ -202,6 +203,25 @@ void App::recordCommandBuffer() {
 }
 
 void App::createPipelineCompute() {
+    Shader* computeShader = new Shader(COMP_SHADER_PATH, VK_SHADER_STAGE_COMPUTE_BIT);
+    m_pipelineCompute = new PipelineCompute();
+    m_pipelineCompute->setShader(computeShader);
+    m_pipelineCompute->setupConstant();
+    m_pipelineCompute->setupLayoutBindings(2);
+    m_pipelineCompute->createDescriptorSetLayout();
+    m_pipelineCompute->createPipelineLayout();
+    m_pipelineCompute->create();
+    
+    uint size = 1000;
+    Buffer* iptBuffer = new Buffer();
+    iptBuffer->setup(size * sizeof(float), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    iptBuffer->create();
+    Buffer* optBuffer = new Buffer();
+    optBuffer->setup(size * size * sizeof(float), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    optBuffer->create();
+    
+    iptBuffer->cleanup();
+    optBuffer->cleanup();
 }
 
 void App::mainLoop() {

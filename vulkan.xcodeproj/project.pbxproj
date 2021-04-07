@@ -76,6 +76,8 @@
 		265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cpp; sourceTree = "<group>"; };
 		265FA2BE254E7002009E5428 /* tiny_obj_loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		265FA2C0254E7102009E5428 /* models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = models; sourceTree = "<group>"; };
+		266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipeline_compute.cpp; sourceTree = "<group>"; };
+		266A2502261B060E00AAF4C2 /* pipeline_compute.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipeline_compute.h; sourceTree = "<group>"; };
 		266A250A261B5B6A00AAF4C2 /* descriptor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = descriptor.cpp; sourceTree = "<group>"; };
 		266A250B261B5B6A00AAF4C2 /* descriptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = descriptor.h; sourceTree = "<group>"; };
 		266C0BFA25CFFDBE00BAF0C7 /* app.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = app.cpp; sourceTree = "<group>"; };
@@ -273,6 +275,8 @@
 				263613142607365A005DBA36 /* frame.h */,
 				26361310260450BC005DBA36 /* pipeline_graphics.cpp */,
 				26361311260450BC005DBA36 /* pipeline_graphics.h */,
+				266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */,
+				266A2502261B060E00AAF4C2 /* pipeline_compute.h */,
 				267949CF25FF04F7001FA569 /* commander.cpp */,
 				267949D025FF04F7001FA569 /* commander.h */,
 				266A250A261B5B6A00AAF4C2 /* descriptor.cpp */,
@@ -365,6 +369,7 @@
 				267949CE25FCE966001FA569 /* buffer.cpp in Sources */,
 				263613152607365A005DBA36 /* frame.cpp in Sources */,
 				267949D425FFB2B8001FA569 /* system.cpp in Sources */,
+				266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */,
 				26361312260450BC005DBA36 /* pipeline_graphics.cpp in Sources */,
 				265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */,
 				267949D125FF04F7001FA569 /* commander.cpp in Sources */,
