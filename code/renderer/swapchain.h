@@ -5,11 +5,12 @@
 
 #include "../common.h"
 #include "renderer.h"
-#include "resource_image.h"
-#include "buffer.h"
-#include "shader.h"
+#include "../resources/image.h"
+#include "../resources/buffer.h"
+#include "../resources/shader.h"
 #include "pipeline_graphics.h"
 #include "frame.h"
+#include "descriptor.h"
 
 class Swapchain {
     
@@ -22,8 +23,6 @@ public:
     VkDevice         m_device         = VK_NULL_HANDLE;
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     
-    uint32_t m_mipLevels = 1;
-    
     VkSwapchainCreateInfoKHR m_swapchainInfo{};
     VkExtent2D m_extent;
     VkFormat m_surfaceFormat;
@@ -34,17 +33,10 @@ public:
     
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
     void createRenderPass();
-    
-    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
-    void createDescriptorSetLayout();
-    
-    PipelineGraphics* m_pipelineGraphics = nullptr;
-    void createPipeline(std::vector<Shader*> shaders, VkPipelineVertexInputStateCreateInfo* vertexInputInfo);
-    
-    std::vector<VkDescriptorSetLayoutBinding> m_layoutBindings;
-    VkDescriptorPool m_descriptorPool;
+
+    uint m_totalFrame;
     std::vector<Frame*> m_frames;
-    void createFrames(VkDeviceSize uniformBufferSize, ResourceImage* texture);
+    void createFrames(VkDeviceSize uniformBufferSize);
     
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkSemaphore> m_renderFinishedSemaphores;
@@ -53,14 +45,6 @@ public:
     void createSyncObjects();
     
 private:
-    
-    
-    static VkDescriptorPool CreateDescriptorPool(uint32_t count,
-                                                 std::vector<VkDescriptorSetLayoutBinding> layoutBindings);
-    
-    static std::vector<VkDescriptorSet> AllocateDescriptorSets(uint32_t count,
-                                                               VkDescriptorSetLayout descriptorSetLayout,
-                                                               VkDescriptorPool descriptorPool);
     
     static std::vector<VkImage> GetSwapchainImages(VkSwapchainKHR swapchain);
 };

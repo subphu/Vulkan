@@ -12,6 +12,7 @@ Commander::Commander() {
 }
 
 void Commander::cleanup() {
+    LOG("Commander::cleanup");
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 }
 
@@ -31,6 +32,7 @@ void Commander::create() {
 }
 
 VkCommandBuffer Commander::createCommandBuffer() {
+    LOG("createCommandBuffer");
     VkDevice      device      = m_device;
     VkCommandPool commandPool = m_commandPool;
     
@@ -46,6 +48,7 @@ VkCommandBuffer Commander::createCommandBuffer() {
 }
 
 std::vector<VkCommandBuffer> Commander::createCommandBuffers(uint32_t size) {
+    LOG("createCommandBuffers");
     VkDevice      device      = m_device;
     VkCommandPool commandPool = m_commandPool;
     
@@ -63,6 +66,7 @@ std::vector<VkCommandBuffer> Commander::createCommandBuffers(uint32_t size) {
 }
 
 void Commander::beginSingleTimeCommands(VkCommandBuffer commandBuffer) {
+    LOG("beginSingleTimeCommands");
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -71,6 +75,7 @@ void Commander::beginSingleTimeCommands(VkCommandBuffer commandBuffer) {
 }
 
 void Commander::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+    LOG("endSingleTimeCommands");
     VkDevice      device      = m_device;
     VkQueue       queue       = m_queue;
     VkCommandPool commandPool = m_commandPool;

@@ -44,6 +44,7 @@ void Buffer::createBuffer() {
 }
 
 void Buffer::allocateBufferMemory() {
+    LOG("allocateBufferMemory");
     VkDevice         device         = m_device;
     VkPhysicalDevice physicalDevice = m_physicalDevice;
     VkBuffer         buffer         = m_buffer;
@@ -72,6 +73,7 @@ void Buffer::allocateBufferMemory() {
 }
 
 void Buffer::cmdCopyFromBuffer(VkBuffer sourceBuffer, VkDeviceSize size) {
+    LOG("cmdCopyFromBuffer");
     VkBuffer     buffer     = m_buffer;
     System&      system     = System::instance();
     Commander*   commander  = system.getCommander();
@@ -104,7 +106,9 @@ void Buffer::unmapMemory() {
     vkUnmapMemory(m_device, m_bufferMemory);
 }
 
-// ======================================================================================
+
+// Private ==================================================
+
 
 VkBufferCreateInfo Buffer::GetDefaultBufferCreateInfo() {
     VkBufferCreateInfo bufferInfo{};

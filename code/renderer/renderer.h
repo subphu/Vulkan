@@ -6,12 +6,12 @@
 #include "../common.h"
 #include "commander.h"
 #include "swapchain.h"
-#include "buffer.h"
-#include "resource_image.h"
+#include "../resources/buffer.h"
+#include "../resources/image.h"
 
 class Swapchain;
 class Buffer;
-class ResourceImage;
+class Image;
 
 class Renderer {
     
@@ -65,10 +65,6 @@ public:
     Swapchain* m_swapchain = nullptr;
     Swapchain* getSwapchain();
     void createSwapchain();
-    
-public:
-    VkShaderModule createShaderModule(const std::vector<char> & code);
-    VkPipelineShaderStageCreateInfo createShaderStageInfo(const std::string filename, VkShaderStageFlagBits stage);
 
 private:
     

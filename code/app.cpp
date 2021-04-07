@@ -14,6 +14,8 @@ void App::run() {
     mainLoop();
     m_model->cleanup();
     m_texture->cleanup();
+    m_pipelineGraphic->cleanup();
+    m_descriptor->cleanup();
     m_renderer->cleanUp();
     m_window->close();
 }
@@ -49,8 +51,84 @@ void App::initVulkan() {
     createModel();
     createShaders();
     
+    
     recreateSwapchain();
     
+    createPipelineCompute();
+}
+
+void App::createTexture() {
+    m_texture = new Image();
+    m_texture->setupForTexture(TEXTURE_PATH);
+    m_texture->createForTexture();
+    m_texture->copyRawDataToImage();
+}
+
+void App::createModel() {
+    m_model = new Mesh();
+    m_model->createPlane();
+    m_model->cmdCreateVertexBuffer();
+    m_model->cmdCreateIndexBuffer();
+}
+
+void App::createShaders() {
+    m_shaders = {
+        new Shader(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
+    };
+}
+
+void App::createDescriptor() {
+    Swapchain *swapchain = m_swapchain;
+    std::vector<Frame*> frames = swapchain->m_frames;
+    
+    m_descriptor = new Descriptor();
+    
+    m_descriptor->setupLayout(0, UINT32(frames.size()));
+    m_descriptor->addLayoutBindings(0, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+    m_descriptor->createLayout(0);
+    
+    m_descriptor->setupLayout(1, 1);
+    m_descriptor->addLayoutBindings(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    m_descriptor->createLayout(1);
+    
+    m_descriptor->create();
+    m_descriptor->allocate(0);
+    m_descriptor->allocate(1);
+    
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView   = m_texture->getImageView();
+    imageInfo.sampler     = m_texture->getSampler();
+    m_descriptor->setupPointerImage(1, 0, 0, imageInfo);
+    m_descriptor->update(1);
+    
+    for (uint i = 0; i < frames.size(); i++) {
+        m_descriptor->setupPointerBuffer(0, i, 0, frames[i]->getBufferInfo());
+        m_descriptor->update(0);
+        frames[i]->setDescriptorSet(m_descriptor->getDescriptorSets(0)[i]);
+    }
+}
+
+void App::createPipelineGraphic() {
+    Swapchain *swapchain = m_swapchain;
+    VkDescriptorSetLayout descriptorSetLayout = m_descriptor->getDescriptorLayout(0);
+    VkDescriptorSetLayout descriptorSetLayout1 = m_descriptor->getDescriptorLayout(1);
+    
+    m_pipelineGraphic = new PipelineGraphics();
+    m_pipelineGraphic->setShaders(m_shaders);
+    m_pipelineGraphic->setVertexInputInfo(m_model->createVertexInputInfo());
+
+    m_pipelineGraphic->createPipelineLayout({descriptorSetLayout, descriptorSetLayout1});
+    m_pipelineGraphic->setupViewportInfo(swapchain->m_extent);
+    
+    m_pipelineGraphic->setupInputAssemblyInfo();
+    m_pipelineGraphic->setupRasterizationInfo();
+    m_pipelineGraphic->setupMultisampleInfo();
+    m_pipelineGraphic->setupColorBlendInfo();
+    m_pipelineGraphic->setupDepthStencilInfo();
+    m_pipelineGraphic->setupDynamicInfo();
+    m_pipelineGraphic->create(swapchain->m_renderPass);
 }
 
 void App::recreateSwapchain() {
@@ -58,24 +136,27 @@ void App::recreateSwapchain() {
     Swapchain *swapchain = m_swapchain;
     swapchain->cleanup();
     
-    swapchain->createDescriptorSetLayout();
     swapchain->setup(m_window->getSize());
     swapchain->create();
     swapchain->createRenderPass();
-    swapchain->createPipeline(m_shaders, m_model->createVertexInputInfo());
-    
-    swapchain->createFrames(sizeof(UniformBufferObject), m_texture);
+    swapchain->createFrames(sizeof(UniformBufferObject));
+
+    createDescriptor();
+    createPipelineGraphic();
     
     recordCommandBuffer();
     m_swapchain->createSyncObjects();
 }
 
 void App::recordCommandBuffer() {
-    for (size_t i = 0; i < m_swapchain->m_frames.size(); i++) {
+    std::vector<VkCommandBuffer> commandBuffers = m_commander->createCommandBuffers(m_swapchain->m_totalFrame);
+    for (size_t i = 0; i < m_swapchain->m_totalFrame; i++) {
         Frame*          frame         = m_swapchain->m_frames[i];
+        frame->m_commandBuffer = commandBuffers[i];
         VkCommandBuffer commandBuffer = frame->m_commandBuffer;
         VkFramebuffer   framebuffer   = frame->m_framebuffer;
         VkDescriptorSet descriptorSet = frame->m_descriptorSet;
+        VkDescriptorSet descriptorSet1 = m_descriptor->getDescriptorSets(1)[0];
         
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -96,10 +177,10 @@ void App::recordCommandBuffer() {
         renderPassInfo.pClearValues      = clearValues.data();
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_swapchain->m_pipelineGraphics->m_pipeline);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipeline);
         
         
-        vkCmdSetViewport(commandBuffer, 0, 1, m_swapchain->m_pipelineGraphics->m_viewport);
+        vkCmdSetViewport(commandBuffer, 0, 1, m_pipelineGraphic->m_viewport);
         
         VkBuffer vertexBuffers[] = {m_model->m_vertexBuffer->m_buffer};
         VkDeviceSize offsets[] = {0};
@@ -107,7 +188,8 @@ void App::recordCommandBuffer() {
 
         vkCmdBindIndexBuffer(commandBuffer, m_model->m_indexBuffer->m_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_swapchain->m_pipelineGraphics->m_pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, 1, 1, &descriptorSet1, 0, nullptr);
 
         uint32_t indexSize = UINT32(m_model->m_indices.size());
         vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);
@@ -119,25 +201,7 @@ void App::recordCommandBuffer() {
     }
 }
 
-void App::createTexture() {
-    m_texture = new ResourceImage();
-    m_texture->setupForTexture(TEXTURE_PATH);
-    m_texture->createForTexture();
-    m_texture->copyRawDataToImage();
-}
-
-void App::createModel() {
-    m_model = new Mesh();
-    m_model->createPlane();
-    m_model->cmdCreateVertexBuffer();
-    m_model->cmdCreateIndexBuffer ();
-}
-
-void App::createShaders() {
-    m_shaders = {
-        new Shader(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
-        new Shader(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
-    };
+void App::createPipelineCompute() {
 }
 
 void App::mainLoop() {
@@ -246,5 +310,5 @@ void App::draw(long iteration) {
         throw std::runtime_error("failed to present swap chain image!");
     }
     
-    m_currentFrame = (m_currentFrame + 1) % DOUBLEBUFFER;
+    m_currentFrame = (m_currentFrame + 1) % 3;
 }

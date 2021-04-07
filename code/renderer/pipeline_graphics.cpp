@@ -1,8 +1,6 @@
 //  Copyright © 2021 Subph. All rights reserved.
 //
 
-#include <array>
-
 #include "pipeline_graphics.h"
 
 #include "../system.h"
@@ -15,19 +13,20 @@ PipelineGraphics::PipelineGraphics() {
 }
 
 void PipelineGraphics::cleanup() {
+    LOG("PipelineGraphics::cleanup");
     for (int i = 0; i < m_shaders.size(); i++) m_shaders[i]->cleanup();
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }
 
-void PipelineGraphics::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayout) {
+void PipelineGraphics::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts) {
     LOG("createPipelineLayout");
     VkDevice device = m_device;
     
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts    = &descriptorSetLayout;
+    pipelineLayoutInfo.setLayoutCount = UINT32(descriptorSetLayouts.size());
+    pipelineLayoutInfo.pSetLayouts    = descriptorSetLayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges    = nullptr;
     
@@ -215,7 +214,9 @@ void PipelineGraphics::create(VkRenderPass renderPass) {
     { m_pipeline = pipeline; }
 }
 
-// ==================================================
+
+// Private ==================================================
+
 
 VkFormat PipelineGraphics::ChooseDepthFormat() {
     VkPhysicalDevice physicalDevice = System::instance().m_renderer->m_physicalDevice;

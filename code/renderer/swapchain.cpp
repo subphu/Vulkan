@@ -15,6 +15,7 @@ Swapchain::Swapchain() {
 }
 
 void Swapchain::cleanup() {
+    LOG("Swapchain::cleanup");
     if (m_frames.size() == 0) return;
     
     for (size_t i = 0; i < m_inFlightFences.size(); i++) {
@@ -26,10 +27,6 @@ void Swapchain::cleanup() {
     for (size_t i = 0; i < m_frames.size(); i++)
         m_frames[i]->cleanup();
     m_frames = {};
-
-    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
-    vkDestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
-    m_pipelineGraphics->cleanup();
     
     vkDestroyRenderPass(m_device, m_renderPass, nullptr);
     vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
@@ -157,27 +154,30 @@ void Swapchain::createRenderPass() {
     { m_renderPass = renderPass; }
 }
 
-void Swapchain::createPipeline(std::vector<Shader*> shaders, VkPipelineVertexInputStateCreateInfo* vertexInputInfo) {
-    VkExtent2D   swapchainExtent = m_extent;
-    VkRenderPass renderPass      = m_renderPass;
-    VkDescriptorSetLayout descriptorSetLayout = m_descriptorSetLayout;
+void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
+    LOG("createFrames");
+    VkSwapchainKHR swapchain     = m_swapchain;
+    VkRenderPass   renderPass    = m_renderPass;
+    VkExtent2D     extent        = m_extent;
+    VkFormat       surfaceFormat = m_surfaceFormat;
     
-    PipelineGraphics* pipelineGraphics = new PipelineGraphics();
-    pipelineGraphics->setShaders(shaders);
-    pipelineGraphics->setVertexInputInfo(vertexInputInfo);
-
-    pipelineGraphics->createPipelineLayout(descriptorSetLayout);
-    pipelineGraphics->setupViewportInfo(swapchainExtent);
+    std::vector<VkImage> swapchainImages = GetSwapchainImages(swapchain);
+    uint32_t totalFrame = UINT32(swapchainImages.size());
     
-    pipelineGraphics->setupInputAssemblyInfo();
-    pipelineGraphics->setupRasterizationInfo();
-    pipelineGraphics->setupMultisampleInfo();
-    pipelineGraphics->setupColorBlendInfo();
-    pipelineGraphics->setupDepthStencilInfo();
-    pipelineGraphics->setupDynamicInfo();
-    pipelineGraphics->create(renderPass);
-    
-    { m_pipelineGraphics = pipelineGraphics; }
+    std::vector<Frame*> frames;
+    for (size_t i = 0; i < totalFrame; i++) {
+        Frame* frame = new Frame();
+        frame->setSize({extent.width, extent.height});
+        frame->createDepthResource();
+        frame->createImageResource(swapchainImages[i], surfaceFormat);
+        frame->createFramebuffer(renderPass);
+        frame->createUniformBuffer(uniformBufferSize);
+        frames.push_back(frame);
+    }
+    {
+        m_frames = frames;
+        m_totalFrame = totalFrame;
+    }
 }
 
 void Swapchain::createSyncObjects() {
@@ -219,125 +219,10 @@ void Swapchain::createSyncObjects() {
     
 }
 
-void Swapchain::createDescriptorSetLayout() {
-    LOG("createDescriptorSetLayout");
-    VkDevice device = m_device;
-    
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding         = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.stageFlags      = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-            
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding         = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding, samplerLayoutBinding };
-    
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = UINT32(bindings.size());
-    layoutInfo.pBindings    = bindings.data();
-    
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
-    CHECK_VKRESULT(result, "failed to create descriptor set layout!");
-    
-    {
-        m_layoutBindings = bindings;
-        m_descriptorSetLayout = descriptorSetLayout;
-    }
-}
 
-void Swapchain::createFrames(VkDeviceSize uniformBufferSize, ResourceImage* texture) {
-    System &system   = System::instance();
-    Commander*     commander  = system.getCommander();
-    
-    VkSwapchainKHR swapchain     = m_swapchain;
-    VkRenderPass   renderPass    = m_renderPass;
-    VkExtent2D     extent        = m_extent;
-    uint32_t       mipLevels     = m_mipLevels;
-    VkFormat       surfaceFormat = m_surfaceFormat;
-    VkDescriptorSetLayout descriptorSetLayout = m_descriptorSetLayout;
-    std::vector<VkDescriptorSetLayoutBinding> layoutBindings = m_layoutBindings;
-    
-    std::vector<VkImage> swapchainImages = GetSwapchainImages(swapchain);
-    uint32_t totalFrame = UINT32(swapchainImages.size());
-    
-    VkDescriptorPool descriptorPool = CreateDescriptorPool(totalFrame, layoutBindings);
-    std::vector<VkDescriptorSet> descriptorSets = AllocateDescriptorSets(totalFrame, descriptorSetLayout, descriptorPool);
-    std::vector<VkCommandBuffer> commandBuffers = commander->createCommandBuffers(totalFrame);
-    
-    std::vector<Frame*> frames;
-    for (size_t i = 0; i < totalFrame; i++) {
-        Frame* frame = new Frame();
-        frame->setSize({extent.width, extent.height});
-        frame->setTexture(texture);
-        frame->setCommandBuffer(commandBuffers[i]);
-        frame->createImageResource(swapchainImages[i], surfaceFormat);
-        frame->createDepthResource(mipLevels);
-        frame->createFramebuffer(renderPass);
-        frame->createUniformBuffer(uniformBufferSize);
-        frame->updateDescriptorSet(descriptorSets[i]);
-        frames.push_back(frame);
-    }
-    {
-        m_descriptorPool = descriptorPool;
-        m_frames = frames;
-    }
-}
 
-// ==================================================
+// Private ==================================================
 
-VkDescriptorPool Swapchain::CreateDescriptorPool(uint32_t count, std::vector<VkDescriptorSetLayoutBinding> layoutBindings) {
-    LOG("CreateDescriptorPool");
-    System &system  = System::instance();
-    VkDevice device = system.m_renderer->m_device;
-    
-    std::vector<VkDescriptorPoolSize> poolSizes;
-    for (int i = 0; i < layoutBindings.size(); i++) {
-        VkDescriptorPoolSize poolSize{};
-        poolSize.type = layoutBindings[i].descriptorType;
-        poolSize.descriptorCount = count;
-        poolSizes.push_back(poolSize);
-    }
-    
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = UINT32(poolSizes.size());
-    poolInfo.pPoolSizes    = poolSizes.data();
-    poolInfo.maxSets       = count;
-    
-    VkDescriptorPool descriptorPool;
-    VkResult result = vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool);
-    CHECK_VKRESULT(result, "failed to create descriptor pool!");
-  
-    return descriptorPool;
-}
-
-std::vector<VkDescriptorSet> Swapchain::AllocateDescriptorSets(uint32_t count, VkDescriptorSetLayout descriptorSetLayout, VkDescriptorPool descriptorPool) {
-    LOG("CreateDescriptorSets");
-    System &system  = System::instance();
-    VkDevice device = system.m_renderer->m_device;
-    
-    std::vector<VkDescriptorSetLayout> layouts(count, descriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool     = descriptorPool;
-    allocInfo.descriptorSetCount = count;
-    allocInfo.pSetLayouts        = layouts.data();
-    
-    std::vector<VkDescriptorSet> descriptorSets(count);
-    VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data());
-    CHECK_VKRESULT(result, "failed to allocate descriptor sets!");
-    
-    return descriptorSets;
-}
 
 std::vector<VkImage> Swapchain::GetSwapchainImages(VkSwapchainKHR swapchain) {
     System &system  = System::instance();

@@ -4,8 +4,8 @@
 #pragma once
 
 #include "../common.h"
-#include "resource_image.h"
-#include "buffer.h"
+#include "../resources/image.h"
+#include "../resources/buffer.h"
 
 class Frame {
     
@@ -17,25 +17,25 @@ public:
     
     VkDevice m_device = VK_NULL_HANDLE;
     
-    VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
     VkFramebuffer   m_framebuffer   = VK_NULL_HANDLE;
+    VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
     VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
     Buffer*         m_uniformBuffer = nullptr;
-    ResourceImage*  m_resourceImage = nullptr;
-    ResourceImage*  m_depthImage    = nullptr;
-    ResourceImage*  m_texture       = nullptr;
+    Image*  m_image = nullptr;
+    Image*  m_depthImage    = nullptr;
     Size<uint32_t>  m_size{};
     
+    void createDepthResource();
     void createImageResource(VkImage image, VkFormat format);
-    void createDepthResource(uint32_t mipLevels);
     void createFramebuffer(VkRenderPass renderPass);
-    void updateDescriptorSet(VkDescriptorSet descriptorSet);
     
     void createUniformBuffer(VkDeviceSize bufferSize);
     void updateUniformBuffer(void* address, size_t size);
     
+    void setDescriptorSet(VkDescriptorSet descriptorSet);
     void setCommandBuffer(VkCommandBuffer commandBuffers);
     
     void setSize(Size<uint32_t> size);
-    void setTexture(ResourceImage* texture);
+    
+    VkDescriptorBufferInfo getBufferInfo();
 };

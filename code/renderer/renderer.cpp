@@ -11,6 +11,7 @@ Renderer::Renderer() { }
 Renderer::~Renderer() { }
 
 void Renderer::cleanUp() {
+    LOG("Renderer::cleanUp");
     m_swapchain->cleanup();
     m_commander->cleanup();
     
@@ -209,44 +210,7 @@ void Renderer::setSurface(VkSurfaceKHR surface) { m_surface = surface; }
 VkSurfaceKHR Renderer::getSurface() { return m_surface; }
 
 
-// ==================================================
-
-
-VkShaderModule Renderer::createShaderModule(const std::vector<char> & code) {
-    {
-        LOG("createShaderModule");
-        CHECK_HANDLE(m_device, "logical device undefined!");
-    }
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-    
-    VkShaderModule shaderModule;
-    VkResult result = vkCreateShaderModule(m_device, &createInfo, nullptr, &shaderModule);
-    {
-        CHECK_VKRESULT(result, "failed to create shader modul!");
-        return shaderModule;
-    }
-}
-
-VkPipelineShaderStageCreateInfo Renderer::createShaderStageInfo(const std::string filename, VkShaderStageFlagBits stage) {
-    { LOG("createShaderStageInfo"); }
-    auto shaderCode = ReadBinaryFile(filename);
-    VkShaderModule shaderModule = createShaderModule(shaderCode);
-    
-    VkPipelineShaderStageCreateInfo shaderStageInfo{};
-    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStageInfo.stage = stage;
-    shaderStageInfo.module = shaderModule;
-    shaderStageInfo.pName = "main";
-    
-    return shaderStageInfo;
-}
-
-
-
-// ==================================================
+// Private ==================================================
 
 
 std::vector<VkPhysicalDevice> Renderer::GetPhysicalDevices(VkInstance instance) {

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../renderer/buffer.h"
+#include "../resources/buffer.h"
 
 class Mesh {
     

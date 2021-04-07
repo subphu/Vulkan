@@ -1,22 +1,22 @@
 //  Copyright © 2021 Subph. All rights reserved.
 //
 
-#include "resource_image.h"
+#include "image.h"
 
 #include "../helper.h"
 #include "../system.h"
 #include "buffer.h"
 
-ResourceImage::~ResourceImage() {}
-ResourceImage::ResourceImage() : m_imageInfo(GetDefaultImageCreateInfo()),
+Image::~Image() {}
+Image::Image() : m_imageInfo(GetDefaultImageCreateInfo()),
                                  m_imageViewInfo(GetDefaultImageViewCreateInfo()) {
     System &system   = System::instance();
     m_device         = system.m_renderer->m_device;
     m_physicalDevice = system.m_renderer->m_physicalDevice;
 }
 
-void ResourceImage::cleanup() {
-    LOG("resource_image cleanup");
+void Image::cleanup() {
+    LOG("image cleanup");
     cleanupImageView();
     if (m_image == VK_NULL_HANDLE) return;
     vkDestroyImage(m_device, m_image, nullptr);
@@ -24,20 +24,20 @@ void ResourceImage::cleanup() {
     vkDestroySampler(m_device, m_sampler, nullptr);
 }
 
-void ResourceImage::cleanupImageView() {
-    LOG("resource_image cleanup imageview");
+void Image::cleanupImageView() {
+    LOG("image cleanup imageview");
     vkDestroyImageView(m_device, m_imageView  , nullptr);
     vkFreeMemory      (m_device, m_imageMemory, nullptr);
 }
 
-VkImage         ResourceImage::getImage      () { return m_image;       }
-VkImageView     ResourceImage::getImageView  () { return m_imageView;   }
-VkDeviceMemory  ResourceImage::getImageMemory() { return m_imageMemory; }
-VkSampler       ResourceImage::getSampler    () { return m_sampler;     }
-unsigned int    ResourceImage::getChannelSize() { return GetChannelSize(m_imageInfo.format); }
-VkDeviceSize    ResourceImage::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize(); }
+VkImage         Image::getImage      () { return m_image;       }
+VkImageView     Image::getImageView  () { return m_imageView;   }
+VkDeviceMemory  Image::getImageMemory() { return m_imageMemory; }
+VkSampler       Image::getSampler    () { return m_sampler;     }
+unsigned int    Image::getChannelSize() { return GetChannelSize(m_imageInfo.format); }
+VkDeviceSize    Image::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize(); }
 
-void ResourceImage::setupForDepth(Size<uint32_t> size, uint32_t mipLevels) {
+void Image::setupForDepth(Size<uint32_t> size, uint32_t mipLevels) {
     VkPhysicalDevice      physicalDevice = m_physicalDevice;
     VkImageCreateInfo     imageInfo      = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
@@ -60,7 +60,7 @@ void ResourceImage::setupForDepth(Size<uint32_t> size, uint32_t mipLevels) {
     }
 }
 
-void ResourceImage::setupForTexture(const std::string filepath) {
+void Image::setupForTexture(const std::string filepath) {
     int width, height, channels;
     unsigned char*  data      = ReadImage(filepath, &width, &height, &channels);
     uint32_t        mipLevels = MaxMipLevel(width, height);
@@ -87,7 +87,7 @@ void ResourceImage::setupForTexture(const std::string filepath) {
     }
 }
 
-void ResourceImage::setupForSwapchain(VkImage image, VkFormat imageFormat) {
+void Image::setupForSwapchain(VkImage image, VkFormat imageFormat) {
     m_image = image;
     VkImageCreateInfo     imageInfo      = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
@@ -104,38 +104,38 @@ void ResourceImage::setupForSwapchain(VkImage image, VkFormat imageFormat) {
     }
 }
 
-void ResourceImage::create() {
+void Image::create() {
     createImage();
     allocateImageMemory();
     createImageView();
 }
 
-void ResourceImage::createForTexture() {
+void Image::createForTexture() {
     createImage();
     allocateImageMemory();
     createImageView();
     createSampler();
 }
 
-void ResourceImage::createForSwapchain() {
+void Image::createForSwapchain() {
     createImageView();
 }
 
-void ResourceImage::createImage() {
+void Image::createImage() {
     LOG("createImage");
     VkResult result = vkCreateImage(m_device, &m_imageInfo, nullptr, &m_image);
     CHECK_VKRESULT(result, "failed to create image!");
 }
 
-void ResourceImage::createImageView() {
+void Image::createImageView() {
     LOG("createImageView");
     m_imageViewInfo.image = m_image;
     VkResult result = vkCreateImageView(m_device, &m_imageViewInfo, nullptr, &m_imageView);
     CHECK_VKRESULT(result, "failed to create image views!");
 }
 
-void ResourceImage::allocateImageMemory() {
-    LOG("bindImageMemory");
+void Image::allocateImageMemory() {
+    LOG("allocateImageMemory");
     VkDevice         device         = m_device;
     VkPhysicalDevice physicalDevice = m_physicalDevice;
     VkImage          image          = m_image;
@@ -162,7 +162,8 @@ void ResourceImage::allocateImageMemory() {
     { m_imageMemory = imageMemory; }
 }
 
-void ResourceImage::createSampler() {
+void Image::createSampler() {
+    LOG("createSampler");
     VkDevice device    = m_device;
     float    mipLevels = m_imageInfo.mipLevels;
     
@@ -191,7 +192,7 @@ void ResourceImage::createSampler() {
     { m_sampler = sampler; }
 }
 
-void ResourceImage::copyRawDataToImage() {
+void Image::copyRawDataToImage() {
     LOG("copyRawDataToImage");
     unsigned char*    rawData        = m_rawData;
     
@@ -209,7 +210,7 @@ void ResourceImage::copyRawDataToImage() {
     tempBuffer->cleanup();
 }
 
-void ResourceImage::cmdTransitionToTransferDst() {
+void Image::cmdTransitionToTransferDst() {
     LOG("transitionToTransferDst");
     VkImage           image     = m_image;
     VkImageCreateInfo imageInfo = m_imageInfo;
@@ -238,7 +239,7 @@ void ResourceImage::cmdTransitionToTransferDst() {
     commander->endSingleTimeCommands(commandBuffer);
 }
 
-void ResourceImage::cmdCopyBufferToImage(VkBuffer buffer) {
+void Image::cmdCopyBufferToImage(VkBuffer buffer) {
     LOG("copyBufferToImage");
     VkImage           image     = m_image;
     VkImageCreateInfo imageInfo = m_imageInfo;
@@ -271,7 +272,7 @@ void ResourceImage::cmdCopyBufferToImage(VkBuffer buffer) {
     commander->endSingleTimeCommands(commandBuffer);
 }
 
-void ResourceImage::cmdGenerateMipmaps() {
+void Image::cmdGenerateMipmaps() {
     LOG("generateMipmaps");
     VkPhysicalDevice  physicalDevice = m_physicalDevice;
     VkImage           image          = m_image;
@@ -372,9 +373,11 @@ void ResourceImage::cmdGenerateMipmaps() {
 
 }
 
-// ======================================================================================
 
-unsigned int ResourceImage::GetChannelSize(VkFormat format) {
+// Private ==================================================
+
+
+unsigned int Image::GetChannelSize(VkFormat format) {
     switch (format) {
         case VK_FORMAT_R8G8B8_SRGB  : return 3; break;
         case VK_FORMAT_R8G8B8A8_SRGB: return 4; break;
@@ -382,7 +385,7 @@ unsigned int ResourceImage::GetChannelSize(VkFormat format) {
     }
 }
 
-VkFormat ResourceImage::ChooseDepthFormat(VkPhysicalDevice physicalDevice) {
+VkFormat Image::ChooseDepthFormat(VkPhysicalDevice physicalDevice) {
     const std::vector<VkFormat>& candidates = {
         VK_FORMAT_D32_SFLOAT,
         VK_FORMAT_D32_SFLOAT_S8_UINT,
@@ -400,7 +403,7 @@ VkFormat ResourceImage::ChooseDepthFormat(VkPhysicalDevice physicalDevice) {
     throw std::runtime_error("failed to find depth format!");
 }
 
-VkImageCreateInfo ResourceImage::GetDefaultImageCreateInfo() {
+VkImageCreateInfo Image::GetDefaultImageCreateInfo() {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType     = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -413,7 +416,7 @@ VkImageCreateInfo ResourceImage::GetDefaultImageCreateInfo() {
     return imageInfo;
 }
 
-VkImageViewCreateInfo ResourceImage::GetDefaultImageViewCreateInfo() {
+VkImageViewCreateInfo Image::GetDefaultImageViewCreateInfo() {
     VkImageViewCreateInfo imageViewInfo{};
     imageViewInfo.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -427,7 +430,7 @@ VkImageViewCreateInfo ResourceImage::GetDefaultImageViewCreateInfo() {
     return imageViewInfo;
 }
 
-VkImageMemoryBarrier ResourceImage::GetDefaultImageMemoryBarrier() {
+VkImageMemoryBarrier Image::GetDefaultImageMemoryBarrier() {
     VkImageMemoryBarrier barrier{};
     barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;

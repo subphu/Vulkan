@@ -21,6 +21,7 @@ Shader::Shader(const std::string filepath, VkShaderStageFlagBits stage, const ch
 }
 
 void Shader::cleanup() {
+    LOG("shader cleanup");
     vkDestroyShaderModule(m_device, m_shaderModule, nullptr);
 }
 

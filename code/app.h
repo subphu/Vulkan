@@ -9,7 +9,10 @@
 #include "renderer/swapchain.h"
 #include "camera/camera.h"
 #include "mesh/mesh.h"
-#include "renderer/shader.h"
+#include "resources/shader.h"
+
+#include "renderer/descriptor.h"
+#include "renderer/pipeline_graphics.h"
 
 struct UniformBufferObject {
     glm::mat4 model;
@@ -43,8 +46,14 @@ private:
     Swapchain* m_swapchain;
     Commander* m_commander;
     
+    Descriptor* m_descriptor;
+    
+    PipelineGraphics* m_pipelineGraphic;
+    
+    
+    
     Mesh* m_model;
-    ResourceImage *m_texture;
+    Image *m_texture;
     std::vector<Shader*> m_shaders;
     
     size_t m_currentFrame = 0;
@@ -60,9 +69,14 @@ private:
     void createTexture();
     void createModel();
     void createShaders();
+    void createDescriptor();
+    
+    void createPipelineGraphic();
+    void createPipelineCompute();
     
     void mainLoop();
     void update(long iteration);
     void draw(long iteration);
+    
     
 };
