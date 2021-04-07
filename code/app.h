@@ -53,8 +53,6 @@ private:
     PipelineGraphics* m_pipelineGraphic;
     PipelineCompute*  m_pipelineCompute;
     
-    
-    
     Mesh* m_model;
     Image *m_texture;
     std::vector<Shader*> m_shaders;

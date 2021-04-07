@@ -11,7 +11,6 @@
 #include "helper.h"
 
 
-
 std::vector<VkImage> GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain) {
     uint32_t count = 0;
     vkGetSwapchainImagesKHR(device, swapchain, &count, nullptr);

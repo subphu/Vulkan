@@ -52,7 +52,6 @@ void App::initVulkan() {
     createModel();
     createShaders();
     
-    
     recreateSwapchain();
     
     createPipelineCompute();
@@ -85,43 +84,45 @@ void App::createDescriptor() {
     
     m_descriptor = new Descriptor();
     
-    m_descriptor->setupLayout(0, UINT32(frames.size()));
-    m_descriptor->addLayoutBindings(0, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
-    m_descriptor->createLayout(0);
+    m_descriptor->setupLayout(L0, UINT32(frames.size()));
+    m_descriptor->addLayoutBindings(L0, B0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+    m_descriptor->createLayout(L0);
     
-    m_descriptor->setupLayout(1, 1);
-    m_descriptor->addLayoutBindings(1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    m_descriptor->createLayout(1);
+    m_descriptor->setupLayout(L1, 1);
+    m_descriptor->addLayoutBindings(L1, B0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+    m_descriptor->createLayout(L1);
     
     m_descriptor->create();
-    m_descriptor->allocate(0);
-    m_descriptor->allocate(1);
+    m_descriptor->allocate(L0);
+    m_descriptor->allocate(L1);
     
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView   = m_texture->getImageView();
     imageInfo.sampler     = m_texture->getSampler();
-    m_descriptor->setupPointerImage(1, 0, 0, imageInfo);
-    m_descriptor->update(1);
+    m_descriptor->setupPointerImage(L1, S0, B0, imageInfo);
+    m_descriptor->update(L1);
     
     for (uint i = 0; i < frames.size(); i++) {
-        m_descriptor->setupPointerBuffer(0, i, 0, frames[i]->getBufferInfo());
-        m_descriptor->update(0);
-        frames[i]->setDescriptorSet(m_descriptor->getDescriptorSets(0)[i]);
+        m_descriptor->setupPointerBuffer(L0, i, B0, frames[i]->getBufferInfo());
+        m_descriptor->update(L0);
+        frames[i]->setDescriptorSet(m_descriptor->getDescriptorSets(L0)[i]);
     }
 }
 
 void App::createPipelineGraphic() {
-    Swapchain *swapchain = m_swapchain;
-    VkDescriptorSetLayout descriptorSetLayout = m_descriptor->getDescriptorLayout(0);
-    VkDescriptorSetLayout descriptorSetLayout1 = m_descriptor->getDescriptorLayout(1);
+    Swapchain  *swapchain  = m_swapchain;
+    Descriptor *descriptor = m_descriptor;
     
     m_pipelineGraphic = new PipelineGraphics();
     m_pipelineGraphic->setShaders(m_shaders);
     m_pipelineGraphic->setVertexInputInfo(m_model->createVertexInputInfo());
-
-    m_pipelineGraphic->createPipelineLayout({descriptorSetLayout, descriptorSetLayout1});
+    
     m_pipelineGraphic->setupViewportInfo(swapchain->m_extent);
+    m_pipelineGraphic->createPipelineLayout({
+        descriptor->getDescriptorLayout(L0),
+        descriptor->getDescriptorLayout(L1)
+    });
     
     m_pipelineGraphic->setupInputAssemblyInfo();
     m_pipelineGraphic->setupRasterizationInfo();
@@ -151,13 +152,13 @@ void App::recreateSwapchain() {
 
 void App::recordCommandBuffer() {
     std::vector<VkCommandBuffer> commandBuffers = m_commander->createCommandBuffers(m_swapchain->m_totalFrame);
+    VkDescriptorSet descriptorSet1 = m_descriptor->getDescriptorSets(L1)[S0];
     for (size_t i = 0; i < m_swapchain->m_totalFrame; i++) {
         Frame*          frame         = m_swapchain->m_frames[i];
         frame->m_commandBuffer = commandBuffers[i];
         VkCommandBuffer commandBuffer = frame->m_commandBuffer;
         VkFramebuffer   framebuffer   = frame->m_framebuffer;
         VkDescriptorSet descriptorSet = frame->m_descriptorSet;
-        VkDescriptorSet descriptorSet1 = m_descriptor->getDescriptorSets(1)[0];
         
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -189,8 +190,8 @@ void App::recordCommandBuffer() {
 
         vkCmdBindIndexBuffer(commandBuffer, m_model->m_indexBuffer->m_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, 1, 1, &descriptorSet1, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, S0, 1, &descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineGraphic->m_pipelineLayout, S1, 1, &descriptorSet1, 0, nullptr);
 
         uint32_t indexSize = UINT32(m_model->m_indices.size());
         vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);

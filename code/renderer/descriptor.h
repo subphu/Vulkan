@@ -5,6 +5,10 @@
 
 #include "../common.h"
 
+enum Set     { S0 = 0, S1 = 1, S2 = 2, S3 = 3, S4 = 4, S5 = 5, S6 = 6, S7 = 7 };
+enum Layout  { L0 = 0, L1 = 1, L2 = 2, L3 = 3, L4 = 4, L5 = 5, L6 = 6, L7 = 7 };
+enum Binding { B0 = 0, B1 = 1, B2 = 2, B3 = 3, B4 = 4, B5 = 5, B6 = 6, B7 = 7 };
+
 class Descriptor {
     
 public:
@@ -19,15 +23,15 @@ public:
     
     void create();
     
-    void allocate(uint setId);
+    void allocate(uint layoutId);
     void allocateAll();
     
     void setupPointerBuffer(uint layoutId, uint setIdx, uint binding, VkDescriptorBufferInfo bufferInfo);
     void setupPointerImage(uint layoutId, uint setIdx, uint binding, VkDescriptorImageInfo imageInfo);
-    void update(uint id);
+    void update(uint layoutId);
     
-    VkDescriptorSetLayout getDescriptorLayout(uint id);
-    std::vector<VkDescriptorSet> getDescriptorSets(uint id);
+    VkDescriptorSetLayout getDescriptorLayout(uint layoutId);
+    std::vector<VkDescriptorSet> getDescriptorSets(uint layoutId);
     
 private:
 #define VkDescriptorPoolSizeMap std::map<VkDescriptorType, VkDescriptorPoolSize>
