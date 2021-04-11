@@ -22,6 +22,7 @@
 		26599FB125E39B990068C919 /* swapchain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26599FAF25E39B990068C919 /* swapchain.cpp */; };
 		265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */; };
 		266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */; };
+		266A2509261B33C600AAF4C2 /* compute_interference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A2507261B33C600AAF4C2 /* compute_interference.cpp */; };
 		266A250C261B5B6A00AAF4C2 /* descriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A250A261B5B6A00AAF4C2 /* descriptor.cpp */; };
 		266C0BFC25CFFDBE00BAF0C7 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266C0BFA25CFFDBE00BAF0C7 /* app.cpp */; };
 		266C0BFE25D0085400BAF0C7 /* helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266C0BFD25D0085400BAF0C7 /* helper.cpp */; };
@@ -79,6 +80,8 @@
 		265FA2C0254E7102009E5428 /* models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = models; sourceTree = "<group>"; };
 		266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipeline_compute.cpp; sourceTree = "<group>"; };
 		266A2502261B060E00AAF4C2 /* pipeline_compute.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipeline_compute.h; sourceTree = "<group>"; };
+		266A2507261B33C600AAF4C2 /* compute_interference.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = compute_interference.cpp; sourceTree = "<group>"; };
+		266A2508261B33C600AAF4C2 /* compute_interference.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compute_interference.h; sourceTree = "<group>"; };
 		266A250A261B5B6A00AAF4C2 /* descriptor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = descriptor.cpp; sourceTree = "<group>"; };
 		266A250B261B5B6A00AAF4C2 /* descriptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = descriptor.h; sourceTree = "<group>"; };
 		266C0BFA25CFFDBE00BAF0C7 /* app.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = app.cpp; sourceTree = "<group>"; };
@@ -191,6 +194,15 @@
 				265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */,
 			);
 			path = tiny_obj_loader;
+			sourceTree = "<group>";
+		};
+		266A2506261B328500AAF4C2 /* process */ = {
+			isa = PBXGroup;
+			children = (
+				266A2507261B33C600AAF4C2 /* compute_interference.cpp */,
+				266A2508261B33C600AAF4C2 /* compute_interference.h */,
+			);
+			path = process;
 			sourceTree = "<group>";
 		};
 		267C2433255815A900A9F07C /* camera */ = {
@@ -365,6 +377,7 @@
 				26536DE5256BA08D0079DC42 /* mesh.cpp in Sources */,
 				26C30897258F2AB900D1BA7E /* renderer.cpp in Sources */,
 				26599FB125E39B990068C919 /* swapchain.cpp in Sources */,
+				266A2509261B33C600AAF4C2 /* compute_interference.cpp in Sources */,
 				267D8907255EC8AB002E918C /* window.cpp in Sources */,
 				2634877825F60B5E00C5657D /* image.cpp in Sources */,
 				267949CE25FCE966001FA569 /* buffer.cpp in Sources */,
