@@ -8,13 +8,14 @@
 
 Buffer::~Buffer() {}
 Buffer::Buffer() : m_bufferInfo(GetDefaultBufferCreateInfo()) {
+    LOG("Buffer::==============================");
     System &system   = System::instance();
     m_device         = system.m_renderer->m_device;
     m_physicalDevice = system.m_renderer->m_physicalDevice;
 }
 
 void Buffer::cleanup() {
-    LOG("buffer cleanup");
+    LOG("Buffer::cleanup");
     vkDestroyBuffer   (m_device, m_buffer      , nullptr);
     vkFreeMemory      (m_device, m_bufferMemory, nullptr);
 }
@@ -34,13 +35,13 @@ void Buffer::create() {
 }
 
 void Buffer::createBuffer() {
-    LOG("createBuffer");
+    LOG("Buffer::createBuffer");
     VkResult result = vkCreateBuffer(m_device, &m_bufferInfo, nullptr, &m_buffer);
     CHECK_VKRESULT(result, "failed to buffer!");
 }
 
 void Buffer::allocateBufferMemory() {
-    LOG("allocateBufferMemory");
+    LOG("Buffer::allocateBufferMemory");
     VkDevice         device         = m_device;
     VkPhysicalDevice physicalDevice = m_physicalDevice;
     VkBuffer         buffer         = m_buffer;
@@ -69,7 +70,7 @@ void Buffer::allocateBufferMemory() {
 }
 
 void Buffer::cmdCopyFromBuffer(VkBuffer sourceBuffer, VkDeviceSize size) {
-    LOG("cmdCopyFromBuffer");
+    LOG("Buffer::cmdCopyFromBuffer");
     VkBuffer     buffer     = m_buffer;
     System&      system     = System::instance();
     Commander*   commander  = system.getCommander();
@@ -81,18 +82,19 @@ void Buffer::cmdCopyFromBuffer(VkBuffer sourceBuffer, VkDeviceSize size) {
     commander->endSingleTimeCommands(commandBuffer);
 }
 
-void Buffer::fillBuffer(const void* address, size_t size, uint32_t shift) {
+void* Buffer::fillBuffer(const void* address, VkDeviceSize size, uint32_t shift) {
     void* ptr = mapMemory(size);
     ptr = static_cast<char*>(ptr) + shift;
     memcpy(ptr, address, size);
     unmapMemory();
+    return ptr;
 }
 
-void Buffer::fillBufferFull(const void* address) {
-    fillBuffer(address, static_cast<size_t>(m_bufferInfo.size));
+void* Buffer::fillBufferFull(const void* address) {
+    return fillBuffer(address, static_cast<size_t>(m_bufferInfo.size));
 }
 
-void* Buffer::mapMemory(size_t size) {
+void* Buffer::mapMemory(VkDeviceSize size) {
     void* ptr;
     vkMapMemory(m_device, m_bufferMemory, 0, size, 0, &ptr);
     return ptr;

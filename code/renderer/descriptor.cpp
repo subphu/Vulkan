@@ -53,7 +53,7 @@ void Descriptor::addLayoutBindings(uint id, uint binding, VkDescriptorType type,
 }
 
 void Descriptor::createLayout(uint id) {
-    LOG("createDescriptorSetLayout");
+    LOG("Descriptor::createLayout");
     VkDevice          device = m_device;
     DescriptorSetData data   = m_dataMap[id];
     
@@ -69,7 +69,7 @@ void Descriptor::createLayout(uint id) {
 }
 
 void Descriptor::createPool() {
-    LOG("CreateDescriptorPool");
+    LOG("Descriptor::createPool");
     VkDevice device = m_device;
     VkDescriptorSetDataMap descDataMap = m_dataMap;
     std::vector<VkDescriptorPoolSize> poolSizes = getPoolSizes();
@@ -129,7 +129,7 @@ std::vector<VkDescriptorSet> Descriptor::getDescriptorSets(uint id) {
 
 
 void Descriptor::allocateData(DescriptorSetData* data) {
-    LOG("AllocateDescriptorSets");
+    LOG("Descriptor::allocateData");
     VkDevice          device = m_device;
     VkDescriptorPool  pool   = m_pool;
     

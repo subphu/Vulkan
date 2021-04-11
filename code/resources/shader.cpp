@@ -21,12 +21,12 @@ Shader::Shader(const std::string filepath, VkShaderStageFlagBits stage, const ch
 }
 
 void Shader::cleanup() {
-    LOG("shader cleanup");
+    LOG("Shader::cleanup");
     vkDestroyShaderModule(m_device, m_shaderModule, nullptr);
 }
 
 void Shader::createModule(const std::string filepath) {
-    LOG("createShaderModule");
+    LOG("Shader::createModule");
     VkDevice device = m_device;
     auto code = ReadBinaryFile(filepath);
     

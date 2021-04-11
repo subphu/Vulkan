@@ -36,10 +36,10 @@ public:
     
     void cmdCopyFromBuffer(VkBuffer sourceBuffer, VkDeviceSize size);
     
-    void fillBuffer    (const void* address, size_t size, uint32_t shift = 0);
-    void fillBufferFull(const void* address);
+    void* fillBuffer    (const void* address, VkDeviceSize size, uint32_t shift = 0);
+    void* fillBufferFull(const void* address);
     
-    void* mapMemory(size_t size);
+    void* mapMemory(VkDeviceSize size);
     void  unmapMemory();
     
     
