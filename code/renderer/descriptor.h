@@ -21,13 +21,13 @@ public:
     void createLayout(uint layoutId);
     void addLayoutBindings(uint layoutId, uint binding, VkDescriptorType type, VkShaderStageFlags flags);
     
-    void create();
+    void createPool();
     
     void allocate(uint layoutId);
     void allocateAll();
     
-    void setupPointerBuffer(uint layoutId, uint setIdx, uint binding, VkDescriptorBufferInfo bufferInfo);
-    void setupPointerImage(uint layoutId, uint setIdx, uint binding, VkDescriptorImageInfo imageInfo);
+    void setupPointerBuffer(uint layoutId, uint setIdx, uint binding, VkDescriptorBufferInfo* pBufferInfo);
+    void setupPointerImage(uint layoutId, uint setIdx, uint binding, VkDescriptorImageInfo* pImageInfo);
     void update(uint layoutId);
     
     VkDescriptorSetLayout getDescriptorLayout(uint layoutId);

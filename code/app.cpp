@@ -92,7 +92,7 @@ void App::createDescriptor() {
     m_pDescriptor->addLayoutBindings(L1, B0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
     m_pDescriptor->createLayout(L1);
     
-    m_pDescriptor->create();
+    m_pDescriptor->createPool();
     m_pDescriptor->allocate(L0);
     m_pDescriptor->allocate(L1);
     
@@ -100,11 +100,12 @@ void App::createDescriptor() {
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView   = m_pTexture->getImageView();
     imageInfo.sampler     = m_pTexture->getSampler();
-    m_pDescriptor->setupPointerImage(L1, S0, B0, imageInfo);
+    m_pDescriptor->setupPointerImage(L1, S0, B0, &imageInfo);
     m_pDescriptor->update(L1);
     
     for (uint i = 0; i < frames.size(); i++) {
-        m_pDescriptor->setupPointerBuffer(L0, i, B0, frames[i]->getBufferInfo());
+        VkDescriptorBufferInfo bufferInfo = frames[i]->getBufferInfo();
+        m_pDescriptor->setupPointerBuffer(L0, i, B0, &bufferInfo);
         m_pDescriptor->update(L0);
         frames[i]->setDescriptorSet(m_pDescriptor->getDescriptorSets(L0)[i]);
     }

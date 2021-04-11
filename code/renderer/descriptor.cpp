@@ -68,7 +68,7 @@ void Descriptor::createLayout(uint id) {
     { m_dataMap[id] = data; }
 }
 
-void Descriptor::create() {
+void Descriptor::createPool() {
     LOG("CreateDescriptorPool");
     VkDevice device = m_device;
     VkDescriptorSetDataMap descDataMap = m_dataMap;
@@ -98,16 +98,16 @@ void Descriptor::allocateAll() {
         allocateData(&it->second);
 }
 
-void Descriptor::setupPointerBuffer(uint id, uint setIdx, uint binding, VkDescriptorBufferInfo bufferInfo) {
+void Descriptor::setupPointerBuffer(uint id, uint setIdx, uint binding, VkDescriptorBufferInfo* pBufferInfo) {
     int idx = findWriteSetIdx(id, binding);
     m_dataMap[id].writeSets[idx].dstSet = m_dataMap[id].descriptorSets[setIdx];
-    m_dataMap[id].writeSets[idx].pBufferInfo = &bufferInfo;
+    m_dataMap[id].writeSets[idx].pBufferInfo = pBufferInfo;
 }
 
-void Descriptor::setupPointerImage(uint id, uint setIdx, uint binding, VkDescriptorImageInfo imageInfo) {
+void Descriptor::setupPointerImage(uint id, uint setIdx, uint binding, VkDescriptorImageInfo* pImageInfo) {
     int idx = findWriteSetIdx(id, binding);
     m_dataMap[id].writeSets[idx].dstSet = m_dataMap[id].descriptorSets[setIdx];
-    m_dataMap[id].writeSets[idx].pImageInfo = &imageInfo;
+    m_dataMap[id].writeSets[idx].pImageInfo = pImageInfo;
 }
 
 void Descriptor::update(uint id) {
