@@ -8,7 +8,7 @@
 #include "../resources/image.h"
 #include "../resources/buffer.h"
 #include "../resources/shader.h"
-#include "pipeline_graphics.h"
+#include "pipeline_graphic.h"
 #include "frame.h"
 #include "descriptor.h"
 

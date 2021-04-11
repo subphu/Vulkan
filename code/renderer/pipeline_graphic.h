@@ -6,11 +6,11 @@
 #include "../common.h"
 #include "shader.h"
 
-class PipelineGraphics {
+class PipelineGraphic {
     
 public:
-    PipelineGraphics();
-    ~PipelineGraphics();
+    PipelineGraphic();
+    ~PipelineGraphic();
     
     void cleanup();
     

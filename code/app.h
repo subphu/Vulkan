@@ -12,7 +12,7 @@
 #include "resources/shader.h"
 
 #include "renderer/descriptor.h"
-#include "renderer/pipeline_graphics.h"
+#include "renderer/pipeline_graphic.h"
 #include "renderer/pipeline_compute.h"
 
 struct UniformBufferObject {
@@ -41,20 +41,20 @@ public:
     void run();
 
 private:
-    Window* m_window;
-    Camera* m_camera;
+    Window* m_pWindow;
+    Camera* m_pCamera;
     
-    Renderer* m_renderer;
-    Swapchain* m_swapchain;
-    Commander* m_commander;
+    Renderer* m_pRenderer;
+    Swapchain* m_pSwapchain;
+    Commander* m_pCommander;
     
-    Descriptor* m_descriptor;
+    Descriptor* m_pDescriptor;
     
-    PipelineGraphics* m_pipelineGraphic;
-    PipelineCompute*  m_pipelineCompute;
+    PipelineGraphic* m_pPipelineGraphic;
+    PipelineCompute*  m_pPipelineCompute;
     
-    Mesh* m_model;
-    Image *m_texture;
+    Mesh* m_pModel;
+    Image* m_pTexture;
     std::vector<Shader*> m_shaders;
     
     size_t m_currentFrame = 0;

@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		261EE5C8254E91E100572666 /* models in CopyFiles */ = {isa = PBXBuildFile; fileRef = 265FA2C0254E7102009E5428 /* models */; };
 		2634877825F60B5E00C5657D /* image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2634877625F60B5E00C5657D /* image.cpp */; };
-		26361312260450BC005DBA36 /* pipeline_graphics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26361310260450BC005DBA36 /* pipeline_graphics.cpp */; };
+		26361312260450BC005DBA36 /* pipeline_graphic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26361310260450BC005DBA36 /* pipeline_graphic.cpp */; };
 		263613152607365A005DBA36 /* frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 263613132607365A005DBA36 /* frame.cpp */; };
 		26450CD524FBCB1700841546 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26450CD324FBCB1700841546 /* libvulkan.1.dylib */; };
 		26450CD624FBCB1700841546 /* libvulkan.1.2.148.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26450CD424FBCB1700841546 /* libvulkan.1.2.148.dylib */; };
@@ -60,8 +60,8 @@
 		2612196324ED695900B2A2E3 /* vulkan */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vulkan; sourceTree = BUILT_PRODUCTS_DIR; };
 		2634877625F60B5E00C5657D /* image.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = image.cpp; sourceTree = "<group>"; };
 		2634877725F60B5E00C5657D /* image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = image.h; sourceTree = "<group>"; };
-		26361310260450BC005DBA36 /* pipeline_graphics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipeline_graphics.cpp; sourceTree = "<group>"; };
-		26361311260450BC005DBA36 /* pipeline_graphics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipeline_graphics.h; sourceTree = "<group>"; };
+		26361310260450BC005DBA36 /* pipeline_graphic.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipeline_graphic.cpp; sourceTree = "<group>"; };
+		26361311260450BC005DBA36 /* pipeline_graphic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipeline_graphic.h; sourceTree = "<group>"; };
 		263613132607365A005DBA36 /* frame.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = frame.cpp; sourceTree = "<group>"; };
 		263613142607365A005DBA36 /* frame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = frame.h; sourceTree = "<group>"; };
 		26450CD324FBCB1700841546 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = "../vulkansdk-1.2.148.1/macOS/lib/libvulkan.1.dylib"; sourceTree = "<group>"; };
@@ -274,8 +274,8 @@
 				26599FB025E39B990068C919 /* swapchain.h */,
 				263613132607365A005DBA36 /* frame.cpp */,
 				263613142607365A005DBA36 /* frame.h */,
-				26361310260450BC005DBA36 /* pipeline_graphics.cpp */,
-				26361311260450BC005DBA36 /* pipeline_graphics.h */,
+				26361310260450BC005DBA36 /* pipeline_graphic.cpp */,
+				26361311260450BC005DBA36 /* pipeline_graphic.h */,
 				266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */,
 				266A2502261B060E00AAF4C2 /* pipeline_compute.h */,
 				267949CF25FF04F7001FA569 /* commander.cpp */,
@@ -371,7 +371,7 @@
 				263613152607365A005DBA36 /* frame.cpp in Sources */,
 				267949D425FFB2B8001FA569 /* system.cpp in Sources */,
 				266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */,
-				26361312260450BC005DBA36 /* pipeline_graphics.cpp in Sources */,
+				26361312260450BC005DBA36 /* pipeline_graphic.cpp in Sources */,
 				265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */,
 				267949D125FF04F7001FA569 /* commander.cpp in Sources */,
 				26592FD9252C510900150894 /* stb_image.cpp in Sources */,

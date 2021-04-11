@@ -1,25 +1,25 @@
 //  Copyright © 2021 Subph. All rights reserved.
 //
 
-#include "pipeline_graphics.h"
+#include "pipeline_graphic.h"
 
 #include "../system.h"
 
-PipelineGraphics::~PipelineGraphics() {}
-PipelineGraphics::PipelineGraphics() {
+PipelineGraphic::~PipelineGraphic() {}
+PipelineGraphic::PipelineGraphic() {
     System &system   = System::instance();
     m_device         = system.m_renderer->m_device;
     m_physicalDevice = system.m_renderer->m_physicalDevice;
 }
 
-void PipelineGraphics::cleanup() {
+void PipelineGraphic::cleanup() {
     LOG("PipelineGraphics::cleanup");
     for (int i = 0; i < m_shaders.size(); i++) m_shaders[i]->cleanup();
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }
 
-void PipelineGraphics::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts) {
+void PipelineGraphic::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts) {
     LOG("createPipelineLayout");
     VkDevice device = m_device;
     
@@ -37,7 +37,7 @@ void PipelineGraphics::createPipelineLayout(std::vector<VkDescriptorSetLayout> d
     { m_pipelineLayout = pipelineLayout; }
 }
 
-void PipelineGraphics::setupViewportInfo(VkExtent2D swapchainExtent) {
+void PipelineGraphic::setupViewportInfo(VkExtent2D swapchainExtent) {
     VkViewport* viewport = new VkViewport();
     viewport->x = 0.0f;
     viewport->y = 0.0f;
@@ -64,7 +64,7 @@ void PipelineGraphics::setupViewportInfo(VkExtent2D swapchainExtent) {
     }
 }
 
-void PipelineGraphics::setupInputAssemblyInfo() {
+void PipelineGraphic::setupInputAssemblyInfo() {
     VkPipelineInputAssemblyStateCreateInfo* inputAssemblyInfo = new VkPipelineInputAssemblyStateCreateInfo();
     inputAssemblyInfo->sType    = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssemblyInfo->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -73,7 +73,7 @@ void PipelineGraphics::setupInputAssemblyInfo() {
     { m_inputAssemblyInfo = inputAssemblyInfo; }
 }
 
-void PipelineGraphics::setupRasterizationInfo() {
+void PipelineGraphic::setupRasterizationInfo() {
     VkPipelineRasterizationStateCreateInfo* rasterizationInfo = new VkPipelineRasterizationStateCreateInfo();
     rasterizationInfo->sType       = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationInfo->polygonMode = VK_POLYGON_MODE_FILL;
@@ -90,7 +90,7 @@ void PipelineGraphics::setupRasterizationInfo() {
     { m_rasterizationInfo = rasterizationInfo; }
 }
 
-void PipelineGraphics::setupMultisampleInfo() {
+void PipelineGraphic::setupMultisampleInfo() {
     VkPipelineMultisampleStateCreateInfo* multisampleInfo = new VkPipelineMultisampleStateCreateInfo();
     multisampleInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleInfo->rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT;
@@ -103,7 +103,7 @@ void PipelineGraphics::setupMultisampleInfo() {
     { m_multisampleInfo = multisampleInfo; }
 }
 
-void PipelineGraphics::setupColorBlendInfo() {
+void PipelineGraphic::setupColorBlendInfo() {
     VkPipelineColorBlendAttachmentState* colorBlendAttachment = new VkPipelineColorBlendAttachmentState();
     colorBlendAttachment->colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment->blendEnable         = VK_FALSE;
@@ -131,7 +131,7 @@ void PipelineGraphics::setupColorBlendInfo() {
     }
 }
 
-void PipelineGraphics::setupDynamicInfo() {
+void PipelineGraphic::setupDynamicInfo() {
     std::vector<VkDynamicState>* dynamicStates = new std::vector<VkDynamicState>();
     dynamicStates->push_back(VK_DYNAMIC_STATE_VIEWPORT);
     dynamicStates->push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
@@ -147,7 +147,7 @@ void PipelineGraphics::setupDynamicInfo() {
     }
 }
 
-void PipelineGraphics::setupDepthStencilInfo() {
+void PipelineGraphic::setupDepthStencilInfo() {
     VkPipelineDepthStencilStateCreateInfo* depthStencilInfo = new VkPipelineDepthStencilStateCreateInfo();
     depthStencilInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencilInfo->depthTestEnable        = VK_TRUE;
@@ -161,15 +161,15 @@ void PipelineGraphics::setupDepthStencilInfo() {
     { m_depthStencilInfo = depthStencilInfo; }
 }
 
-void PipelineGraphics::setShaders(std::vector<Shader*> shaders) {
+void PipelineGraphic::setShaders(std::vector<Shader*> shaders) {
     m_shaders = shaders;
 }
 
-void PipelineGraphics::setVertexInputInfo(VkPipelineVertexInputStateCreateInfo* vertexInputInfo) {
+void PipelineGraphic::setVertexInputInfo(VkPipelineVertexInputStateCreateInfo* vertexInputInfo) {
     m_vertexInputInfo = vertexInputInfo;
 }
 
-void PipelineGraphics::create(VkRenderPass renderPass) {
+void PipelineGraphic::create(VkRenderPass renderPass) {
     LOG("createGraphicsPipelines");
     VkDevice         device         = m_device;
     VkPipelineLayout pipelineLayout = m_pipelineLayout;
@@ -218,7 +218,7 @@ void PipelineGraphics::create(VkRenderPass renderPass) {
 // Private ==================================================
 
 
-VkFormat PipelineGraphics::ChooseDepthFormat() {
+VkFormat PipelineGraphic::ChooseDepthFormat() {
     VkPhysicalDevice physicalDevice = System::instance().m_renderer->m_physicalDevice;
     
     const std::vector<VkFormat>& candidates = {
