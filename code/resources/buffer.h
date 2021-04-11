@@ -24,8 +24,9 @@ public:
     VkBufferCreateInfo m_bufferInfo{};
     
     VkBuffer       getBuffer();
-    VkDeviceMemory getBufferMemory();
     VkDeviceSize   getBufferSize();
+    VkDeviceMemory getBufferMemory();
+    VkDescriptorBufferInfo getBufferInfo();
     
     void setup (VkDeviceSize size, VkBufferUsageFlags usage);
     void create();
@@ -40,6 +41,7 @@ public:
     
     void* mapMemory(size_t size);
     void  unmapMemory();
+    
     
 private:
     

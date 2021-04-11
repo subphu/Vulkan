@@ -19,10 +19,6 @@ void Buffer::cleanup() {
     vkFreeMemory      (m_device, m_bufferMemory, nullptr);
 }
 
-VkBuffer       Buffer::getBuffer      () { return m_buffer;       }
-VkDeviceMemory Buffer::getBufferMemory() { return m_bufferMemory; }
-VkDeviceSize   Buffer::getBufferSize  () { return m_bufferInfo.size; }
-
 void Buffer::setup(VkDeviceSize size, VkBufferUsageFlags usage) {
     VkBufferCreateInfo bufferInfo = m_bufferInfo;
     
@@ -104,6 +100,18 @@ void* Buffer::mapMemory(size_t size) {
 
 void Buffer::unmapMemory() {
     vkUnmapMemory(m_device, m_bufferMemory);
+}
+
+VkBuffer       Buffer::getBuffer      () { return m_buffer;       }
+VkDeviceMemory Buffer::getBufferMemory() { return m_bufferMemory; }
+VkDeviceSize   Buffer::getBufferSize  () { return m_bufferInfo.size; }
+VkDescriptorBufferInfo Buffer::getBufferInfo() {
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = m_buffer;
+    bufferInfo.range  = m_bufferInfo.size;
+    bufferInfo.offset = 0;
+    return bufferInfo;
+    
 }
 
 
