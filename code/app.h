@@ -15,6 +15,8 @@
 #include "renderer/pipeline_graphic.h"
 #include "renderer/pipeline_compute.h"
 
+#include "process/compute_interference.h"
+
 struct UniformBufferObject {
     glm::mat4 model;
     glm::mat4 view;
@@ -32,6 +34,7 @@ public:
     const uint32_t HEIGHT  = 800;
     const int DOUBLEBUFFER = 2;
     
+    const char*   SHADER_COMPILER_PATH = "shaders/compile.sh";
     const std::string VERT_SHADER_PATH = "shaders/vert.spv";
     const std::string FRAG_SHADER_PATH = "shaders/frag.spv";
     const std::string COMP_SHADER_PATH = "shaders/comp.spv";
@@ -52,6 +55,8 @@ private:
     
     PipelineGraphic* m_pPipelineGraphic;
     PipelineCompute*  m_pPipelineCompute;
+    
+    ComputeInterference* m_pCompute;
     
     Mesh* m_pModel;
     Image* m_pTexture;

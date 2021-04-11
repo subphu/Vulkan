@@ -27,13 +27,8 @@ public:
     Shader* m_shader;
     
     void setShader(Shader* shader);
-    
-    void setupLayoutBindings(uint32_t bindingsCount);
-    void setupConstant();
-    
-    void createDescriptorSetLayout();
-    void createPipelineLayout();
-    
+    void setupPushConstant(uint size);
+    void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
     void create();
     
 private:

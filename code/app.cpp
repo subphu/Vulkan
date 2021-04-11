@@ -8,6 +8,8 @@
 #include "system.h"
 
 void App::run() {
+    system(SHADER_COMPILER_PATH);
+    
     initWindow();
     initVulkan();
     m_pCamera = new Camera();
@@ -15,7 +17,7 @@ void App::run() {
     m_pModel->cleanup();
     m_pTexture->cleanup();
     m_pPipelineGraphic->cleanup();
-    m_pPipelineCompute->cleanup();
+    m_pCompute->cleanup();
     m_pDescriptor->cleanup();
     m_pRenderer->cleanUp();
     m_pWindow->close();
@@ -205,25 +207,10 @@ void App::recordCommandBuffer() {
 }
 
 void App::createPipelineCompute() {
-    Shader* computeShader = new Shader(COMP_SHADER_PATH, VK_SHADER_STAGE_COMPUTE_BIT);
-    m_pPipelineCompute = new PipelineCompute();
-    m_pPipelineCompute->setShader(computeShader);
-    m_pPipelineCompute->setupConstant();
-    m_pPipelineCompute->setupLayoutBindings(2);
-    m_pPipelineCompute->createDescriptorSetLayout();
-    m_pPipelineCompute->createPipelineLayout();
-    m_pPipelineCompute->create();
-    
-    uint size = 1000;
-    Buffer* iptBuffer = new Buffer();
-    iptBuffer->setup(size * sizeof(float), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    iptBuffer->create();
-    Buffer* optBuffer = new Buffer();
-    optBuffer->setup(size * size * sizeof(float), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    optBuffer->create();
-    
-    iptBuffer->cleanup();
-    optBuffer->cleanup();
+    LOG("createPipelineCompute");
+    m_pCompute = new ComputeInterference();
+    m_pCompute->setup({ 512, 512 });
+    m_pCompute->dispatch();
 }
 
 void App::mainLoop() {
