@@ -15,5 +15,5 @@ void main(){
 
     if(x >= size || y >= size) return;
 
-    opt[x + y*size] = ipt[x] * ipt[y];
+    opt[x + y*size] = opt[x + y*size] + ipt[x] * ipt[y];
 }

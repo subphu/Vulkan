@@ -1,0 +1,70 @@
+#version 450
+
+#define PI 3.14159265358979323846
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+layout(set=0, binding=0) buffer outputBuffer { vec4 imageData[]; };
+
+layout(push_constant) uniform pushConstants {
+    uint width, height;
+    float n;
+};
+
+float refractionAngle(float n1, float theta1, float n2) {
+    float sin2 = n1 * sin(theta1) / n2;
+    float theta2 = asin(sin2);
+    return theta2;
+}
+
+vec2 measureWave(float lambda, float opd) {
+    float m = (opd/lambda) * 2.0 * PI;
+    return vec2(cos(m), sin(m));
+}
+
+float getOPD(float d, float theta, float n) {
+    return n * 2.0 * d * cos(theta);
+}
+
+float interference(float wavelength, float delta, float opd) {
+    int bands = 5;
+    float tot = 0.0;
+    
+    for (int i=-bands ; i<=bands ; i++) {
+        float idx = float(i)/float(bands);
+        float lambda = wavelength + delta * idx;
+        
+        vec2 l = vec2(0.0);
+
+        l += -measureWave(lambda, 0. ) * 0.5;
+        l += +measureWave(lambda, opd) * 0.5;
+
+        float sensitivity = cos(idx * PI)+1.0;
+        tot += sensitivity * dot(l, l) / float(bands*2+1);
+    }
+    return tot;
+}
+
+void main() {
+    uint xi = gl_GlobalInvocationID.x;
+    uint yi = gl_GlobalInvocationID.x;
+
+    if(xi >= width || yi >= height) return;
+    
+    float xf = float(xi) / float(width);
+    float yf = float(yi) / float(height);
+
+    float d     = yf * 4e-6;
+    float angle = xf * PI / 2;
+
+    float theta = refractionAngle(1.0, angle, n);
+    float opd   = getOPD(d, theta, n);
+
+    uint idx = yi * width + xi;
+    imageData[idx] = vec4(
+        interference(650e-9, 60e-9, opd),
+        interference(532e-9, 40e-9, opd),
+        interference(441e-9, 30e-9, opd),
+        1.0
+    );
+}
