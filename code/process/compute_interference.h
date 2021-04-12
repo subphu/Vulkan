@@ -30,6 +30,8 @@ public:
     void setup(Size<uint> size);
     void dispatch();
     
+    Buffer* getOutputBuffer();
+    
 private:
     
     Descriptor* m_pDescriptor;

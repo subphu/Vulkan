@@ -54,6 +54,7 @@ void ComputeInterference::dispatch() {
     commander->endSingleTimeCommands(commandBuffer);
 }
 
+Buffer* ComputeInterference::getOutputBuffer() { return m_pBufferOutput; }
 
 // Private ==================================================
 
