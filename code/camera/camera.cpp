@@ -3,10 +3,13 @@
 
 #include "camera.h"
 
-#define FRONT    glm::vec3(0.0f, 0.0f, 0.0f)
-#define WORLD_UP glm::vec3(0.0f, 1.0f, 0.0f)
-#define POSITION glm::vec3(0.0f, 1.0f, 3.0f)
-#define ZERO_VEC glm::vec3(0.0f, 0.0f, 0.0f)
+#include "../common.h"
+
+#define RIGHT    glm::vec3( 1.0f, 0.0f, 0.0f)
+#define FRONT    glm::vec3( 0.0f, 0.0f,-1.0f)
+#define WORLD_UP glm::vec3( 0.0f, 1.0f, 0.0f)
+#define POSITION glm::vec3( 0.0f, 2.0f, 0.0f)
+#define ZERO_VEC glm::vec3( 0.0f, 0.0f, 0.0f)
 
 #define MAX_ZOOM  45.0f
 #define MAX_PITCH 89.0f
@@ -40,7 +43,9 @@ void Camera::reset() {
     maxZoom = MAX_ZOOM;
     maxPitch = MAX_PITCH;
     
+    up = WORLD_UP;
     front = FRONT;
+    right = RIGHT;
     worldUp = WORLD_UP;
     position = POSITION;
     focusPoint = ZERO_VEC;
@@ -92,7 +97,7 @@ void Camera::setPosition(glm::vec3 pos) {
 void Camera::lookAt(glm::vec3 focusPos) {
     focusPoint = focusPos;
     front = glm::normalize(focusPos - position);
-    right = glm::normalize(glm::cross(front, worldUp));
+    right = abs(front.y) != 1 ? glm::normalize(glm::cross(front, worldUp)) : right;
     up    = glm::normalize(glm::cross(right, front));
     updateRotation();
 }
