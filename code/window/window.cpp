@@ -100,10 +100,7 @@ void Window::enableInput() {
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     glfwSetMouseButtonCallback(m_window, this->mouseButtonCallback);
     glfwSetScrollCallback(m_window, scrollCallback);
-    
-    double x, y;
-    glfwGetCursorPos(m_window, &x, &y);
-    m_cursorPos = glm::vec2(x, -y);
+    resetInput();
 }
 
 void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {

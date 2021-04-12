@@ -67,7 +67,7 @@ private:
     glm::vec2 m_cursorPos;
     glm::vec2 m_cursorOffset;
     glm::vec2 m_scrollOffset;
-    bool m_mouseBtn[3];
+    bool m_mouseBtn[3] = {0, 0, 0};
     
 
     void calcRatio(Size<int> size);
