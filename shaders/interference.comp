@@ -47,7 +47,7 @@ float interference(float wavelength, float delta, float opd) {
 
 void main() {
     uint xi = gl_GlobalInvocationID.x;
-    uint yi = gl_GlobalInvocationID.x;
+    uint yi = gl_GlobalInvocationID.y;
 
     if(xi >= width || yi >= height) return;
     
