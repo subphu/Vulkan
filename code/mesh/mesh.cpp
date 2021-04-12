@@ -108,8 +108,8 @@ void Mesh::createSphere(int wedge, int segment) {
         w1 = i  * segmentVertices;
         w2 = w1 + segmentVertices;
 
-        for(int j = 0; j < segment; j++) {
-            int d = j + 1;
+        for(uint j = 0; j < segment; j++) {
+            uint d = j + 1;
             m_indices.insert(m_indices.end(), { w1+j, w2+j, w1+d });
             m_indices.insert(m_indices.end(), { w1+d, w2+j, w2+d });
         }

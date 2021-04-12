@@ -15,7 +15,7 @@ public:
     std::vector<glm::vec3> m_positions;
     std::vector<glm::vec3> m_normals;
     std::vector<glm::vec2> m_texCoords;
-    std::vector<int>       m_indices;
+    std::vector<uint32_t>  m_indices;
     
     void cleanup();
     void createPlane();
