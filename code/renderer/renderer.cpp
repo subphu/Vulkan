@@ -96,10 +96,14 @@ void Renderer::pickPhysicalDevice() {
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     std::vector<VkSurfaceFormatKHR> surfaceFormats;
     std::vector<VkPresentModeKHR>   presentModes;
-    uint32_t graphicQueueIndex = 0;
-    uint32_t presentQueueIndex = 0;
+    int graphicQueueIndex = 0;
+    int presentQueueIndex = 0;
     
     for (const auto& tempDevice : physicalDevices) {
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(tempDevice, &properties);
+        LOG(properties.deviceName);
+
         VkPhysicalDeviceFeatures supportedFeatures;
         vkGetPhysicalDeviceFeatures(tempDevice, &supportedFeatures);
         
@@ -207,7 +211,9 @@ uint32_t Renderer::getPresentQueueIndex() { return m_presentQueueIndex; }
 
 void Renderer::setSurface(VkSurfaceKHR surface) { m_surface = surface; }
 
-VkSurfaceKHR Renderer::getSurface() { return m_surface; }
+VkSurfaceKHR     Renderer::getSurface()        { return m_surface; }
+VkPhysicalDevice Renderer::getPhysicalDevice() { return m_physicalDevice; }
+VkDevice         Renderer::getDevice()         { return m_device; }
 
 
 // Private ==================================================

@@ -49,9 +49,11 @@ public:
     uint32_t getPresentQueueIndex();
 
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice getPhysicalDevice();
     void pickPhysicalDevice();
     
     VkDevice m_device = VK_NULL_HANDLE;
+    VkDevice getDevice();
     void createLogicalDevice();
     
     VkQueue m_graphicQueue = VK_NULL_HANDLE;
