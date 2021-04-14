@@ -30,13 +30,6 @@ void Image::cleanupImageView() {
     vkFreeMemory      (m_device, m_imageMemory, nullptr);
 }
 
-VkImage         Image::getImage      () { return m_image;       }
-VkImageView     Image::getImageView  () { return m_imageView;   }
-VkDeviceMemory  Image::getImageMemory() { return m_imageMemory; }
-VkSampler       Image::getSampler    () { return m_sampler;     }
-unsigned int    Image::getChannelSize() { return GetChannelSize(m_imageInfo.format); }
-VkDeviceSize    Image::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize(); }
-
 void Image::setupForDepth(Size<uint32_t> size, uint32_t mipLevels) {
     VkPhysicalDevice      physicalDevice = m_physicalDevice;
     VkImageCreateInfo     imageInfo      = m_imageInfo;
@@ -371,6 +364,20 @@ void Image::cmdGenerateMipmaps() {
     
     commander->endSingleTimeCommands(commandBuffer);
 
+}
+
+VkImage         Image::getImage      () { return m_image;       }
+VkImageView     Image::getImageView  () { return m_imageView;   }
+VkDeviceMemory  Image::getImageMemory() { return m_imageMemory; }
+VkSampler       Image::getSampler    () { return m_sampler;     }
+unsigned int    Image::getChannelSize() { return GetChannelSize(m_imageInfo.format); }
+VkDeviceSize    Image::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize(); }
+VkDescriptorImageInfo Image::getImageInfo() {
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView   = m_imageView;
+    imageInfo.sampler     = m_sampler;
+    return imageInfo;
 }
 
 

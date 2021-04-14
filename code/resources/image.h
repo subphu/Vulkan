@@ -41,6 +41,7 @@ public:
     VkDeviceSize     getImageSize  ();
     VkSampler        getSampler    ();
     unsigned int     getChannelSize();
+    VkDescriptorImageInfo getImageInfo();
     
     
 private:
