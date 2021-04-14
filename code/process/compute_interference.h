@@ -27,7 +27,7 @@ public:
     ~ComputeInterference();
     
     void cleanup();
-    void setup(Size<uint> size);
+    void setup();
     void dispatch();
     
     Buffer* getOutputBuffer();

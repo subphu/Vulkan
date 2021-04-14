@@ -14,12 +14,11 @@ void ComputeInterference::cleanup() {
     LOG("ComputeInterference::cleanup");
     m_pPipeline->cleanup();
     m_pDescriptor->cleanup();
-    m_pBufferOutput->cleanup();
 }
 
-void ComputeInterference::setup(Size<uint> size) {
+void ComputeInterference::setup() {
     LOG("ComputeInterference::setup");
-    m_size = size;
+    m_size = { 512, 512 };
     fillInput();
     createBuffers();
     createDescriptor();
@@ -40,21 +39,22 @@ void ComputeInterference::dispatch() {
     VkCommandBuffer commandBuffer = commander->createCommandBuffer();
     commander->beginSingleTimeCommands(commandBuffer);
     {
-        vkCmdPushConstants(commandBuffer, pipelineLayout,
-                           VK_SHADER_STAGE_COMPUTE_BIT,
-                           0, sizeof(inputConstant), &inputConstant);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
-                                pipelineLayout, 0, 1, &descSet, 0, nullptr);
-        
-        vkCmdDispatch(commandBuffer,
-                      size.width  / WORKGROUP_SIZE,
-                      size.height / WORKGROUP_SIZE, 1);
+    vkCmdPushConstants(commandBuffer, pipelineLayout,
+                       VK_SHADER_STAGE_COMPUTE_BIT,
+                       0, sizeof(inputConstant), &inputConstant);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
+                            pipelineLayout, 0, 1, &descSet, 0, nullptr);
+    
+    vkCmdDispatch(commandBuffer,
+                  size.width  / WORKGROUP_SIZE,
+                  size.height / WORKGROUP_SIZE, 1);
     }
     commander->endSingleTimeCommands(commandBuffer);
 }
 
 Buffer* ComputeInterference::getOutputBuffer() { return m_pBufferOutput; }
+
 
 // Private ==================================================
 
@@ -70,11 +70,11 @@ void ComputeInterference::createBuffers() {
     LOG("ComputeInterference::createBuffers");
     Size<uint> size = m_size;
     uint lengthSize = size.width * size.height;
-    uint outputSize = lengthSize * CHANNEL;
+    uint outputSize = lengthSize * CHANNEL * sizeof(float);
     std::vector<float> outputData(lengthSize, 0.0f);
     
     Buffer* pOutput = new Buffer();
-    pOutput->setup(outputSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    pOutput->setup(outputSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     pOutput->create();
     pOutput->fillBufferFull(outputData.data());
     
@@ -102,14 +102,13 @@ void ComputeInterference::createDescriptor() {
 
 void ComputeInterference::createPipeline() {
     LOG("ComputeInterference::createPipeline");
-    Descriptor*      pDescriptor = m_pDescriptor;
-    VkDescriptorSetLayout layout = pDescriptor->getDescriptorLayout(L0);
-    Shader*        computeShader = new Shader(COMP_SHADER_PATH, VK_SHADER_STAGE_COMPUTE_BIT);
+    Descriptor* pDescriptor = m_pDescriptor;
+    Shader*     computeShader = new Shader(COMP_SHADER_PATH, VK_SHADER_STAGE_COMPUTE_BIT);
     
     PipelineCompute* pPipelineCompute = new PipelineCompute();
     pPipelineCompute->setShader(computeShader);
     pPipelineCompute->setupPushConstant(sizeof(InterferenceDetails));
-    pPipelineCompute->createPipelineLayout({ layout });
+    pPipelineCompute->createPipelineLayout({ pDescriptor->getDescriptorLayout(L0) });
     pPipelineCompute->create();
     
     { m_pPipeline = pPipelineCompute; }
