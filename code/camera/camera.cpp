@@ -97,7 +97,8 @@ void Camera::setPosition(glm::vec3 pos) {
 void Camera::lookAt(glm::vec3 focusPos) {
     focusPoint = focusPos;
     front = glm::normalize(focusPos - position);
-    right = abs(front.y) != 1 ? glm::normalize(glm::cross(front, worldUp)) : right;
+    if (round(abs(front.y)*1000)/1000 != 1)
+        right = glm::normalize(glm::cross(front, worldUp));
     up    = glm::normalize(glm::cross(right, front));
     updateRotation();
 }
