@@ -20,14 +20,19 @@ public:
     VkFramebuffer   m_framebuffer   = VK_NULL_HANDLE;
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
     VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
-    Buffer*         m_uniformBuffer = nullptr;
-    Image*  m_image = nullptr;
+    Buffer* m_uniformBuffer = nullptr;
+    Image*  m_image         = nullptr;
     Image*  m_depthImage    = nullptr;
     Size<uint32_t>  m_size{};
+    
+    VkSemaphore m_renderSemaphore;
+    VkFence     m_commandFence;
+    
     
     void createDepthResource();
     void createImageResource(VkImage image, VkFormat format);
     void createFramebuffer(VkRenderPass renderPass);
+    void createFinishSignal();
     
     void createUniformBuffer(VkDeviceSize bufferSize);
     void updateUniformBuffer(void* address, size_t size);

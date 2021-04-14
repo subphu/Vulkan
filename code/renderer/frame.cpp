@@ -13,9 +13,11 @@ Frame::Frame() {
 
 void Frame::cleanup() {
     LOG("Frame::cleanup");
+    vkDestroyFence(m_device, m_commandFence, nullptr);
+    vkDestroySemaphore(m_device, m_renderSemaphore, nullptr);
+    vkDestroyFramebuffer(m_device, m_framebuffer, nullptr);
     
     m_uniformBuffer->cleanup();
-    vkDestroyFramebuffer(m_device, m_framebuffer, nullptr);
     m_depthImage->cleanup();
     m_image->cleanupImageView();
 }
@@ -58,6 +60,30 @@ void Frame::createFramebuffer(VkRenderPass renderPass) {
     { m_framebuffer = framebuffer; }
 }
 
+void Frame::createFinishSignal() {
+    VkDevice device = m_device;
+    
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    
+    VkSemaphore semaphore;
+    VkResult result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore);
+    CHECK_VKRESULT(result, "failed to create semaphores!");
+    
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    
+    VkFence fence;
+    result = vkCreateFence(device, &fenceInfo, nullptr, &fence);
+    CHECK_VKRESULT(result, "failed to create fences!");
+    
+    {
+        m_renderSemaphore = semaphore;
+        m_commandFence    = fence;
+    }
+}
+
 void Frame::createUniformBuffer(VkDeviceSize bufferSize) {
     m_uniformBuffer = new Buffer();
     m_uniformBuffer->setup(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -69,12 +95,7 @@ void Frame::updateUniformBuffer(void* address, size_t size) {
 }
 
 VkDescriptorBufferInfo Frame::getBufferInfo() {
-    Buffer* uniformBuffer = m_uniformBuffer;
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = uniformBuffer->getBuffer();
-    bufferInfo.range  = uniformBuffer->getBufferSize();
-    bufferInfo.offset = 0;
-    return bufferInfo;
+    return m_uniformBuffer->getBufferInfo();
 }
 
 void Frame::setDescriptorSet(VkDescriptorSet descriptorSet) {
