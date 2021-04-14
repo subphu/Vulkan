@@ -16,17 +16,8 @@
 #include "renderer/pipeline_compute.h"
 
 #include "process/compute_interference.h"
+#include "process/graphic_main.h"
 
-struct UniformBufferObject {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
-};
-
-struct Texture {
-    VkImageView imageView;
-    VkSampler sampler;
-};
 
 class App {
 public:
@@ -48,23 +39,19 @@ private:
     Camera* m_pCamera;
     
     Renderer* m_pRenderer;
-    Swapchain* m_pSwapchain;
     Commander* m_pCommander;
     
-    Descriptor* m_pDescriptor;
-    
-    PipelineGraphic* m_pPipelineGraphic;
     PipelineCompute*  m_pPipelineCompute;
     
     ComputeInterference* m_pCompute;
+    GraphicMain* m_pGraphic;
     
-    Mesh* m_pModel;
-    Image* m_pTexture;
-    std::vector<Shader*> m_shaders;
     
     size_t m_currentFrame = 0;
-    UniformBufferObject m_ubo{};
+    CameraMatrix m_cameraMatrix{};
     
+    Misc m_misc{};
+    Buffer* m_pMiscBuffer;
     
     void initWindow();
     void initVulkan();

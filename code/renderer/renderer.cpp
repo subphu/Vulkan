@@ -12,7 +12,6 @@ Renderer::~Renderer() { }
 
 void Renderer::cleanUp() {
     LOG("Renderer::cleanUp");
-    m_swapchain->cleanup();
     m_commander->cleanup();
     
     vkDestroyDevice(m_device, nullptr);
@@ -178,11 +177,6 @@ void Renderer::createCommander() {
     m_commander = new Commander();
     m_commander->setupPool(m_graphicQueue, m_graphicQueueIndex);
     m_commander->create();
-}
-
-Swapchain* Renderer::getSwapchain() { return m_swapchain; }
-void Renderer::createSwapchain() {
-    m_swapchain = new Swapchain();
 }
 
 VkSurfaceFormatKHR Renderer::getSwapchainSurfaceFormat() {

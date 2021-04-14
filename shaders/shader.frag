@@ -2,12 +2,22 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout(set = 1, binding = 0) uniform sampler2D texSampler;
+layout(set = 1, binding = 1) buffer outputBuffer { vec4 imageData[]; };
+
+layout(set = 1, binding = 2) uniform Misc {
+    uint buffSize;
+} misc;
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
+
 void main() {
-    outColor = texture(texSampler, fragTexCoord);
+    uint x = uint(fragTexCoord.x * misc.buffSize);
+    uint y = uint(fragTexCoord.y * misc.buffSize);
+    uint idx = y*misc.buffSize + x;
+    outColor = imageData[idx];
+//    outColor = texture(texSampler, fragTexCoord);
 }

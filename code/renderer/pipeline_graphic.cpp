@@ -77,7 +77,7 @@ void PipelineGraphic::setupRasterizationInfo() {
     VkPipelineRasterizationStateCreateInfo* rasterizationInfo = new VkPipelineRasterizationStateCreateInfo();
     rasterizationInfo->sType       = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationInfo->polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizationInfo->cullMode    = VK_CULL_MODE_BACK_BIT;
+    rasterizationInfo->cullMode    = VK_CULL_MODE_NONE;
     rasterizationInfo->frontFace   = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizationInfo->rasterizerDiscardEnable = VK_FALSE;
     rasterizationInfo->depthClampEnable        = VK_FALSE;

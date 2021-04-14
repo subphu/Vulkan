@@ -38,11 +38,10 @@ public:
     std::vector<Frame*> m_frames;
     void createFrames(VkDeviceSize uniformBufferSize);
     
-    std::vector<VkSemaphore> m_imageAvailableSemaphores;
-    std::vector<VkSemaphore> m_renderFinishedSemaphores;
-    std::vector<VkFence> m_inFlightFences;
-    std::vector<VkFence> m_imagesInFlight;
+    std::vector<VkSemaphore> m_imageSemaphores;
     void createSyncObjects();
+    
+    VkRenderPassBeginInfo getRenderBeginInfo();
     
 private:
     

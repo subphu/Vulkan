@@ -113,7 +113,6 @@ VkDescriptorBufferInfo Buffer::getBufferInfo() {
     bufferInfo.range  = m_bufferInfo.size;
     bufferInfo.offset = 0;
     return bufferInfo;
-    
 }
 
 

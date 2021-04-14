@@ -63,10 +63,6 @@ public:
     Commander* m_commander = nullptr;
     Commander* getCommander();
     void createCommander();
-    
-    Swapchain* m_swapchain = nullptr;
-    Swapchain* getSwapchain();
-    void createSwapchain();
 
 private:
     

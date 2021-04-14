@@ -15,7 +15,6 @@ public:
     
     Renderer *  getRenderer () { return m_renderer; }
     Commander*  getCommander() { return m_renderer->getCommander(); }
-    Swapchain*  getSwapchain() { return m_renderer->getSwapchain(); }
     
     static System& instance() {
         static System instance; // Guaranteed to be destroyed. Instantiated on first use.

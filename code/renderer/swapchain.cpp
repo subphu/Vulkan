@@ -18,10 +18,8 @@ void Swapchain::cleanup() {
     LOG("Swapchain::cleanup");
     if (m_frames.size() == 0) return;
     
-    for (size_t i = 0; i < m_inFlightFences.size(); i++) {
-        vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+    for (size_t i = 0; i < m_imageSemaphores.size(); i++) {
+        vkDestroySemaphore(m_device, m_imageSemaphores[i], nullptr);
     }
     
     for (size_t i = 0; i < m_frames.size(); i++)
@@ -172,6 +170,7 @@ void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
         frame->createImageResource(swapchainImages[i], surfaceFormat);
         frame->createFramebuffer(renderPass);
         frame->createUniformBuffer(uniformBufferSize);
+        frame->createFinishSignal();
         frames.push_back(frame);
     }
     {
@@ -185,41 +184,27 @@ void Swapchain::createSyncObjects() {
     VkDevice device     = m_device;
     uint32_t totalFrame = UINT32(m_frames.size());
     
-    std::vector<VkSemaphore> imageAvailableSemaphores;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkFence>     inFlightFences;
-    std::vector<VkFence>     imagesInFlight;
-    
-    imageAvailableSemaphores.resize(totalFrame);
-    renderFinishedSemaphores.resize(totalFrame);
-    inFlightFences.resize(totalFrame);
-    imagesInFlight.resize(totalFrame, VK_NULL_HANDLE);
+    std::vector<VkSemaphore> semaphore;
+    semaphore.resize(totalFrame);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     
-    VkFenceCreateInfo fenceInfo{};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
     for (size_t i = 0; i < totalFrame; i++) {
-        VkResult result1 = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]);
-        VkResult result2 = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]);
-        VkResult result3 = vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]);
-        CHECK_VKRESULT(result1, "failed to create image available semaphores!");
-        CHECK_VKRESULT(result2, "failed to create render finished semaphores!");
-        CHECK_VKRESULT(result3, "failed to create in flight fences!");
+        VkResult result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore[i]);
+        CHECK_VKRESULT(result, "failed to create image available semaphores!");
     }
-    {
-        m_imageAvailableSemaphores = imageAvailableSemaphores;
-        m_renderFinishedSemaphores = renderFinishedSemaphores;
-        m_inFlightFences = inFlightFences;
-        m_imagesInFlight = imagesInFlight;
-    }
-    
+    { m_imageSemaphores = semaphore; }
 }
 
-
+VkRenderPassBeginInfo Swapchain::getRenderBeginInfo() {
+    VkRenderPassBeginInfo renderBeginInfo{};
+    renderBeginInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderBeginInfo.renderPass  = m_renderPass;
+    renderBeginInfo.renderArea.extent = m_extent;
+    renderBeginInfo.renderArea.offset = {0,0};
+    return renderBeginInfo;
+}
 
 // Private ==================================================
 

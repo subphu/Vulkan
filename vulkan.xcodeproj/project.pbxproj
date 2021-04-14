@@ -31,6 +31,7 @@
 		267949D425FFB2B8001FA569 /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267949D225FFB2B8001FA569 /* system.cpp */; };
 		267D8904255EC6C7002E918C /* camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267D8902255EC6C7002E918C /* camera.cpp */; };
 		267D8907255EC8AB002E918C /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267D8906255EC8AB002E918C /* window.cpp */; };
+		2699921F26247EA3006F5802 /* graphic_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2699921D26247EA3006F5802 /* graphic_main.cpp */; };
 		26BE145424ED699200F534B9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BE145324ED699200F534B9 /* main.cpp */; };
 		26BE14A824ED852C00F534B9 /* libglfw.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26BE14A724ED852C00F534B9 /* libglfw.3.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		26BE14A924ED853200F534B9 /* libglfw.3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 26BE14A724ED852C00F534B9 /* libglfw.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -114,6 +115,8 @@
 		267D8905255EC8AB002E918C /* window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
 		267D8906255EC8AB002E918C /* window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = window.cpp; sourceTree = "<group>"; };
 		267E55C82577E46100651094 /* helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
+		2699921D26247EA3006F5802 /* graphic_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = graphic_main.cpp; sourceTree = "<group>"; };
+		2699921E26247EA3006F5802 /* graphic_main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = graphic_main.h; sourceTree = "<group>"; };
 		26BE145324ED699200F534B9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		26BE14A724ED852C00F534B9 /* libglfw.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.dylib; path = ../../../../../usr/local/Cellar/glfw/3.3.2/lib/libglfw.3.dylib; sourceTree = "<group>"; };
 		26BE14AF24ED864700F534B9 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
@@ -201,6 +204,8 @@
 			children = (
 				266A2507261B33C600AAF4C2 /* compute_interference.cpp */,
 				266A2508261B33C600AAF4C2 /* compute_interference.h */,
+				2699921D26247EA3006F5802 /* graphic_main.cpp */,
+				2699921E26247EA3006F5802 /* graphic_main.h */,
 			);
 			path = process;
 			sourceTree = "<group>";
@@ -303,10 +308,10 @@
 			children = (
 				2634877625F60B5E00C5657D /* image.cpp */,
 				2634877725F60B5E00C5657D /* image.h */,
-				26FF06252601D8BD006FB68C /* shader.cpp */,
-				26FF06262601D8BD006FB68C /* shader.h */,
 				267949CC25FCE966001FA569 /* buffer.cpp */,
 				267949CD25FCE966001FA569 /* buffer.h */,
+				26FF06252601D8BD006FB68C /* shader.cpp */,
+				26FF06262601D8BD006FB68C /* shader.h */,
 			);
 			path = resources;
 			sourceTree = "<group>";
@@ -382,6 +387,7 @@
 				2634877825F60B5E00C5657D /* image.cpp in Sources */,
 				267949CE25FCE966001FA569 /* buffer.cpp in Sources */,
 				263613152607365A005DBA36 /* frame.cpp in Sources */,
+				2699921F26247EA3006F5802 /* graphic_main.cpp in Sources */,
 				267949D425FFB2B8001FA569 /* system.cpp in Sources */,
 				266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */,
 				26361312260450BC005DBA36 /* pipeline_graphic.cpp in Sources */,
