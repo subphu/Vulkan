@@ -16,11 +16,10 @@ void GraphicMain::cleanup() {
     for (Image* texture : m_pTextures) texture->cleanup();
     
     m_pMiscBuffer->cleanup();
-    m_pInterBuffer->cleanup();
     m_pMesh->cleanup();
+    m_pSwapchain->cleanup();
     m_pPipeline->cleanup();
     m_pDescriptor->cleanup();
-    m_pSwapchain->cleanup();
 }
 
 void GraphicMain::setup(Size<int> size) {
@@ -34,9 +33,9 @@ void GraphicMain::setup(Size<int> size) {
 }
 
 void GraphicMain::reset() {
+    if (m_pSwapchain  != nullptr) m_pSwapchain->cleanup();
     if (m_pPipeline   != nullptr) m_pPipeline->cleanup();
     if (m_pDescriptor != nullptr) m_pDescriptor->cleanup();
-    if (m_pSwapchain  != nullptr) m_pSwapchain->cleanup();
     createSwapchain();
     createDescriptor();
     createPipeline();

@@ -12,6 +12,7 @@ ComputeInterference::ComputeInterference() {
 
 void ComputeInterference::cleanup() {
     LOG("ComputeInterference::cleanup");
+    m_pBufferOutput->cleanup();
     m_pPipeline->cleanup();
     m_pDescriptor->cleanup();
 }

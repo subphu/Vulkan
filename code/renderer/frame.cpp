@@ -13,6 +13,8 @@ Frame::Frame() {
 
 void Frame::cleanup() {
     LOG("Frame::cleanup");
+    vkWaitForFences(m_device, 1, &m_commandFence, VK_TRUE, UINT64_MAX);
+    
     vkDestroyFence(m_device, m_commandFence, nullptr);
     vkDestroySemaphore(m_device, m_renderSemaphore, nullptr);
     vkDestroyFramebuffer(m_device, m_framebuffer, nullptr);

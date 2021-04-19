@@ -16,7 +16,6 @@ void Renderer::cleanUp() {
     
     vkDestroyDevice(m_device, nullptr);
     DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
-    vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
     vkDestroyInstance(m_instance, nullptr);
 }
 
