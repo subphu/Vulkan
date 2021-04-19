@@ -28,6 +28,7 @@ public:
     ~Window();
     
     VkSurfaceKHR createSurface(VkInstance instance);
+    VkSurfaceKHR getSurface();
     
     void create(GLuint width, GLuint height, const char* name);
     void close();
@@ -36,6 +37,7 @@ public:
     bool isOpen();
     float getRatio();
     Size<int> getSize();
+    Size<int> getFrameSize();
     static std::vector<const char*> getRequiredExtensions();
     
     void setSize(Size<int> size);
@@ -51,6 +53,7 @@ public:
     glm::vec2 getCursorOffset();
     glm::vec2 getScrollOffset();
     
+    void setWindowPosition(uint x, uint y);
     void setMouseButton(int button, int action);
     void setScroll(double xoffset, double yoffset);
     
@@ -69,6 +72,7 @@ private:
     glm::vec2 m_scrollOffset;
     bool m_mouseBtn[3] = {0, 0, 0};
     
+    VkSurfaceKHR m_surface;
 
     void calcRatio(Size<int> size);
     void exitFailure(std::string message);

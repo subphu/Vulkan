@@ -3,9 +3,9 @@
 
 #include "window.h"
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include "../libraries/imgui/imgui.h"
+#include "../libraries/imgui/imgui_impl_glfw.h"
+#include "../libraries/imgui/imgui_impl_opengl3.h"
 
 #define WINDOW_FAILED_MESSAGE "Failed to create GLFW window"
 #define EXIT_MESSAGE          "Window closed"
@@ -32,12 +32,11 @@ void Window::resizeCallback(GLFWwindow* window, int width, int height) {
     app->notifyResize();
 }
 
+VkSurfaceKHR Window::getSurface() { return m_surface; }
 VkSurfaceKHR Window::createSurface(VkInstance instance) {
-    VkSurfaceKHR surface;
-    if (glfwCreateWindowSurface(instance, m_window, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create window surface!");
-    }
-    return surface;
+    VkResult result = glfwCreateWindowSurface(instance, m_window, nullptr, &m_surface);
+    CHECK_VKRESULT(result, "failed to create window surface!");
+    return m_surface;
 }
 
 void Window::close() {
@@ -68,6 +67,13 @@ std::vector<const char*> Window::getRequiredExtensions() {
 bool Window::isOpen() { return !glfwWindowShouldClose(m_window); }
 
 float Window::getRatio() { return m_ratio; }
+
+Size<int> Window::getFrameSize () {
+    int width, height;
+    glfwGetFramebufferSize(m_window, &width, &height);
+    setSize({ width, height });
+    return m_size;
+}
 
 Size<int> Window::getSize () {
     int width, height;
@@ -113,6 +119,10 @@ void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) 
     app->setScroll(xoffset, yoffset);
 }
 
+void Window::setWindowPosition(uint x, uint y) {
+    glfwSetWindowPos(m_window, x, y);
+}
+
 void Window::setMouseButton(int button, int action) {
     m_mouseBtn[mouse_btn_left] = button == GLFW_MOUSE_BUTTON_LEFT ?
         action == GLFW_PRESS : m_mouseBtn[mouse_btn_left];
@@ -144,17 +154,17 @@ glm::vec2 Window::getCursorOffset() { return m_cursorOffset; }
 glm::vec2 Window::getScrollOffset() { return m_scrollOffset; }
 
 void Window::settingUI() {
-//    IMGUI_CHECKVERSION();
-//    ImGui::CreateContext();
-//    ImGuiIO& io = ImGui::GetIO(); (void)io;
-////    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-////    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-////
-////    Setup Dear ImGui style
-////    ImGui::StyleColorsDark();
-//    ImGui::StyleColorsClassic();
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 //
-////    Setup Platform/Renderer bindings
-//    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-////    ImGui_ImplOpenGL3_Init(GLSL_VERSION);
+//    Setup Dear ImGui style
+//    ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
+
+//    Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+//    ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 }
