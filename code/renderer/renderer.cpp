@@ -82,9 +82,8 @@ void Renderer::setupDeviceExtensions() {
     m_deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 }
 
-void Renderer::pickPhysicalDevice() {
+void Renderer::pickPhysicalDevice(VkSurfaceKHR surface) {
     LOG("pickPhysicalDevice");
-    VkSurfaceKHR surface  = m_surface;
     VkInstance   instance = m_instance;
     
     std::vector<const char*>      deviceExtensions = m_deviceExtensions;
@@ -201,11 +200,9 @@ VkPresentModeKHR Renderer::getSwapchainPresentMode() {
 }
 
 uint32_t Renderer::getGraphicQueueIndex() { return m_graphicQueueIndex; }
-uint32_t Renderer::getPresentQueueIndex() { return m_presentQueueIndex; }
+uint32_t Renderer::getPresentQueueIndex(VkSurfaceKHR surface) {
+    return FindPresentQueueIndex(m_physicalDevice, surface); }
 
-void Renderer::setSurface(VkSurfaceKHR surface) { m_surface = surface; }
-
-VkSurfaceKHR     Renderer::getSurface()        { return m_surface; }
 VkPhysicalDevice Renderer::getPhysicalDevice() { return m_physicalDevice; }
 VkDevice         Renderer::getDevice()         { return m_device; }
 

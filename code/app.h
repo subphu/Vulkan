@@ -21,33 +21,30 @@
 
 class App {
 public:
-    const uint32_t WIDTH   = 1200;
-    const uint32_t HEIGHT  = 800;
-    const uint32_t TEXSIZE = 1024;
     
-    const char*   SHADER_COMPILER_PATH = "shaders/compile.sh";
-    const std::string MODEL_PATH   = "models/viking_room/viking_room.obj";
+    const char* SHADER_COMPILER_PATH = "shaders/compile.sh";
+    const std::string MODEL_PATH = "models/viking_room/viking_room.obj";
     
     void run();
 
 private:
-    Window* m_pWindow;
+    Window* m_pGUIWindow;
+    Window* m_pComputeWindow;
+    Window* m_pRenderWindow1;
+    Window* m_pRenderWindow2;
+    
     Camera* m_pCamera;
     
     Renderer* m_pRenderer;
-    Commander* m_pCommander;
-    
-    PipelineCompute*  m_pPipelineCompute;
     
     ComputeInterference* m_pCompute;
-    GraphicMain* m_pGraphic;
-    
+    GraphicMain* m_pGraphic1;
+    GraphicMain* m_pGraphic2;
     
     size_t m_currentFrame = 0;
     CameraMatrix m_cameraMatrix{};
     
     Misc m_misc{};
-    Buffer* m_pMiscBuffer;
     
     void initWindow();
     void initVulkan();
@@ -67,5 +64,5 @@ private:
     void update(long iteration);
     void draw(long iteration);
     
-    
+    glm::vec3 getMovement(Window* pWindow);
 };

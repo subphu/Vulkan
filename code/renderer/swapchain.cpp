@@ -30,17 +30,16 @@ void Swapchain::cleanup() {
     vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
 }
 
-void Swapchain::setup(Size<int> size) {
+void Swapchain::setup(Size<int> size, VkSurfaceKHR surface) {
     VkPhysicalDevice physicalDevice = m_physicalDevice;
     
     System&   system   = System::instance();
     Renderer* renderer = system.getRenderer();
     
-    VkSurfaceKHR       surface       = renderer->getSurface();
     VkSurfaceFormatKHR surfaceFormat = renderer->getSwapchainSurfaceFormat();
     VkPresentModeKHR   presentMode   = renderer->getSwapchainPresentMode();
     uint32_t graphicFamilyIndex = renderer->getGraphicQueueIndex();
-    uint32_t presentFamilyIndex = renderer->getPresentQueueIndex();
+    uint32_t presentFamilyIndex = renderer->getPresentQueueIndex(surface);
     
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities);
@@ -83,13 +82,13 @@ void Swapchain::setup(Size<int> size) {
 }
 
 void Swapchain::create() {
-    LOG("createSwapchain");
+    LOG("Swapchain::create");
     VkResult result = vkCreateSwapchainKHR(m_device, &m_swapchainInfo, nullptr, &m_swapchain);
     CHECK_VKRESULT(result, "failed to create swap chain!");
 }
 
 void Swapchain::createRenderPass() {
-    LOG("createRenderPass");
+    LOG("Swapchain::createRenderPass");
     VkDevice device = m_device;
     
     VkAttachmentDescription colorAttachment{};
@@ -153,7 +152,7 @@ void Swapchain::createRenderPass() {
 }
 
 void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
-    LOG("createFrames");
+    LOG("Swapchain::createFrames");
     VkSwapchainKHR swapchain     = m_swapchain;
     VkRenderPass   renderPass    = m_renderPass;
     VkExtent2D     extent        = m_extent;
@@ -180,7 +179,7 @@ void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
 }
 
 void Swapchain::createSyncObjects() {
-    LOG("createSyncObjects");
+    LOG("Swapchain::createSyncObjects");
     VkDevice device     = m_device;
     uint32_t totalFrame = UINT32(m_frames.size());
     

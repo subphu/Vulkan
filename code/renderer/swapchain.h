@@ -26,7 +26,7 @@ public:
     VkSwapchainCreateInfoKHR m_swapchainInfo{};
     VkExtent2D m_extent;
     VkFormat m_surfaceFormat;
-    void setup(Size<int> size);
+    void setup(Size<int> size, VkSurfaceKHR surface);
     
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     void create();

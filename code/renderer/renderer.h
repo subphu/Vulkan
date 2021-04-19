@@ -31,10 +31,6 @@ public:
     VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
     void createDebugMessenger();
     
-    VkSurfaceKHR m_surface = VK_NULL_HANDLE;
-    VkSurfaceKHR getSurface();
-    void setSurface(VkSurfaceKHR pSurface);
-    
     std::vector<const char*> m_deviceExtensions = {};
     void setupDeviceExtensions();
     
@@ -46,11 +42,11 @@ public:
     uint32_t m_graphicQueueIndex = 0;
     uint32_t m_presentQueueIndex = 0;
     uint32_t getGraphicQueueIndex();
-    uint32_t getPresentQueueIndex();
+    uint32_t getPresentQueueIndex(VkSurfaceKHR surface);
 
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     VkPhysicalDevice getPhysicalDevice();
-    void pickPhysicalDevice();
+    void pickPhysicalDevice(VkSurfaceKHR surface);
     
     VkDevice m_device = VK_NULL_HANDLE;
     VkDevice getDevice();

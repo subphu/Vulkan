@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../common.h"
+#include "../window/window.h"
 #include "../renderer/descriptor.h"
 #include "../renderer/swapchain.h"
 #include "../renderer/pipeline_graphic.h"
@@ -48,7 +49,7 @@ public:
     
     void cleanup();
     void reset();
-    void setup(Size<int> size);
+    void setup(Window* pWindow);
     
     void draw();
     
@@ -62,6 +63,7 @@ public:
     
 //private:
     
+    Window*          m_pWindow      = nullptr;
     Descriptor*      m_pDescriptor = nullptr;
     PipelineGraphic* m_pPipeline   = nullptr;
     

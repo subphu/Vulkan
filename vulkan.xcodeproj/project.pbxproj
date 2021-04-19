@@ -21,6 +21,11 @@
 		26592FEC252C578E00150894 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = 266FAC0B25165303004F42AA /* shaders */; };
 		26599FB125E39B990068C919 /* swapchain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26599FAF25E39B990068C919 /* swapchain.cpp */; };
 		265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */; };
+		26633AAF262DCB2A006F8E23 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267C24552558559300A9F07C /* imgui_widgets.cpp */; };
+		26633AB2262DCB2A006F8E23 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267C24582558559300A9F07C /* imgui.cpp */; };
+		26633AB8262DCB2A006F8E23 /* imgui_impl_glfw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267C245E2558559300A9F07C /* imgui_impl_glfw.cpp */; };
+		26633AB9262DCB2A006F8E23 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267C245F2558559300A9F07C /* imgui_demo.cpp */; };
+		26633ABA262DCB2A006F8E23 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267C24602558559300A9F07C /* imgui_draw.cpp */; };
 		266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */; };
 		266A2509261B33C600AAF4C2 /* compute_interference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A2507261B33C600AAF4C2 /* compute_interference.cpp */; };
 		266A250C261B5B6A00AAF4C2 /* descriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A250A261B5B6A00AAF4C2 /* descriptor.cpp */; };
@@ -394,6 +399,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				26633AAF262DCB2A006F8E23 /* imgui_widgets.cpp in Sources */,
+				26633AB2262DCB2A006F8E23 /* imgui.cpp in Sources */,
+				26633AB8262DCB2A006F8E23 /* imgui_impl_glfw.cpp in Sources */,
+				26633AB9262DCB2A006F8E23 /* imgui_demo.cpp in Sources */,
+				26633ABA262DCB2A006F8E23 /* imgui_draw.cpp in Sources */,
 				266C0BFE25D0085400BAF0C7 /* helper.cpp in Sources */,
 				26FF06272601D8BD006FB68C /* shader.cpp in Sources */,
 				266C0BFC25CFFDBE00BAF0C7 /* app.cpp in Sources */,

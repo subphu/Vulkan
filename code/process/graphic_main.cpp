@@ -20,11 +20,14 @@ void GraphicMain::cleanup() {
     m_pSwapchain->cleanup();
     m_pPipeline->cleanup();
     m_pDescriptor->cleanup();
+    
+    Renderer* renderer = System::instance().m_renderer;
+    vkDestroySurfaceKHR(renderer->m_instance, m_pWindow->getSurface(), nullptr);
 }
 
-void GraphicMain::setup(Size<int> size) {
+void GraphicMain::setup(Window* pWindow) {
     LOG("GraphicMain::setup");
-    m_size = size;
+    m_pWindow = pWindow;
     fillInput();
     createTexture();
     createModel();
@@ -43,7 +46,7 @@ void GraphicMain::reset() {
 }
 
 void GraphicMain::createDrawCommand() {
-    Commander*   pCommander = System::instance().getCommander();
+    Commander* pCommander = System::instance().getCommander();
     
     Swapchain* pSwapchain = m_pSwapchain;
     uint       totalFrame = pSwapchain->m_totalFrame;
@@ -135,8 +138,10 @@ void GraphicMain::draw() {
     VkResult result =  vkAcquireNextImageKHR(device, pSwapchain->m_swapchain,
                                              UINT64_MAX, imageSemaphore,
                                              VK_NULL_HANDLE, &imageIndex);
-    CHECK_VKRESULT(result, "failed to acquire swap chain image!");
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) return reset();
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        CHECK_VKRESULT(result, "failed to acquire swap chain image!");
+        return reset();
+    }
     
     Frame*          frame           = pSwapchain->m_frames[imageIndex];
     VkCommandBuffer commandBuffer   = frame->m_commandBuffer;
@@ -180,8 +185,10 @@ void GraphicMain::draw() {
     presentInfo.pImageIndices      = &imageIndex;
 
     result = vkQueuePresentKHR(pRenderer->m_presentQueue, &presentInfo);
-    CHECK_VKRESULT(result, "failed to present swap chain image!");
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) reset();
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR){
+        LOG("failed to present swap chain image!");
+        reset();
+    }
     
     m_currentFrame = (m_currentFrame + 1) % pSwapchain->m_totalFrame;
 }
@@ -222,8 +229,9 @@ void GraphicMain::createBuffers() {
 }
 
 void GraphicMain::createSwapchain() {
+    m_size = m_pWindow->getFrameSize();
     m_pSwapchain = new Swapchain();
-    m_pSwapchain->setup(m_size);
+    m_pSwapchain->setup(m_size, m_pWindow->getSurface());
     m_pSwapchain->create();
     m_pSwapchain->createRenderPass();
     m_pSwapchain->createFrames(sizeof(CameraMatrix));
