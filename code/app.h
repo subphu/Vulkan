@@ -23,14 +23,10 @@ class App {
 public:
     const uint32_t WIDTH   = 1200;
     const uint32_t HEIGHT  = 800;
-    const int DOUBLEBUFFER = 2;
+    const uint32_t TEXSIZE = 1024;
     
     const char*   SHADER_COMPILER_PATH = "shaders/compile.sh";
-    const std::string VERT_SHADER_PATH = "shaders/vert.spv";
-    const std::string FRAG_SHADER_PATH = "shaders/frag.spv";
-    const std::string COMP_SHADER_PATH = "shaders/comp.spv";
     const std::string MODEL_PATH   = "models/viking_room/viking_room.obj";
-    const std::string TEXTURE_PATH = "textures/rustediron/rustediron_albedo.png";
     
     void run();
 

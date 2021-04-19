@@ -21,15 +21,24 @@ struct CameraMatrix {
 };
 
 struct Misc {
+    glm::vec3 camera;
     uint buffSize;
 };
 
 class GraphicMain {
     
 public:
-    const std::string TEXTURE_PATH = "textures/rustediron/rustediron_albedo.png";
     const std::string VERT_SHADER_PATH = "shaders/SPV/main.vert.spv";
     const std::string FRAG_SHADER_PATH = "shaders/SPV/main.frag.spv";
+    
+    const std::string TEX_ALBEDO_PATH   = "textures/rustediron/rustediron_albedo.png";
+    const std::string TEX_AO_PATH       = "textures/rustediron/rustediron_ao.png";
+    const std::string TEX_METALLIC_PATH = "textures/rustediron/rustediron_metallic.png";
+    const std::string TEX_NORMAL_PATH   = "textures/rustediron/rustediron_normal.png";
+    const std::string TEX_ROUGNESS_PATH = "textures/rustediron/rustediron_roughness.png";
+    const std::vector<std::string> TEXURES_PATH = {
+        TEX_ALBEDO_PATH, TEX_AO_PATH, TEX_METALLIC_PATH,
+        TEX_NORMAL_PATH, TEX_ROUGNESS_PATH };
     
     const VkClearValue CLEARCOLOR = {0.8f, 0.8f, 0.8f, 1.0f};
     const VkClearValue CLEARDS    = {1.0f, 0.0};
@@ -57,7 +66,8 @@ public:
     PipelineGraphic* m_pPipeline   = nullptr;
     
     Mesh* m_pMesh;
-    Image* m_pTexture;
+    Image* m_pTexAlbedo;
+    std::vector<Image*> m_pTextures;
     
     Size<int> m_size;
     size_t m_currentFrame = 0;

@@ -12,10 +12,12 @@ GraphicMain::GraphicMain() {
 
 void GraphicMain::cleanup() {
     LOG("GraphicMain::cleanup");
+    
+    for (Image* texture : m_pTextures) texture->cleanup();
+    
     m_pMiscBuffer->cleanup();
     m_pInterBuffer->cleanup();
     m_pMesh->cleanup();
-    m_pTexture->cleanup();
     m_pPipeline->cleanup();
     m_pDescriptor->cleanup();
     m_pSwapchain->cleanup();
@@ -58,9 +60,9 @@ void GraphicMain::createDrawCommand() {
 
 void GraphicMain::drawCommand(Frame* pFrame) {
     PipelineGraphic* pPipeline      = m_pPipeline;
-    VkViewport*      pViewport      = pPipeline->m_viewport;
     VkPipeline       pipeline       = pPipeline->m_pipeline;
     VkPipelineLayout pipelineLayout = pPipeline->m_pipelineLayout;
+    VkExtent2D       extent         = m_pSwapchain->m_extent;
     
     Mesh* pMesh = m_pMesh;
     VkDeviceSize offsets[]   = {0};
@@ -69,9 +71,10 @@ void GraphicMain::drawCommand(Frame* pFrame) {
     uint32_t indexSize       = UINT32(pMesh->m_indices.size());
     
     Descriptor* pDescriptor = m_pDescriptor;
-    VkDescriptorSet descriptorSet = pDescriptor->getDescriptorSets(L1)[0];
-    VkDescriptorSet frameDescSet  = pFrame->m_descriptorSet;
-    VkCommandBuffer commandBuffer = pFrame->m_commandBuffer;
+    VkDescriptorSet bufferDescSet  = pDescriptor->getDescriptorSets(L1)[0];
+    VkDescriptorSet textureDescSet = pDescriptor->getDescriptorSets(L2)[0];
+    VkDescriptorSet frameDescSet   = pFrame->m_descriptorSet;
+    VkCommandBuffer commandBuffer  = pFrame->m_commandBuffer;
     
     std::vector<VkClearValue> clearValues = { CLEARCOLOR, CLEARDS };
     
@@ -86,14 +89,31 @@ void GraphicMain::drawCommand(Frame* pFrame) {
     renderBeginInfo.pClearValues    = clearValues.data();
     vkCmdBeginRenderPass(commandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    VkViewport* viewport = new VkViewport();
+    viewport->x = 0.0f;
+    viewport->y = 0.0f;
+    viewport->width  = (float) m_size.width;
+    viewport->height = (float) m_size.height;
+    viewport->minDepth = 0.0f;
+    viewport->maxDepth = 1.0f;
     
-    vkCmdSetViewport(commandBuffer, 0, 1, pViewport);
-
+    VkRect2D* scissor = new VkRect2D();
+    scissor->offset = {0, 0};
+    scissor->extent = extent;
+    
+    vkCmdSetViewport(commandBuffer, 0, 1, viewport);
+    vkCmdSetScissor (commandBuffer, 0, 1, scissor);
+    
+    vkCmdSetLineWidth(commandBuffer, 1.0f);
+    
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                             pipelineLayout, S0, 1, &frameDescSet, 0, nullptr);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            pipelineLayout, S1, 1, &descriptorSet, 0, nullptr);
+                            pipelineLayout, S1, 1, &bufferDescSet, 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipelineLayout, S2, 1, &textureDescSet, 0, nullptr);
         
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer  (commandBuffer, indexBuffers, 0, VK_INDEX_TYPE_UINT32);
@@ -124,10 +144,13 @@ void GraphicMain::draw() {
     VkFence         commandFence    = frame->m_commandFence;
     VkSemaphore     renderSemaphore = frame->m_renderSemaphore;
     CameraMatrix    cameraMatrix    = m_cameraMatrix;
+    Misc            misc            = m_misc;
+    Buffer*         miscBuffer      = m_pMiscBuffer;
     
     vkWaitForFences(device, 1, &commandFence, VK_TRUE, UINT64_MAX);
     
     frame->updateUniformBuffer(&cameraMatrix, sizeof(CameraMatrix));
+    miscBuffer->fillBufferFull(&misc);
 
     VkSemaphore waitSemaphore[]   = { imageSemaphore };
     VkSemaphore signalSemaphors[] = { renderSemaphore };
@@ -169,20 +192,25 @@ void GraphicMain::draw() {
 // Private ==================================================
 
 void GraphicMain::fillInput() {
-    m_misc = { 512 };
+    m_misc = {};
     m_cameraMatrix = {};
 }
 
 void GraphicMain::createTexture() {
-    m_pTexture = new Image();
-    m_pTexture->setupForTexture(TEXTURE_PATH);
-    m_pTexture->createForTexture();
-    m_pTexture->copyRawDataToImage();
+    std::vector<Image*> pTextures;
+    for (std::string path : TEXURES_PATH) {
+        Image* pTexture = new Image();
+        pTexture->setupForTexture(path);
+        pTexture->createForTexture();
+        pTexture->copyRawDataToImage();
+        pTextures.push_back(pTexture);
+    }
+    { m_pTextures = pTextures; }
 }
 
 void GraphicMain::createModel() {
     m_pMesh = new Mesh();
-    m_pMesh->createPlane();
+    m_pMesh->createCube();
     m_pMesh->cmdCreateVertexBuffer();
     m_pMesh->cmdCreateIndexBuffer();
 }
@@ -204,6 +232,9 @@ void GraphicMain::createSwapchain() {
 }
 
 void GraphicMain::createDescriptor() {
+    Buffer* pMiscBuffer = m_pMiscBuffer;
+    Buffer* pInterBuffer = m_pInterBuffer;
+    std::vector<Image*> pTextures = m_pTextures;
     Swapchain *swapchain = m_pSwapchain;
     std::vector<Frame*> frames = swapchain->m_frames;
     
@@ -214,25 +245,23 @@ void GraphicMain::createDescriptor() {
     pDescriptor->createLayout(L0);
     
     pDescriptor->setupLayout(L1);
-    pDescriptor->addLayoutBindings(L1, B0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    pDescriptor->addLayoutBindings(L1, B0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                                    VK_SHADER_STAGE_FRAGMENT_BIT);
-    pDescriptor->addLayoutBindings(L1, B1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                                   VK_SHADER_STAGE_FRAGMENT_BIT);
-    pDescriptor->addLayoutBindings(L1, B2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    pDescriptor->addLayoutBindings(L1, B1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                    VK_SHADER_STAGE_FRAGMENT_BIT);
     pDescriptor->createLayout(L1);
+    
+    pDescriptor->setupLayout(L2);
+    for (uint i = 0; i < pTextures.size(); i++) {
+        pDescriptor->addLayoutBindings(L2, i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                       VK_SHADER_STAGE_FRAGMENT_BIT);
+    }
+    pDescriptor->createLayout(L2);
     
     pDescriptor->createPool();
     pDescriptor->allocate(L0);
     pDescriptor->allocate(L1);
-    
-    VkDescriptorImageInfo  imageInfo   = m_pTexture->getImageInfo();
-    VkDescriptorBufferInfo outputBInfo = m_pInterBuffer->getBufferInfo();
-    VkDescriptorBufferInfo miscBInfo   = m_pMiscBuffer->getBufferInfo();
-    pDescriptor->setupPointerImage (L1, S0, B0, &imageInfo);
-    pDescriptor->setupPointerBuffer(L1, S0, B1, &outputBInfo);
-    pDescriptor->setupPointerBuffer(L1, S0, B2, &miscBInfo);
-    pDescriptor->update(L1);
+    pDescriptor->allocate(L2);
     
     for (uint i = 0; i < frames.size(); i++) {
         VkDescriptorBufferInfo bufferInfo = frames[i]->getBufferInfo();
@@ -240,6 +269,19 @@ void GraphicMain::createDescriptor() {
         pDescriptor->update(L0);
         frames[i]->setDescriptorSet(pDescriptor->getDescriptorSets(L0)[i]);
     }
+    
+    VkDescriptorBufferInfo outputBInfo = pInterBuffer->getBufferInfo();
+    VkDescriptorBufferInfo miscBInfo   = pMiscBuffer->getBufferInfo();
+    pDescriptor->setupPointerBuffer(L1, S0, B0, &outputBInfo);
+    pDescriptor->setupPointerBuffer(L1, S0, B1, &miscBInfo);
+    pDescriptor->update(L1);
+    
+    VkDescriptorImageInfo imageInfos[pTextures.size()];
+    for (uint i = 0; i < pTextures.size(); i++) {
+        imageInfos[i] = pTextures[i]->getImageInfo();
+        pDescriptor->setupPointerImage(L2, S0, i, &imageInfos[i]);
+    }
+    pDescriptor->update(L2);
     
     { m_pDescriptor = pDescriptor; }
 }
@@ -261,7 +303,8 @@ void GraphicMain::createPipeline() {
     pPipeline->setupViewportInfo(pSwapchain->m_extent);
     pPipeline->createPipelineLayout({
         pDdescriptor->getDescriptorLayout(L0),
-        pDdescriptor->getDescriptorLayout(L1)
+        pDdescriptor->getDescriptorLayout(L1),
+        pDdescriptor->getDescriptorLayout(L2)
     });
     
     pPipeline->setupInputAssemblyInfo();

@@ -19,16 +19,26 @@ void PipelineGraphic::cleanup() {
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }
 
+void PipelineGraphic::setupPushConstant(uint size) {
+    VkPushConstantRange constantRange{};
+    constantRange.size = size;
+    constantRange.offset = 0;
+    constantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    { m_constantRange = constantRange; }
+}
+
 void PipelineGraphic::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts) {
-    LOG("createPipelineLayout");
+    LOG("PipelineGraphic::createPipelineLayout");
     VkDevice device = m_device;
+    VkPushConstantRange constantRange = m_constantRange;
+    uint constantCount = constantRange.size == 0 ? 0 : 1;
     
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = UINT32(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts    = descriptorSetLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges    = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = constantCount;
+    pipelineLayoutInfo.pPushConstantRanges    = &constantRange;
     
     VkPipelineLayout pipelineLayout;
     VkResult result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
@@ -38,30 +48,12 @@ void PipelineGraphic::createPipelineLayout(std::vector<VkDescriptorSetLayout> de
 }
 
 void PipelineGraphic::setupViewportInfo(VkExtent2D swapchainExtent) {
-    VkViewport* viewport = new VkViewport();
-    viewport->x = 0.0f;
-    viewport->y = 0.0f;
-    viewport->width  = (float) swapchainExtent.width;
-    viewport->height = (float) swapchainExtent.height;
-    viewport->minDepth = 0.0f;
-    viewport->maxDepth = 1.0f;
-    
-    VkRect2D* scissor = new VkRect2D();
-    scissor->offset = {0, 0};
-    scissor->extent = swapchainExtent;
-    
     VkPipelineViewportStateCreateInfo* viewportInfo = new VkPipelineViewportStateCreateInfo();
     viewportInfo->sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportInfo->viewportCount = 1;
-    viewportInfo->pViewports    = viewport;
     viewportInfo->scissorCount  = 1;
-    viewportInfo->pScissors     = scissor;
     
-    {
-        m_scissor  = scissor;
-        m_viewport = viewport;
-        m_viewportInfo = viewportInfo;
-    }
+    { m_viewportInfo = viewportInfo; }
 }
 
 void PipelineGraphic::setupInputAssemblyInfo() {
@@ -134,11 +126,12 @@ void PipelineGraphic::setupColorBlendInfo() {
 void PipelineGraphic::setupDynamicInfo() {
     std::vector<VkDynamicState>* dynamicStates = new std::vector<VkDynamicState>();
     dynamicStates->push_back(VK_DYNAMIC_STATE_VIEWPORT);
+    dynamicStates->push_back(VK_DYNAMIC_STATE_SCISSOR);
     dynamicStates->push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
 
     VkPipelineDynamicStateCreateInfo* dynamicInfo = new VkPipelineDynamicStateCreateInfo();
     dynamicInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicInfo->dynamicStateCount = 2;
+    dynamicInfo->dynamicStateCount = 3;
     dynamicInfo->pDynamicStates    = dynamicStates->data();
     
     {
@@ -170,7 +163,7 @@ void PipelineGraphic::setVertexInputInfo(VkPipelineVertexInputStateCreateInfo* v
 }
 
 void PipelineGraphic::create(VkRenderPass renderPass) {
-    LOG("createGraphicsPipelines");
+    LOG("PipelineGraphic::create");
     VkDevice         device         = m_device;
     VkPipelineLayout pipelineLayout = m_pipelineLayout;
     VkPipelineViewportStateCreateInfo*      viewportInfo      = m_viewportInfo;

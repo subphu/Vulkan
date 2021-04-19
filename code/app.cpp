@@ -8,8 +8,6 @@
 #include "system.h"
 
 void App::run() {
-    system(SHADER_COMPILER_PATH);
-    
     initWindow();
     initVulkan();
     m_pCamera = new Camera();
@@ -51,13 +49,14 @@ void App::initVulkan() {
     m_pGraphic = new GraphicMain();
     m_pGraphic->m_pInterBuffer = m_pCompute->getOutputBuffer();
     m_pGraphic->setup(m_pWindow->getSize());
+    m_pGraphic->m_misc.buffSize = TEXSIZE;
     
 }
 
 void App::createPipelineCompute() {
     LOG("createPipelineCompute");
     m_pCompute = new ComputeInterference();
-    m_pCompute->setup();
+    m_pCompute->setup(TEXSIZE);
     m_pCompute->dispatch();
 }
 
@@ -102,10 +101,12 @@ void App::update(long iteration) {
     
     m_cameraMatrix.model = glm::mat4(1.0f);
     m_cameraMatrix.model = glm::translate(m_cameraMatrix.model, glm::vec3(0.f, -0.5f, 0.f));
+    m_cameraMatrix.model = glm::scale(m_cameraMatrix.model, glm::vec3(3.0));
     m_cameraMatrix.view = m_pCamera->getViewMatrix();
     m_cameraMatrix.proj = m_pCamera->getProjection(m_pSwapchain->m_extent.width / (float) m_pSwapchain->m_extent.height);
     
     m_pGraphic->m_cameraMatrix = m_cameraMatrix;
+    m_pGraphic->m_misc.camera  = m_pCamera->getPosition();
 }
 
 void App::draw(long iteration) {

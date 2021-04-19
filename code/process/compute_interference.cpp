@@ -16,9 +16,9 @@ void ComputeInterference::cleanup() {
     m_pDescriptor->cleanup();
 }
 
-void ComputeInterference::setup() {
+void ComputeInterference::setup(uint size) {
     LOG("ComputeInterference::setup");
-    m_size = { 512, 512 };
+    m_size = { size, size };
     fillInput();
     createBuffers();
     createDescriptor();
@@ -39,8 +39,7 @@ void ComputeInterference::dispatch() {
     VkCommandBuffer commandBuffer = commander->createCommandBuffer();
     commander->beginSingleTimeCommands(commandBuffer);
     {
-    vkCmdPushConstants(commandBuffer, pipelineLayout,
-                       VK_SHADER_STAGE_COMPUTE_BIT,
+    vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
                        0, sizeof(inputConstant), &inputConstant);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -105,12 +104,12 @@ void ComputeInterference::createPipeline() {
     Descriptor* pDescriptor = m_pDescriptor;
     Shader*     computeShader = new Shader(COMP_SHADER_PATH, VK_SHADER_STAGE_COMPUTE_BIT);
     
-    PipelineCompute* pPipelineCompute = new PipelineCompute();
-    pPipelineCompute->setShader(computeShader);
-    pPipelineCompute->setupPushConstant(sizeof(InterferenceDetails));
-    pPipelineCompute->createPipelineLayout({ pDescriptor->getDescriptorLayout(L0) });
-    pPipelineCompute->create();
+    PipelineCompute* pPipeline = new PipelineCompute();
+    pPipeline->setShader(computeShader);
+    pPipeline->setupPushConstant(sizeof(InterferenceDetails));
+    pPipeline->createPipelineLayout({ pDescriptor->getDescriptorLayout(L0) });
+    pPipeline->create();
     
-    { m_pPipeline = pPipelineCompute; }
+    { m_pPipeline = pPipeline; }
 }
 

@@ -38,7 +38,7 @@ void PipelineCompute::createPipelineLayout(std::vector<VkDescriptorSetLayout> de
     pipelineLayoutInfo.setLayoutCount = UINT32(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts    = descriptorSetLayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &constantRange;
+    pipelineLayoutInfo.pPushConstantRanges    = &constantRange;
 
     VkPipelineLayout pipelineLayout;
     VkResult result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
