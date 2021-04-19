@@ -323,6 +323,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2612196A24ED695900B2A2E3 /* Build configuration list for PBXNativeTarget "vulkan" */;
 			buildPhases = (
+				26B6B4C6262C0E73004B0B04 /* ShellScript */,
 				2612195F24ED695900B2A2E3 /* Sources */,
 				2612196024ED695900B2A2E3 /* Frameworks */,
 				2612196124ED695900B2A2E3 /* CopyFiles */,
@@ -368,17 +369,37 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		26B6B4C6262C0E73004B0B04 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n$SRCROOT/shaders/compile.sh\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		2612195F24ED695900B2A2E3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				266C0BFE25D0085400BAF0C7 /* helper.cpp in Sources */,
 				26FF06272601D8BD006FB68C /* shader.cpp in Sources */,
 				266C0BFC25CFFDBE00BAF0C7 /* app.cpp in Sources */,
 				266A250C261B5B6A00AAF4C2 /* descriptor.cpp in Sources */,
 				267D8904255EC6C7002E918C /* camera.cpp in Sources */,
 				26BE145424ED699200F534B9 /* main.cpp in Sources */,
-				266C0BFE25D0085400BAF0C7 /* helper.cpp in Sources */,
 				26536DE5256BA08D0079DC42 /* mesh.cpp in Sources */,
 				26C30897258F2AB900D1BA7E /* renderer.cpp in Sources */,
 				26599FB125E39B990068C919 /* swapchain.cpp in Sources */,

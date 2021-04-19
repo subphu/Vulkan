@@ -27,9 +27,9 @@ struct Misc {
 class GraphicMain {
     
 public:
-    const std::string VERT_SHADER_PATH = "shaders/vert.spv";
-    const std::string FRAG_SHADER_PATH = "shaders/frag.spv";
     const std::string TEXTURE_PATH = "textures/rustediron/rustediron_albedo.png";
+    const std::string VERT_SHADER_PATH = "shaders/SPV/main.vert.spv";
+    const std::string FRAG_SHADER_PATH = "shaders/SPV/main.frag.spv";
     
     const VkClearValue CLEARCOLOR = {0.8f, 0.8f, 0.8f, 1.0f};
     const VkClearValue CLEARDS    = {1.0f, 0.0};

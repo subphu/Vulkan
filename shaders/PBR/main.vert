@@ -5,7 +5,7 @@ layout(set = 0, binding = 0) uniform MVP {
     mat4 model;
     mat4 view;
     mat4 proj;
-} mvp;
+};
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
@@ -16,10 +16,10 @@ layout(location = 1) out vec2 fragTexCoord;
 layout(location = 2) out vec3 fragPosition;
 
 void main() {
-    vec4 worldPos = mvp.model * vec4(inPosition, 1.0);
+    vec4 worldPos = model * vec4(inPosition, 1.0);
     fragPosition  = vec3(worldPos);
     fragTexCoord  = inTexCoord;
-    fragNormal    = mat3(transpose(inverse(mvp.model))) * inNormal;
+    fragNormal    = mat3(transpose(inverse(model))) * inNormal;
 
-    gl_Position =  mvp.proj * mvp.view * worldPos;
+    gl_Position =  proj * view * worldPos;
 }
