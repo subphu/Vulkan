@@ -111,7 +111,7 @@ void Descriptor::setupPointerImage(uint id, uint setIdx, uint binding, VkDescrip
 }
 
 void Descriptor::update(uint id) {
-    LOG("updateDescriptorSets");
+    LOG("Descriptor::update");
     std::vector<VkWriteDescriptorSet> writeSets = m_dataMap[id].writeSets;
     vkUpdateDescriptorSets(m_device, UINT32(writeSets.size()), writeSets.data(), 0, nullptr);
 }

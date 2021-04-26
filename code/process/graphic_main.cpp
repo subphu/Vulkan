@@ -14,6 +14,7 @@ void GraphicMain::cleanup() {
     LOG("GraphicMain::cleanup");
     
     for (Image* texture : m_pTextures) texture->cleanup();
+    for (Shader* shader : m_pShaders ) shader->cleanup();
     
     m_pMiscBuffer->cleanup();
     m_pMesh->cleanup();
@@ -139,7 +140,7 @@ void GraphicMain::draw() {
                                              UINT64_MAX, imageSemaphore,
                                              VK_NULL_HANDLE, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        CHECK_VKRESULT(result, "failed to acquire swap chain image!");
+        LOG("failed to acquire swap chain image!");
         return reset();
     }
     
@@ -193,7 +194,8 @@ void GraphicMain::draw() {
     m_currentFrame = (m_currentFrame + 1) % pSwapchain->m_totalFrame;
 }
 
-
+void GraphicMain::setInterBuffer(Buffer* buffer) { m_pInterBuffer = buffer; }
+void GraphicMain::setShaders(std::vector<Shader*> shaders) { m_pShaders = shaders; }
 
 // Private ==================================================
 
@@ -298,10 +300,7 @@ void GraphicMain::createPipeline() {
     Descriptor* pDdescriptor = m_pDescriptor;
     Mesh*       pMesh        = m_pMesh;
     
-    std::vector<Shader*> shaders = {
-        new Shader(VERT_SHADER_PATH, VK_SHADER_STAGE_VERTEX_BIT),
-        new Shader(FRAG_SHADER_PATH, VK_SHADER_STAGE_FRAGMENT_BIT)
-    };
+    std::vector<Shader*> shaders = m_pShaders;
     
     PipelineGraphic* pPipeline = new PipelineGraphic();
     pPipeline->setShaders(shaders);

@@ -14,7 +14,6 @@ PipelineGraphic::PipelineGraphic() {
 
 void PipelineGraphic::cleanup() {
     LOG("PipelineGraphics::cleanup");
-    for (int i = 0; i < m_shaders.size(); i++) m_shaders[i]->cleanup();
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }

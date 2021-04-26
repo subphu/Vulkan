@@ -53,6 +53,8 @@ void ComputeInterference::dispatch() {
     commander->endSingleTimeCommands(commandBuffer);
 }
 
+void ComputeInterference::setShaderPath(std::string path) { m_shaderPath = path; }
+
 Buffer* ComputeInterference::getOutputBuffer() { return m_pBufferOutput; }
 
 
@@ -103,7 +105,7 @@ void ComputeInterference::createDescriptor() {
 void ComputeInterference::createPipeline() {
     LOG("ComputeInterference::createPipeline");
     Descriptor* pDescriptor = m_pDescriptor;
-    Shader*     computeShader = new Shader(COMP_SHADER_PATH, VK_SHADER_STAGE_COMPUTE_BIT);
+    Shader*     computeShader = new Shader(m_shaderPath, VK_SHADER_STAGE_COMPUTE_BIT);
     
     PipelineCompute* pPipeline = new PipelineCompute();
     pPipeline->setShader(computeShader);

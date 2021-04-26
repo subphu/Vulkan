@@ -21,7 +21,7 @@ struct InterferenceDetails {
 class ComputeInterference {
     
 public:
-    const std::string COMP_SHADER_PATH = "shaders/SPV/interference.comp.spv";
+    const std::string COMP_SHADER_PATH = "shaders/SPV/interference2d.comp.spv";
     
     ComputeInterference();
     ~ComputeInterference();
@@ -29,6 +29,8 @@ public:
     void cleanup();
     void setup(uint size);
     void dispatch();
+    
+    void setShaderPath(std::string path);
     
     Buffer* getOutputBuffer();
     
@@ -41,6 +43,8 @@ private:
     
     Size<uint> m_size;
     InterferenceDetails m_interferenceDetails;
+    
+    std::string m_shaderPath;
     
     void fillInput();
     void createBuffers();

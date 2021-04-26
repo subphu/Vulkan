@@ -29,8 +29,8 @@ struct Misc {
 class GraphicMain {
     
 public:
-    const std::string VERT_SHADER_PATH = "shaders/SPV/main.vert.spv";
-    const std::string FRAG_SHADER_PATH = "shaders/SPV/main.frag.spv";
+    const std::string VERT_SHADER_PATH = "shaders/SPV/main1d.vert.spv";
+    const std::string FRAG_SHADER_PATH = "shaders/SPV/main1d.frag.spv";
     
     const std::string TEX_ALBEDO_PATH   = "textures/rustediron/rustediron_albedo.png";
     const std::string TEX_AO_PATH       = "textures/rustediron/rustediron_ao.png";
@@ -56,6 +56,9 @@ public:
     void createDrawCommand();
     void drawCommand(Frame* pFrame);
     
+    void setInterBuffer(Buffer* buffer);
+    void setShaders(std::vector<Shader*> shaders);
+    
     Swapchain*   m_pSwapchain  = nullptr;
     CameraMatrix m_cameraMatrix{};
     
@@ -75,6 +78,8 @@ public:
     size_t m_currentFrame = 0;
     Buffer* m_pMiscBuffer;
     Buffer* m_pInterBuffer;
+    
+    std::vector<Shader*> m_pShaders;
     
     void createTexture();
     void createModel();

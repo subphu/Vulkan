@@ -22,33 +22,13 @@ void App::run() {
     VkInstance instance = System::instance().m_renderer->m_instance;
     vkDestroySurfaceKHR(instance, m_pGUIWindow->getSurface(), nullptr);
     
-    m_pCompute->cleanup();
-    m_pGraphic1->cleanup();
-    m_pGraphic2->cleanup();
+    m_pCInterference2D->cleanup();
+    m_pGMain1->cleanup();
+    m_pGMain2->cleanup();
     m_pRenderer->cleanUp();
     m_pRenderWindow2->close();
     m_pRenderWindow1->close();
     m_pGUIWindow->close();
-}
-
-
-void App::initWindow() {
-    LOG("App::initWindow");
-    m_pGUIWindow = new Window();
-    m_pGUIWindow->create(WIDTH/2, HEIGHT, "Interference 2D");
-    m_pGUIWindow->setWindowPosition(WINDOW_X, WINDOW_Y);
-    m_pGUIWindow->enableInput();
-    m_pGUIWindow->settingUI();
-
-    m_pRenderWindow1 = new Window();
-    m_pRenderWindow1->create(WIDTH, HEIGHT, "Interference 2D");
-    m_pRenderWindow1->setWindowPosition(WINDOW_X + WIDTH/2, WINDOW_Y);
-    m_pRenderWindow1->enableInput();
-    
-    m_pRenderWindow2 = new Window();
-    m_pRenderWindow2->create(WIDTH, HEIGHT, "Interference 1D");
-    m_pRenderWindow2->setWindowPosition(WINDOW_X + WIDTH + WIDTH/2, WINDOW_Y);
-    m_pRenderWindow2->enableInput();
 }
 
 
@@ -77,24 +57,59 @@ void App::initVulkan() {
     createPipelineGraphic();
 }
 
+
+void App::initWindow() {
+    LOG("App::initWindow");
+    m_pGUIWindow = new Window();
+    m_pGUIWindow->create(WIDTH/2, HEIGHT, "Parameters");
+    m_pGUIWindow->setWindowPosition(WINDOW_X, WINDOW_Y);
+    m_pGUIWindow->enableInput();
+    m_pGUIWindow->settingUI();
+
+    m_pRenderWindow1 = new Window();
+    m_pRenderWindow1->create(WIDTH, HEIGHT, "Interference 1D");
+    m_pRenderWindow1->setWindowPosition(WINDOW_X + WIDTH/2, WINDOW_Y);
+    m_pRenderWindow1->enableInput();
+    
+    m_pRenderWindow2 = new Window();
+    m_pRenderWindow2->create(WIDTH, HEIGHT, "Interference 2D");
+    m_pRenderWindow2->setWindowPosition(WINDOW_X + WIDTH + WIDTH/2, WINDOW_Y);
+    m_pRenderWindow2->enableInput();
+}
+
 void App::createPipelineCompute() {
     LOG("App::createPipelineCompute");
-    m_pCompute = new ComputeInterference();
-    m_pCompute->setup(TEXSIZE);
-    m_pCompute->dispatch();
+    m_pCInterference1D = new ComputeInterference();
+    m_pCInterference1D->setShaderPath("shaders/SPV/interference1d.comp.spv");
+    m_pCInterference1D->setup(TEXSIZE);
+    m_pCInterference1D->dispatch();
+    
+    m_pCInterference2D = new ComputeInterference();
+    m_pCInterference2D->setShaderPath("shaders/SPV/interference2d.comp.spv");
+    m_pCInterference2D->setup(TEXSIZE);
+    m_pCInterference2D->dispatch();
 }
 
 void App::createPipelineGraphic() {
     LOG("App::createPipelineGraphic");
-    m_pGraphic1 = new GraphicMain();
-    m_pGraphic1->m_pInterBuffer = m_pCompute->getOutputBuffer();
-    m_pGraphic1->setup(m_pRenderWindow1);
-    m_pGraphic1->m_misc.buffSize = TEXSIZE;
     
-    m_pGraphic2 = new GraphicMain();
-    m_pGraphic2->m_pInterBuffer = m_pCompute->getOutputBuffer();
-    m_pGraphic2->setup(m_pRenderWindow2);
-    m_pGraphic2->m_misc.buffSize = TEXSIZE;
+    m_pGMain1 = new GraphicMain();
+    m_pGMain1->setShaders({
+        new Shader("shaders/SPV/main1d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader("shaders/SPV/main1d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+    });
+    m_pGMain1->setInterBuffer(m_pCInterference1D->getOutputBuffer());
+    m_pGMain1->setup(m_pRenderWindow1);
+    m_pGMain1->m_misc.buffSize = TEXSIZE;
+    
+    m_pGMain2 = new GraphicMain();
+    m_pGMain2->setShaders({
+        new Shader("shaders/SPV/main2d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader("shaders/SPV/main2d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+    });
+    m_pGMain2->setInterBuffer(m_pCInterference2D->getOutputBuffer());
+    m_pGMain2->setup(m_pRenderWindow2);
+    m_pGMain2->m_misc.buffSize = TEXSIZE;
 }
 
 void App::mainLoop() {
@@ -129,18 +144,18 @@ void App::update(long iteration) {
     m_cameraMatrix.view = m_pCamera->getViewMatrix();
     m_cameraMatrix.proj = m_pCamera->getProjection((float) WIDTH / HEIGHT);
     
-    m_pGraphic1->m_cameraMatrix = m_cameraMatrix;
-    m_pGraphic1->m_misc.camera  = m_pCamera->getPosition();
-    m_pGraphic2->m_cameraMatrix = m_cameraMatrix;
-    m_pGraphic2->m_misc.camera  = m_pCamera->getPosition();
+    m_pGMain1->m_cameraMatrix = m_cameraMatrix;
+    m_pGMain1->m_misc.camera  = m_pCamera->getPosition();
+    m_pGMain2->m_cameraMatrix = m_cameraMatrix;
+    m_pGMain2->m_misc.camera  = m_pCamera->getPosition();
 }
 
 void App::draw(long iteration) {
-    m_pGraphic1->draw();
-    m_pGraphic2->draw();
+    m_pGMain1->draw();
+    m_pGMain2->draw();
     
-    if ( m_pRenderWindow1->checkResized()) m_pGraphic1->reset();
-    if ( m_pRenderWindow2->checkResized()) m_pGraphic2->reset();
+    if ( m_pRenderWindow1->checkResized()) m_pGMain1->reset();
+    if ( m_pRenderWindow2->checkResized()) m_pGMain2->reset();
 }
 
 glm::vec3 App::getMovement(Window* pWindow) {

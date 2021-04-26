@@ -37,9 +37,10 @@ private:
     
     Renderer* m_pRenderer;
     
-    ComputeInterference* m_pCompute;
-    GraphicMain* m_pGraphic1;
-    GraphicMain* m_pGraphic2;
+    ComputeInterference* m_pCInterference1D;
+    ComputeInterference* m_pCInterference2D;
+    GraphicMain* m_pGMain1;
+    GraphicMain* m_pGMain2;
     
     size_t m_currentFrame = 0;
     CameraMatrix m_cameraMatrix{};
