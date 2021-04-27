@@ -19,6 +19,15 @@
 					<key>rule</key>
 					<string>workspace-location</string>
 				</dict>
+				<dict>
+					<key>path-components</key>
+					<array>
+						<string>vulkan.xcodeproj</string>
+						<string>models</string>
+					</array>
+					<key>rule</key>
+					<string>workspace-location</string>
+				</dict>
 			</array>
 			<key>rule</key>
 			<string>none</string>
