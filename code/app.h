@@ -23,9 +23,10 @@ class App {
 public:
     
     const char* SHADER_COMPILER_PATH = "shaders/compile.sh";
-    const std::string MODEL_PATH = "models/viking_room/viking_room.obj";
     
     void run();
+    float duration1 = 0;
+    float duration2 = 0;
 
 private:
     Window* m_pGUIWindow;
@@ -62,8 +63,10 @@ private:
     void createPipelineCompute();
     
     void mainLoop();
+    void mainLoopFps();
     void update(long iteration);
     void draw(long iteration);
     
-    glm::vec3 getMovement(Window* pWindow);
+    void moveView(Window* pWindow);
+    void moveViewLock(Window* pWindow);
 };

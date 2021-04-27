@@ -52,6 +52,7 @@ public:
     glm::vec2 getCursorPosition();
     glm::vec2 getCursorOffset();
     glm::vec2 getScrollOffset();
+    glm::vec2 getCursorMovement();
     
     void setWindowPosition(uint x, uint y);
     void setMouseButton(int button, int action);
@@ -64,7 +65,6 @@ private:
     Size<int> m_size = { 900, 900 };
     bool m_resized = false;
     float m_ratio = 1.f;
-    float m_frameTime = 1.f/60.f;
     const char* m_name = "Vulkan";
     
     glm::vec2 m_cursorPos;

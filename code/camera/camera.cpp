@@ -38,7 +38,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 direction) {
 
 void Camera::reset() {
     axis = 1;
-    lockFocus = true;
+    lockFocus = false;
     useConstraint = true;
     maxZoom = MAX_ZOOM;
     maxPitch = MAX_PITCH;

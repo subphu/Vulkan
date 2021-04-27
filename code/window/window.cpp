@@ -153,6 +153,23 @@ glm::vec2 Window::getCursorPosition() { return m_cursorPos; }
 glm::vec2 Window::getCursorOffset() { return m_cursorOffset; }
 glm::vec2 Window::getScrollOffset() { return m_scrollOffset; }
 
+glm::vec2 Window::getCursorMovement() {
+    if (!getMouseBtnState(mouse_btn_left)) {
+        resetInput();
+        return glm::vec2(0, 0);
+    }
+    glm::vec2 cursorPos = m_cursorPos;
+    if (cursorPos.x == 0 && cursorPos.y == 0) {
+        resetInput();
+        return glm::vec2(0, 0);
+    }
+    glm::vec2 lastPos = cursorPos;
+    resetInput();
+    cursorPos = m_cursorPos;
+    glm::vec2 move = glm::vec2(cursorPos.x - lastPos.x, cursorPos.y - lastPos.y);
+    return glm::clamp(move, glm::vec2(-99, -99), glm::vec2(99, 99));
+}
+
 void Window::settingUI() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
