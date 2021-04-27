@@ -22,26 +22,27 @@ struct CameraMatrix {
 };
 
 struct Misc {
-    glm::vec3 camera;
+    glm::vec3 viewPosition;
     uint buffSize;
 };
 
 class GraphicMain {
     
 public:
-    const std::string VERT_SHADER_PATH = "shaders/SPV/main1d.vert.spv";
-    const std::string FRAG_SHADER_PATH = "shaders/SPV/main1d.frag.spv";
-    
-    const std::string TEX_ALBEDO_PATH   = "textures/rustediron/rustediron_albedo.png";
-    const std::string TEX_AO_PATH       = "textures/rustediron/rustediron_ao.png";
-    const std::string TEX_METALLIC_PATH = "textures/rustediron/rustediron_metallic.png";
-    const std::string TEX_NORMAL_PATH   = "textures/rustediron/rustediron_normal.png";
-    const std::string TEX_ROUGNESS_PATH = "textures/rustediron/rustediron_roughness.png";
+    const std::string MODEL_PATH = "models/bunny/bunny.obj";
+    const uint TEX_IDX = 3; // 3,4,
+    const std::vector<std::string> TEXTURES = {"cliffrockface", "cobblestylized", "greasypan", "layered-rock1", "limestone6",  "roughrockface", "rustediron", "slimy-slippery-rock1", "slipperystonework", "worn-wet-old-cobblestone"};
+    const std::string TEX_PATH = TEXTURES[TEX_IDX] + "/" + TEXTURES[TEX_IDX];
+    const std::string TEX_ALBEDO_PATH   = "textures/" + TEX_PATH + "_albedo.png";
+    const std::string TEX_AO_PATH       = "textures/" + TEX_PATH + "_ao.png";
+    const std::string TEX_METALLIC_PATH = "textures/" + TEX_PATH + "_metallic.png";
+    const std::string TEX_NORMAL_PATH   = "textures/" + TEX_PATH + "_normal.png";
+    const std::string TEX_ROUGNESS_PATH = "textures/" + TEX_PATH + "_roughness.png";
     const std::vector<std::string> TEXURES_PATH = {
         TEX_ALBEDO_PATH, TEX_AO_PATH, TEX_METALLIC_PATH,
         TEX_NORMAL_PATH, TEX_ROUGNESS_PATH };
     
-    const VkClearValue CLEARCOLOR = {0.8f, 0.8f, 0.8f, 1.0f};
+    const VkClearValue CLEARCOLOR = {0.1f, 0.1f, 0.1f, 1.0f};
     const VkClearValue CLEARDS    = {1.0f, 0.0};
    
     GraphicMain();

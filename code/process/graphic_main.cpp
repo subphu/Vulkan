@@ -218,7 +218,9 @@ void GraphicMain::createTexture() {
 
 void GraphicMain::createModel() {
     m_pMesh = new Mesh();
+//    m_pMesh->createSphere(50, 50);
     m_pMesh->createCube();
+//    m_pMesh->loadModel(MODEL_PATH.c_str());
     m_pMesh->cmdCreateVertexBuffer();
     m_pMesh->cmdCreateIndexBuffer();
 }
