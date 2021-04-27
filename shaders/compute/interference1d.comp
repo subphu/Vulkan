@@ -12,28 +12,12 @@ layout(push_constant) uniform pushConstants {
     float n;
 };
 
-const int bands = 5;
-const float n1 = 1.0; // refraction index air
-const float n2 = 1.5; // refraction index oil
-
-float interference(float wavelength, float delta, float opd) {
-
-    float tot = 0.0;
-    for (int i=-bands ; i<=bands ; i++) {
-        float idx = float(i)/float(bands);
-        float lambda = wavelength + delta * idx;
-        float interference = calcInterference(lambda, opd);
-        float sensitivity = cos(idx * PI)+1.0;
-        tot += sensitivity * interference / float(bands*2+1);
-    }
-    return tot;
-}
-
 vec3 measure(float opd) {
+    return fullInterferences(opd);
     return vec3(
-        interference(650e-9, 60e-9, opd),
-        interference(532e-9, 40e-9, opd),
-        interference(441e-9, 30e-9, opd)
+        interferences(650e-9, 60e-9, opd),
+        interferences(532e-9, 40e-9, opd),
+        interferences(441e-9, 30e-9, opd)
     );
 }
 

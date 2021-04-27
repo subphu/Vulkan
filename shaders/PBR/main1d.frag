@@ -1,13 +1,15 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+#include "../functions/constants.glsl"
+
 // Buffers ==================================================
 layout(set = 1, binding = 0) buffer outputBuffer {
     vec4 imageData[];
 };
 
 layout(set = 1, binding = 1) uniform Misc {
-    vec3 camera;
+    vec3 viewPosition;
     uint buffSize;
 };
 
@@ -27,33 +29,20 @@ layout(location = 2) in vec3 fragPosition;
 layout(location = 0) out vec4 outColor;
 
 // Functions ==================================================
-void main() {
-    const float PI = 3.141592653589793;
-    
-//    uint x = uint(fragTexCoord.x * buffSize);
-//    uint y = uint(fragTexCoord.y * buffSize);
-//    uint idx = y * buffSize + x;
-//    outColor = imageData[idx];
-    
-    vec3 lightDir = normalize( camera * 5.0 - fragPosition );
-    float angle   = dot(lightDir, normalize( fragNormal ));
-    float scale   = acos(angle) / PI * 2.0;
+#include "../functions/interference.glsl"
+#include "../functions/render_function.glsl"
+#include "../functions/pbr.glsl"
 
-    uint x   = uint(buffSize * scale);
-    uint y   = uint(buffSize * 0.5);
-    uint idx = uint(y * buffSize + x);
+void main() {
+    
+    vec3  N = fragNormal;
+    float theta1 = getTheta1(N);
+    float theta2 = refractionAngle(n1, theta1, n2);
+    float opd    = getOPD(d, theta2, n2);
+
+    uint idx = getIndex1D(opd);
+    
+    vec4 pbrColor = vec4(pbr(), 1.0);
 
     outColor = imageData[idx];
-    
-//    vec3 lightDir = normalize( u_camPos * 5.0 - v_FragPos );
-//    float angle   = dot(lightDir, normalize( v_Normal ));
-//    float scale   = acos(angle) / PI * 2.0;
-//
-//    int x = int(scale * u_texSize.x);
-//    int y = int(u_thickness * u_texSize.y);
-//    int index = int(y * u_texSize.x + x);
-//
-//    fragColor = imageData[index];
-    
-//    outColor = texture(albedoMap, fragTexCoord);
 }

@@ -10,3 +10,5 @@ cd /Users/subrotoph/Developer/Vulkan/Vulkan/shaders
 /usr/local/bin/glslc PBR/main1d.frag -o SPV/main1d.frag.spv
 /usr/local/bin/glslc PBR/main2d.vert -o SPV/main2d.vert.spv
 /usr/local/bin/glslc PBR/main2d.frag -o SPV/main2d.frag.spv
+/usr/local/bin/glslc PBR/manual.vert -o SPV/manual.vert.spv
+/usr/local/bin/glslc PBR/manual.frag -o SPV/manual.frag.spv
