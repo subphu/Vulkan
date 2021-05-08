@@ -1,6 +1,7 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
 
+#include "../functions/constants.glsl"
 #include "../functions/interference.glsl"
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
@@ -13,10 +14,9 @@ layout(push_constant) uniform pushConstants {
 };
 
 vec3 measure(float d, float theta1) {
-    const float n1 = 1.0; // refraction index air
-    const float n2 = 1.5; // refraction index oil
     float theta2 = refractionAngle(n1, theta1, n2);
     float opd    = getOPD(d, theta2, n2);
+    return fullInterferences(opd);
     return vec3(
         interferences(650e-9, 60e-9, opd),
         interferences(532e-9, 40e-9, opd),
@@ -34,7 +34,7 @@ void main() {
     float yf = float(yi) / float(height);
     vec2  uv = vec2(xf, yf);
 
-    float thickness  = 4e-6 * uv.y;
+    float thickness  = maxD * uv.y;
     float angle      = PI/2 * uv.x;
 
     vec3 col = measure(thickness, angle);

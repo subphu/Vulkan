@@ -43,6 +43,22 @@ float interferences(float wavelength, float delta, float opd) {
 
 #include "../functions/spectrum.glsl"
 
+
+vec3 deltaInterferences(float opd) {
+    vec3 outColor = vec3(0.0);
+    float tot = 0.0;
+    float waveRange = 750. - 380.;
+    float sensitivity = 4.0 / waveRange;
+    for (float i=380. ; i<=750. ; i++) {
+        float lambda = i * 1e-9;
+        float interference = calcInterference(lambda, opd);
+        float waveScale = (i - 380.) / waveRange;
+        outColor += sensitivity * interference * getColor(waveScale) * vec3(7./7.,7./5.8,7./4.6);
+//        tot += sensitivity * interference;
+    }
+    return outColor;//vec3(tot);
+}
+
 vec3 fullInterferences(float opd) {
     vec3 outColor = vec3(0.0);
     float tot = 0.0;

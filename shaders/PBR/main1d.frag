@@ -35,7 +35,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     
-    vec3  N = fragNormal;
+    vec3  N = getNormal();
     float theta1 = getTheta1(N);
     float theta2 = refractionAngle(n1, theta1, n2);
     float opd    = getOPD(d, theta2, n2);
@@ -45,4 +45,9 @@ void main() {
     vec4 pbrColor = vec4(pbr(), 1.0);
 
     outColor = imageData[idx];
+    
+//    float metallic  = texture(metallicMap, fragTexCoord).r;
+//    if (metallic > 0.5) {
+//        outColor = pbrColor * imageData[idx] * 2.4;
+//    }
 }

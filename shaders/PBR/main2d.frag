@@ -2,7 +2,6 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 #include "../functions/constants.glsl"
-#include "../functions/interference.glsl"
 
 // Buffers ==================================================
 layout(set = 1, binding = 0) buffer outputBuffer {
@@ -30,7 +29,9 @@ layout(location = 2) in vec3 fragPosition;
 layout(location = 0) out vec4 outColor;
 
 // Functions ==================================================
+#include "../functions/interference.glsl"
 #include "../functions/render_function.glsl"
+#include "../functions/pbr.glsl"
 
 void main() {
     
@@ -39,6 +40,8 @@ void main() {
     float angleRad = theta1 / PI * 2.0;
 
     uint idx = getIndex2D(angleRad);
+    
+    vec4 pbrColor = vec4(pbr(), 1.0);
 
     outColor = imageData[idx];
 }
