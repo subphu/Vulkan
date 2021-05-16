@@ -3,10 +3,6 @@
 
 #include "window.h"
 
-#include "../libraries/imgui/imgui.h"
-#include "../libraries/imgui/imgui_impl_glfw.h"
-#include "../libraries/imgui/imgui_impl_opengl3.h"
-
 #define WINDOW_FAILED_MESSAGE "Failed to create GLFW window"
 #define EXIT_MESSAGE          "Window closed"
 
@@ -152,6 +148,7 @@ bool Window::getMouseBtnState(int idx) { return m_mouseBtn[idx]; }
 glm::vec2 Window::getCursorPosition() { return m_cursorPos; }
 glm::vec2 Window::getCursorOffset() { return m_cursorOffset; }
 glm::vec2 Window::getScrollOffset() { return m_scrollOffset; }
+GLFWwindow* Window::getGLFWwindow() { return m_window; }
 
 glm::vec2 Window::getCursorMovement() {
     if (!getMouseBtnState(mouse_btn_left)) {
@@ -168,20 +165,4 @@ glm::vec2 Window::getCursorMovement() {
     cursorPos = m_cursorPos;
     glm::vec2 move = glm::vec2(cursorPos.x - lastPos.x, cursorPos.y - lastPos.y);
     return glm::clamp(move, glm::vec2(-99, -99), glm::vec2(99, 99));
-}
-
-void Window::settingUI() {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-//
-//    Setup Dear ImGui style
-//    ImGui::StyleColorsDark();
-    ImGui::StyleColorsClassic();
-
-//    Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-//    ImGui_ImplOpenGL3_Init(GLSL_VERSION);
 }

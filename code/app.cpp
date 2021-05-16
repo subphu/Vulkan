@@ -65,7 +65,6 @@ void App::initWindow() {
     m_pGUIWindow->create(WIDTH/2, HEIGHT, "Parameters");
     m_pGUIWindow->setWindowPosition(WINDOW_X, WINDOW_Y);
     m_pGUIWindow->enableInput();
-    m_pGUIWindow->settingUI();
 
     Window* renderWindow1 = new Window();
     renderWindow1->create(WIDTH, HEIGHT, "Interference 1D");

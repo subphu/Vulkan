@@ -53,12 +53,11 @@ public:
     glm::vec2 getCursorOffset();
     glm::vec2 getScrollOffset();
     glm::vec2 getCursorMovement();
+    GLFWwindow* getGLFWwindow();
     
     void setWindowPosition(uint x, uint y);
     void setMouseButton(int button, int action);
     void setScroll(double xoffset, double yoffset);
-    
-    void settingUI();
     
 private:
     GLFWwindow* m_window;
