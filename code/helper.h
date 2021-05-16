@@ -16,6 +16,6 @@ VkPresentModeKHR    ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& a
 VkExtent2D          ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, Size<int> size);
 
 std::vector<char> ReadBinaryFile (const std::string filename);
-unsigned char*    ReadImage(const std::string filename, int* width, int* height, int* channels);
+unsigned char*    LoadImage(const std::string filename, int* width, int* height, int* channels);
 
 uint32_t MaxMipLevel(int width, int height);

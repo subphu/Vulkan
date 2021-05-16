@@ -75,8 +75,11 @@ std::vector<char> ReadBinaryFile(const std::string filename) {
     return buffer;
 }
 
-unsigned char* ReadImage(const std::string filename, int* width, int* height, int* channels) {
-    return stbi_load(filename.c_str(), width, height, channels, STBI_rgb_alpha);
+unsigned char* LoadImage(const std::string filename, int* width, int* height, int* channels) {
+    unsigned char *data = stbi_load(filename.c_str(), width, height, channels, STBI_rgb_alpha);
+    if (data) return data;
+    PRINTLN2("failed to load image ", filename);
+    return nullptr;
 }
 
 uint32_t MaxMipLevel(int width, int height) {

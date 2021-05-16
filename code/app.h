@@ -30,18 +30,13 @@ public:
 
 private:
     Window* m_pGUIWindow;
-    Window* m_pComputeWindow;
-    Window* m_pRenderWindow1;
-    Window* m_pRenderWindow2;
-    
     Camera* m_pCamera;
-    
     Renderer* m_pRenderer;
     
-    ComputeInterference* m_pCInterference1D;
-    ComputeInterference* m_pCInterference2D;
-    GraphicMain* m_pGMain1;
-    GraphicMain* m_pGMain2;
+    std::vector<Window*>              m_pRenderWindows;
+    std::vector<GraphicMain*>         m_pGraphics;
+    std::vector<ComputeInterference*> m_pComputes;
+    
     
     size_t m_currentFrame = 0;
     CameraMatrix m_cameraMatrix{};
