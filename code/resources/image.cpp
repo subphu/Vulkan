@@ -16,7 +16,7 @@ Image::Image() : m_imageInfo(GetDefaultImageCreateInfo()),
 }
 
 void Image::cleanup() {
-    LOG("image cleanup");
+    LOG("Image::cleanup");
     cleanupImageView();
     if (m_image == VK_NULL_HANDLE) return;
     vkDestroyImage(m_device, m_image, nullptr);
@@ -25,12 +25,13 @@ void Image::cleanup() {
 }
 
 void Image::cleanupImageView() {
-    LOG("image cleanup imageview");
+    LOG("Image::cleanupImageView");
     vkDestroyImageView(m_device, m_imageView  , nullptr);
     vkFreeMemory      (m_device, m_imageMemory, nullptr);
 }
 
 void Image::setupForDepth(Size<uint32_t> size, uint32_t mipLevels) {
+    LOG("Image::setupForDepth");
     VkPhysicalDevice      physicalDevice = m_physicalDevice;
     VkImageCreateInfo     imageInfo      = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
@@ -54,8 +55,9 @@ void Image::setupForDepth(Size<uint32_t> size, uint32_t mipLevels) {
 }
 
 void Image::setupForTexture(const std::string filepath) {
+    LOG("Image::setupForTexture");
     int width, height, channels;
-    unsigned char*  data      = ReadImage(filepath, &width, &height, &channels);
+    unsigned char*  data      = LoadImage(filepath, &width, &height, &channels);
     uint32_t        mipLevels = MaxMipLevel(width, height);
     
     VkImageCreateInfo     imageInfo      = m_imageInfo;
@@ -80,7 +82,45 @@ void Image::setupForTexture(const std::string filepath) {
     }
 }
 
+void Image::setupForCubemap(const std::string *filepaths) {
+    LOG("Image::setupForCubemap");
+    int width = 0, height = 0, channels = 0;
+    std::vector<unsigned char*> data;
+    
+    for (int i = 0; i < 6; ++i) {
+        data.push_back(LoadImage(filepaths[i], &width, &height, &channels));
+    }
+    uint32_t mipLevels = MaxMipLevel(width, height);
+    
+    VkImageCreateInfo     imageInfo      = m_imageInfo;
+    VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
+    
+    imageInfo.arrayLayers   = 6;
+    imageInfo.extent.width  = width;
+    imageInfo.extent.height = height;
+    imageInfo.mipLevels     = mipLevels;
+    imageInfo.format        = VK_FORMAT_R8G8B8A8_SRGB;
+    imageInfo.flags         = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    imageInfo.usage         = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                              VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                              VK_IMAGE_USAGE_SAMPLED_BIT;
+    
+    imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+    imageViewInfo.format   = VK_FORMAT_R8G8B8A8_SRGB;
+    imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageViewInfo.subresourceRange.levelCount = mipLevels;
+    imageViewInfo.subresourceRange.layerCount = 6;
+    
+    {
+        m_rawCubemap    = data;
+        m_imageInfo     = imageInfo;
+        m_imageViewInfo = imageViewInfo;
+    }
+    
+}
+
 void Image::setupForSwapchain(VkImage image, VkFormat imageFormat) {
+    LOG("Image::setupForSwapchain");
     m_image = image;
     VkImageCreateInfo     imageInfo      = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
@@ -104,6 +144,13 @@ void Image::create() {
 }
 
 void Image::createForTexture() {
+    createImage();
+    allocateImageMemory();
+    createImageView();
+    createSampler();
+}
+
+void Image::createForCubemap() {
     createImage();
     allocateImageMemory();
     createImageView();
@@ -174,9 +221,9 @@ void Image::createSampler() {
     samplerInfo.compareEnable    = VK_FALSE;
     samplerInfo.compareOp        = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode       = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipLodBias       = 0.0f;
     samplerInfo.minLod           = 0.0f;
     samplerInfo.maxLod           = mipLevels;
-    samplerInfo.mipLodBias       = 0.0f;
     
     VkSampler sampler;
     VkResult  result = vkCreateSampler(device, &samplerInfo, nullptr, &sampler);
@@ -185,28 +232,50 @@ void Image::createSampler() {
     { m_sampler = sampler; }
 }
 
-void Image::copyRawDataToImage() {
-    LOG("copyRawDataToImage");
-    unsigned char*    rawData        = m_rawData;
+void Image::copyCubemapToImage() {
+    LOG("Image::copyCubemapToImage");
+    std::vector<unsigned char*> rawData = m_rawCubemap;
     
-    VkDeviceSize      imageSize = getImageSize();
+    VkDeviceSize imageSize = getImageSize();
+    uint32_t     layerSize = imageSize / 6.0;
     
     Buffer *tempBuffer = new Buffer();
     tempBuffer->setup(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     tempBuffer->create();
-    tempBuffer->fillBufferFull(rawData);
+    for (int i = 0; i < 6; ++i) {
+        tempBuffer->fillBuffer(rawData[i], layerSize, layerSize * i);
+    }
     
-    cmdTransitionToTransferDst();
+    cmdTransitionToTransferDest();
     cmdCopyBufferToImage(tempBuffer->m_buffer);
     cmdGenerateMipmaps();
     
     tempBuffer->cleanup();
 }
 
-void Image::cmdTransitionToTransferDst() {
-    LOG("transitionToTransferDst");
-    VkImage           image     = m_image;
-    VkImageCreateInfo imageInfo = m_imageInfo;
+void Image::copyRawDataToImage() {
+    LOG("Image::copyRawDataToImage");
+    unsigned char* rawData = m_rawData;
+    
+    VkDeviceSize imageSize = getImageSize();
+    
+    Buffer *tempBuffer = new Buffer();
+    tempBuffer->setup(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    tempBuffer->create();
+    tempBuffer->fillBufferFull(rawData);
+    
+    cmdTransitionToTransferDest();
+    cmdCopyBufferToImage(tempBuffer->m_buffer);
+    cmdGenerateMipmaps();
+    
+    tempBuffer->cleanup();
+}
+
+void Image::cmdTransitionToTransferDest() {
+    LOG("Image::cmdTransitionToTransferDest");
+    VkImage               image         = m_image;
+    VkImageCreateInfo     imageInfo     = m_imageInfo;
+    VkImageViewCreateInfo imageViewInfo = m_imageViewInfo;
     
     System&           system    = System::instance();
     Commander*        commander = system.getCommander();
@@ -220,6 +289,7 @@ void Image::cmdTransitionToTransferDst() {
     barrier.newLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     barrier.subresourceRange.levelCount = imageInfo.mipLevels;
+    barrier.subresourceRange.layerCount = imageViewInfo.subresourceRange.layerCount;
     
     vkCmdPipelineBarrier(commandBuffer,
                          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
@@ -233,9 +303,10 @@ void Image::cmdTransitionToTransferDst() {
 }
 
 void Image::cmdCopyBufferToImage(VkBuffer buffer) {
-    LOG("copyBufferToImage");
-    VkImage           image     = m_image;
-    VkImageCreateInfo imageInfo = m_imageInfo;
+    LOG("Image::cmdCopyBufferToImage");
+    VkImage               image         = m_image;
+    VkImageCreateInfo     imageInfo     = m_imageInfo;
+    VkImageViewCreateInfo imageViewInfo = m_imageViewInfo;
     
     System&           system    = System::instance();
     Commander*        commander = system.getCommander();
@@ -251,7 +322,7 @@ void Image::cmdCopyBufferToImage(VkBuffer buffer) {
     region.imageSubresource.aspectMask      = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.mipLevel        = 0;
     region.imageSubresource.baseArrayLayer  = 0;
-    region.imageSubresource.layerCount      = 1;
+    region.imageSubresource.layerCount      = imageViewInfo.subresourceRange.layerCount;
     
     region.imageOffset = {0, 0, 0};
     region.imageExtent = {imageInfo.extent.width, imageInfo.extent.height, 1};
@@ -266,13 +337,16 @@ void Image::cmdCopyBufferToImage(VkBuffer buffer) {
 }
 
 void Image::cmdGenerateMipmaps() {
-    LOG("generateMipmaps");
-    VkPhysicalDevice  physicalDevice = m_physicalDevice;
-    VkImage           image          = m_image;
-    VkImageCreateInfo imageInfo      = m_imageInfo;
+    LOG("Image::cmdGenerateMipmaps");
+    VkPhysicalDevice      physicalDevice = m_physicalDevice;
+    VkImage               image          = m_image;
+    VkImageCreateInfo     imageInfo      = m_imageInfo;
+    VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
     
     System&           system    = System::instance();
     Commander*        commander = system.getCommander();
+    
+    uint32_t layerCount = imageViewInfo.subresourceRange.layerCount;
     
     // Check if image format supports linear blitting
     VkFormatProperties formatProperties;
@@ -290,10 +364,10 @@ void Image::cmdGenerateMipmaps() {
     barrier.image = image;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.levelCount     = 1;
     barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.layerCount     = layerCount;
 
     int32_t mipWidth  = imageInfo.extent.width;
     int32_t mipHeight = imageInfo.extent.height;
@@ -320,14 +394,14 @@ void Image::cmdGenerateMipmaps() {
         blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
         blit.srcSubresource.mipLevel       = i - 1;
         blit.srcSubresource.baseArrayLayer = 0;
-        blit.srcSubresource.layerCount     = 1;
+        blit.srcSubresource.layerCount     = layerCount;
         
         blit.dstOffsets[0] = { 0, 0, 0 };
         blit.dstOffsets[1] = { halfMipWidth, halfMipHeight, 1 };
         blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
         blit.dstSubresource.mipLevel       = i;
         blit.dstSubresource.baseArrayLayer = 0;
-        blit.dstSubresource.layerCount     = 1;
+        blit.dstSubresource.layerCount     = layerCount;
         
         vkCmdBlitImage(commandBuffer,
                        image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -371,7 +445,7 @@ VkImageView     Image::getImageView  () { return m_imageView;   }
 VkDeviceMemory  Image::getImageMemory() { return m_imageMemory; }
 VkSampler       Image::getSampler    () { return m_sampler;     }
 unsigned int    Image::getChannelSize() { return GetChannelSize(m_imageInfo.format); }
-VkDeviceSize    Image::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize(); }
+VkDeviceSize    Image::getImageSize  () { return m_imageInfo.extent.width * m_imageInfo.extent.height * getChannelSize() * m_imageInfo.arrayLayers; }
 VkDescriptorImageInfo Image::getImageInfo() {
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

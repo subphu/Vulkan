@@ -19,9 +19,11 @@ public:
     void setupForDepth     (Size<uint32_t> size, uint32_t mipLevels);
     void setupForSwapchain (VkImage image, VkFormat imageFormat);
     void setupForTexture   (const std::string filepath);
+    void setupForCubemap   (const std::string *filepaths);
     
     void create             ();
     void createForTexture   ();
+    void createForCubemap   ();
     void createForSwapchain ();
     
     void createImage        ();
@@ -30,8 +32,9 @@ public:
     void createSampler      ();
     
     void copyRawDataToImage ();
+    void copyCubemapToImage ();
     
-    void cmdTransitionToTransferDst();
+    void cmdTransitionToTransferDest();
     void cmdCopyBufferToImage      (VkBuffer buffer);
     void cmdGenerateMipmaps        ();
     
@@ -48,6 +51,7 @@ private:
     
     unsigned char* m_desc;
     unsigned char* m_rawData;
+    std::vector<unsigned char*> m_rawCubemap;
     
     VkDevice         m_device         = VK_NULL_HANDLE;
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
