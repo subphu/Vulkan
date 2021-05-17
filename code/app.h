@@ -4,7 +4,7 @@
 #pragma once
 
 #include "window/window.h"
-#include "window/gui.h"
+#include "window/settings.h"
 #include "camera/camera.h"
 #include "mesh/mesh.h"
 
@@ -32,7 +32,7 @@ public:
 
 private:
     Window* m_pWindow;
-    GUI* m_pGui;
+    Settings* m_pSettings;
     Camera* m_pCamera;
     Renderer* m_pRenderer;
     GraphicMain* m_pGraphicMain;
@@ -62,7 +62,6 @@ private:
     void createPipelineCompute();
     
     void mainLoop();
-    void mainLoopFps();
     void update(long iteration);
     void draw(long iteration);
     

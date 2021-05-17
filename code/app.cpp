@@ -7,8 +7,8 @@
 #include "helper.h"
 #include "system.h"
 
-#define WIDTH   900
-#define HEIGHT  600
+#define WIDTH   1200
+#define HEIGHT  800
 #define TEXSIZE 256
 #define WINDOW_X 50
 #define WINDOW_Y 100
@@ -17,13 +17,12 @@ void App::run() {
     initWindow();
     initVulkan();
     m_pCamera = new Camera();
-//    mainLoop();
-    mainLoopFps();
+    mainLoop();
     cleanup();
 }
 
 void App::cleanup() {
-    m_pGui->cleanup();
+    m_pSettings->cleanup();
     m_pGraphicMain->cleanup();
     m_pComputeInterference->cleanup();
     m_pWindow->cleanup();
@@ -33,14 +32,14 @@ void App::cleanup() {
 void App::initVulkan() {
     LOG("App::initVulkan");
     m_pRenderer = new Renderer();
-    System::instance().m_pRenderer = m_pRenderer;
+    System::Instance().m_pRenderer = m_pRenderer;
     
     m_pRenderer->setupValidation(IS_DEBUG);
     m_pRenderer->createInstance(Window::getRequiredExtensions());
     m_pRenderer->createDebugMessenger();
     m_pRenderer->setupDeviceExtensions();
     
-    m_pWindow->createSurface(m_pRenderer->m_instance);
+    m_pWindow->createSurface(m_pRenderer->getInstance());
     
     m_pRenderer->pickPhysicalDevice(m_pWindow->getSurface());
     m_pRenderer->createLogicalDevice();
@@ -53,10 +52,10 @@ void App::initVulkan() {
 }
 
 void App::createGUI() {
-    m_pGui = new GUI();
-    m_pGui->setWindow(m_pWindow);
-    m_pGui->init(m_pGraphicMain->m_pSwapchain->m_renderPass);
-    System::instance().m_pGui = m_pGui;
+    m_pSettings = new Settings();
+    m_pSettings->setWindow(m_pWindow);
+    m_pSettings->initGUI(m_pGraphicMain->m_pSwapchain->m_renderPass);
+    System::Instance().m_pSettings = m_pSettings;
 }
 
 void App::initWindow() {
@@ -107,8 +106,9 @@ void App::createPipelineGraphic() {
 }
 
 void App::update(long iteration) {
-    m_pWindow->pollEvents();
-    moveView(m_pWindow);
+    Settings* settings = System::Settings();
+    if (settings->LockFocus) moveViewLock(m_pWindow);
+    else                     moveView(m_pWindow);
     
     m_cameraMatrix.model = glm::mat4(1.0f);
     m_cameraMatrix.model = glm::translate(m_cameraMatrix.model, glm::vec3(0.f, -0.5f, 0.f));
@@ -130,6 +130,7 @@ void App::draw(long iteration) {
 }
 
 void App::moveView(Window* pWindow) {
+    m_pCamera->setLockFocus(System::Settings()->LockFocus);
     pWindow->pollEvents();
     glm::vec3 movement = glm::vec3(0.f, 0.f, 0.f);
     movement.x += pWindow->getKeyState(key_d) - pWindow->getKeyState(key_a);
@@ -142,6 +143,7 @@ void App::moveView(Window* pWindow) {
 }
 
 void App::moveViewLock(Window* pWindow) {
+    m_pCamera->setLockFocus(System::Settings()->LockFocus);
     pWindow->pollEvents();
     glm::vec3 movement = glm::vec3(0.f, 0.f, 0.f);
     movement.x += pWindow->getKeyState(key_d) - pWindow->getKeyState(key_a);
@@ -159,36 +161,6 @@ void App::moveViewLock(Window* pWindow) {
     m_pCamera->move(movement);    
 }
 
-void App::mainLoopFps() {
-    LOG("App::mainLoopFps");
-    auto lastTime = Time::now();
-    float pastTime = 0;
-    long iteration = 0;
-    while (m_pWindow->isOpen()) {
-        iteration++;
-        
-        m_pGui->draw();
-        
-        update(iteration);
-        draw(iteration);
-        
-        pastTime += TimeDif(Time::now() - lastTime).count();
-        lastTime = Time::now();
-
-        if (pastTime > 1.0) {
-            PRINTLN2("duration1", duration1);
-            PRINTLN2("duration2", duration2);
-            LOG(iteration);
-            duration1 = 0;
-            duration2 = 0;
-            iteration = 0;
-            pastTime = 0;
-        }
-    }
-    vkDeviceWaitIdle(m_pRenderer->m_device);
-    
-}
-
 void App::mainLoop() {
     LOG("App::mainLoop");
     auto lastTime = Time::now();
@@ -197,24 +169,23 @@ void App::mainLoop() {
     
     long iteration = 0;
     while (m_pWindow->isOpen()) {
-        iteration++;
-        update(iteration);
-        lag -= frameDelay;
+        bool lockFps = System::Settings()->LockFPS;
         
+        iteration++;
+        m_pSettings->drawGUI();
+        update(iteration);
+        
+        if (!lockFps) {
+            draw(iteration);
+            continue;
+        }
+        
+        lag -= frameDelay;
         while (lag < frameDelay) {
             draw(iteration);
-        
             lag += TimeDif(Time::now() - lastTime).count();
             lastTime = Time::now();
         }
-        
-        if (iteration % 60 == 0) {
-            PRINTLN2("duration1", duration1);
-            PRINTLN2("duration2", duration2);
-            LOG("");
-            duration1 = 0;
-            duration2 = 0;
-        }
     }
-    vkDeviceWaitIdle(m_pRenderer->m_device);
+    vkDeviceWaitIdle(m_pRenderer->getDevice());
 }

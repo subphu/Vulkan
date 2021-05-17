@@ -192,9 +192,9 @@ VkSurfaceFormatKHR Renderer::getSwapchainSurfaceFormat() {
 VkPresentModeKHR Renderer::getSwapchainPresentMode() {
     const std::vector<VkPresentModeKHR>& availablePresentModes = m_presentModes;
     for (const auto& availablePresentMode : availablePresentModes) {
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+//        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+        if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
             return availablePresentMode;
-        }
     }
     return VK_PRESENT_MODE_FIFO_KHR;
 }
@@ -203,8 +203,10 @@ uint32_t Renderer::getGraphicQueueIndex() { return m_graphicQueueIndex; }
 uint32_t Renderer::getPresentQueueIndex(VkSurfaceKHR surface) {
     return FindPresentQueueIndex(m_physicalDevice, surface); }
 
+VkInstance       Renderer::getInstance()       { return m_instance; }
 VkPhysicalDevice Renderer::getPhysicalDevice() { return m_physicalDevice; }
 VkDevice         Renderer::getDevice()         { return m_device; }
+VkQueue          Renderer::getGraphicQueue()   { return m_graphicQueue; }
 
 
 // Private ==================================================

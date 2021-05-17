@@ -9,9 +9,9 @@
 
 Swapchain::~Swapchain() { }
 Swapchain::Swapchain() {
-    System &system   = System::instance();
-    m_device         = system.getRenderer()->m_device;
-    m_physicalDevice = system.getRenderer()->m_physicalDevice;
+    Renderer* renderer = System::Renderer();
+    m_device           = renderer->getDevice();
+    m_physicalDevice   = renderer->getPhysicalDevice();
 }
 
 void Swapchain::cleanup() {
@@ -33,8 +33,7 @@ void Swapchain::cleanup() {
 void Swapchain::setup(Size<int> size, VkSurfaceKHR surface) {
     VkPhysicalDevice physicalDevice = m_physicalDevice;
     
-    System&   system   = System::instance();
-    Renderer* renderer = system.getRenderer();
+    Renderer* renderer = System::Renderer();
     
     VkSurfaceFormatKHR surfaceFormat = renderer->getSwapchainSurfaceFormat();
     VkPresentModeKHR   presentMode   = renderer->getSwapchainPresentMode();
@@ -153,7 +152,7 @@ void Swapchain::createRenderPass() {
 
 void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
     LOG("Swapchain::createFrames");
-    Commander*     pCommander    = System::instance().getCommander();
+    Commander*     pCommander    = System::Commander();
     VkSwapchainKHR swapchain     = m_swapchain;
     VkRenderPass   renderPass    = m_renderPass;
     VkExtent2D     extent        = m_extent;
@@ -213,8 +212,7 @@ VkRenderPassBeginInfo Swapchain::getRenderBeginInfo() {
 
 
 std::vector<VkImage> Swapchain::GetSwapchainImages(VkSwapchainKHR swapchain) {
-    System &system  = System::instance();
-    VkDevice device = system.getRenderer()->m_device;
+    VkDevice device = System::Renderer()->getDevice();
     
     uint32_t count;
     vkGetSwapchainImagesKHR(device, swapchain, &count, nullptr);

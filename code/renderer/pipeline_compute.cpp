@@ -7,9 +7,9 @@
 
 PipelineCompute::~PipelineCompute() {}
 PipelineCompute::PipelineCompute() {
-    System &system   = System::instance();
-    m_device         = system.getRenderer()->m_device;
-    m_physicalDevice = system.getRenderer()->m_physicalDevice;
+    Renderer* renderer = System::Renderer();
+    m_device           = renderer->getDevice();
+    m_physicalDevice   = renderer->getPhysicalDevice();
 }
 
 void PipelineCompute::cleanup() {

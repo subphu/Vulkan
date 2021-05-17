@@ -7,14 +7,10 @@
 #include "../system.h"
 
 Shader::~Shader() {}
-Shader::Shader() {
-    System &system = System::instance();
-    m_device       = system.getRenderer()->m_device;
-}
+Shader::Shader() { m_device = System::Renderer()->getDevice(); }
 
 Shader::Shader(const std::string filepath, VkShaderStageFlagBits stage, const char* entryPoint) {
-    System &system  = System::instance();
-    m_device = system.getRenderer()->m_device;
+    m_device = System::Renderer()->getDevice();
     
     createModule(filepath);
     createStageInfo(stage, entryPoint);

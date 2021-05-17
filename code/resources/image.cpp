@@ -8,11 +8,10 @@
 #include "buffer.h"
 
 Image::~Image() {}
-Image::Image() : m_imageInfo(GetDefaultImageCreateInfo()),
-                                 m_imageViewInfo(GetDefaultImageViewCreateInfo()) {
-    System &system   = System::instance();
-    m_device         = system.getRenderer()->m_device;
-    m_physicalDevice = system.getRenderer()->m_physicalDevice;
+Image::Image() : m_imageInfo(GetDefaultImageCreateInfo()), m_imageViewInfo(GetDefaultImageViewCreateInfo()) {
+    Renderer* renderer = System::Renderer();
+    m_device           = renderer->getDevice();
+    m_physicalDevice   = renderer->getPhysicalDevice();
 }
 
 void Image::cleanup() {
@@ -277,8 +276,7 @@ void Image::cmdTransitionToTransferDest() {
     VkImageCreateInfo     imageInfo     = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo = m_imageViewInfo;
     
-    System&           system    = System::instance();
-    Commander*        commander = system.getCommander();
+    Commander* commander = System::Commander();
     
     VkCommandBuffer commandBuffer = commander->createCommandBuffer();
     commander->beginSingleTimeCommands(commandBuffer);
@@ -308,8 +306,7 @@ void Image::cmdCopyBufferToImage(VkBuffer buffer) {
     VkImageCreateInfo     imageInfo     = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo = m_imageViewInfo;
     
-    System&           system    = System::instance();
-    Commander*        commander = system.getCommander();
+    Commander* commander = System::Commander();
     
     VkCommandBuffer commandBuffer = commander->createCommandBuffer();
     commander->beginSingleTimeCommands(commandBuffer);
@@ -343,8 +340,7 @@ void Image::cmdGenerateMipmaps() {
     VkImageCreateInfo     imageInfo      = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
     
-    System&           system    = System::instance();
-    Commander*        commander = system.getCommander();
+    Commander* commander = System::Commander();
     
     uint32_t layerCount = imageViewInfo.subresourceRange.layerCount;
     

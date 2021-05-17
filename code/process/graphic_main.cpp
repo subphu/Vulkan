@@ -46,6 +46,7 @@ void GraphicMain::reset() {
 }
 
 void GraphicMain::drawCommand(Frame* pFrame) {
+    Settings*        settings       = System::Settings();
     PipelineGraphic* pPipeline      = m_pPipeline;
     VkPipeline       pipeline       = pPipeline->m_pipeline;
     VkPipelineLayout pipelineLayout = pPipeline->m_pipelineLayout;
@@ -63,7 +64,10 @@ void GraphicMain::drawCommand(Frame* pFrame) {
     VkDescriptorSet frameDescSet   = pFrame->m_descriptorSet;
     VkCommandBuffer commandBuffer  = pFrame->m_commandBuffer;
     
-    std::vector<VkClearValue> clearValues = { CLEARCOLOR, CLEARDS };
+    float* clearColor = settings->ClearColor;
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {clearColor[0], clearColor[1], clearColor[2], clearColor[3]};
+    clearValues[1].depthStencil = {settings->ClearDepth, settings->ClearStencil};
     
     VkCommandBufferBeginInfo commandBeginInfo{};
     commandBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -107,7 +111,7 @@ void GraphicMain::drawCommand(Frame* pFrame) {
 
     vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);
 
-    System::instance().getGUI()->render(commandBuffer);
+    settings->renderGUI(commandBuffer);
 
     vkCmdEndRenderPass(commandBuffer);
     }
@@ -116,7 +120,7 @@ void GraphicMain::drawCommand(Frame* pFrame) {
 }
 
 void GraphicMain::draw() {
-    Renderer*   pRenderer  = System::instance().getRenderer();
+    Renderer*   pRenderer  = System::Renderer();
     VkDevice    device     = pRenderer->getDevice();
     Swapchain*  pSwapchain = m_pSwapchain;
     VkSemaphore imageSemaphore = pSwapchain->m_imageSemaphores[m_currentFrame];

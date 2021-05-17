@@ -28,8 +28,7 @@ void ComputeInterference::setup(uint size) {
 
 void ComputeInterference::dispatch() {
     LOG("ComputeInterference::dispatch");
-    System&    system    = System::instance();
-    Commander* commander = system.getRenderer()->getCommander();
+    Commander* commander = System::Commander();
     
     Size<uint> size = m_size;
     VkPipeline          pipeline       = m_pPipeline->m_pipeline;

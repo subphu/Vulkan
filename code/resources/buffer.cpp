@@ -9,9 +9,9 @@
 Buffer::~Buffer() {}
 Buffer::Buffer() : m_bufferInfo(GetDefaultBufferCreateInfo()) {
     LOG("Buffer::==============================");
-    System &system   = System::instance();
-    m_device         = system.getRenderer()->m_device;
-    m_physicalDevice = system.getRenderer()->m_physicalDevice;
+    Renderer* renderer = System::Renderer();
+    m_device           = renderer->getDevice();
+    m_physicalDevice   = renderer->getPhysicalDevice();
 }
 
 void Buffer::cleanup() {
@@ -72,8 +72,7 @@ void Buffer::allocateBufferMemory() {
 void Buffer::cmdCopyFromBuffer(VkBuffer sourceBuffer, VkDeviceSize size) {
     LOG("Buffer::cmdCopyFromBuffer");
     VkBuffer     buffer     = m_buffer;
-    System&      system     = System::instance();
-    Commander*   commander  = system.getCommander();
+    Commander*   commander  = System::Commander();
     
     VkCommandBuffer commandBuffer = commander->createCommandBuffer();
     commander->beginSingleTimeCommands(commandBuffer);

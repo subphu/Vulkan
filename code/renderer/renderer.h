@@ -26,6 +26,7 @@ public:
     void setupValidation(bool isEnable);
     
     VkInstance m_instance = VK_NULL_HANDLE;
+    VkInstance getInstance();
     void createInstance(std::vector<const char*> extensions);
     
     VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
@@ -54,6 +55,7 @@ public:
     
     VkQueue m_graphicQueue = VK_NULL_HANDLE;
     VkQueue m_presentQueue = VK_NULL_HANDLE;
+    VkQueue getGraphicQueue();
     void createDeviceQueue();
     
     Commander* m_commander = nullptr;

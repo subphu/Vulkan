@@ -1,29 +1,25 @@
 //  Copyright © 2021 Subph. All rights reserved.
 //
 
-#include "gui.h"
-
-#include "../libraries/imgui/imgui.h"
-#include "../libraries/imgui/backends/imgui_impl_glfw.h"
-#include "../libraries/imgui/backends/imgui_impl_vulkan.h"
+#include "settings.h"
 
 #include "../system.h"
 
-GUI::~GUI() { }
-GUI::GUI() { }
+Settings::~Settings() { }
+Settings::Settings() { }
 
-void GUI::cleanup() { m_cleaner.flush(); }
+void Settings::cleanup() { m_cleaner.flush(); }
 
-void GUI::setWindow(Window* window) { m_pWindow = window; }
+void Settings::setWindow(Window* window) { m_pWindow = window; }
 
-void GUI::init(VkRenderPass renderPass) {
-    LOG("GUI::init");
-    System &system  = System::instance();
-    VkInstance       instance       = system.getRenderer()->m_instance;
-    VkDevice         device         = system.getRenderer()->m_device;
-    VkPhysicalDevice physicalDevice = system.getRenderer()->m_physicalDevice;
-    VkQueue          graphicQueue   = system.getRenderer()->m_graphicQueue;
-    Commander*       commander      = system.getCommander();
+void Settings::initGUI(VkRenderPass renderPass) {
+    LOG("Settings::init");
+    Renderer* renderer = System::Renderer();
+    VkInstance       instance       = renderer->getInstance();
+    VkDevice         device         = renderer->getDevice();
+    VkPhysicalDevice physicalDevice = renderer->getPhysicalDevice();
+    VkQueue          graphicQueue   = renderer->getGraphicQueue();
+    Commander*       commander      = System::Commander();
     
     Window* pWindow = m_pWindow;
     
@@ -90,17 +86,41 @@ void GUI::init(VkRenderPass renderPass) {
     });
 }
 
-void GUI::draw() {
+void Settings::drawGUI() {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-    ImGui::ShowDemoWindow();
+    
+    if (ShowDemo) ImGui::ShowDemoWindow(&ShowDemo);
+    drawStatusWindow();
     
     ImGui::Render();
 }
 
-void GUI::render(VkCommandBuffer commandBuffer) {
+void Settings::drawStatusWindow() {
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::Begin("Status");
+    
+    ImGui::Text("%.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
+    
+    ImGui::Checkbox("Lock FPS"  , &LockFPS);
+    ImGui::Checkbox("Lock Focus", &LockFocus);
+    
+    ImGui::ColorEdit3("Clear Color", (float*) &ClearColor);
+
+//    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+//    if (ImGui::Button("Button"))
+//        counter++;
+//    ImGui::SameLine();
+//    ImGui::Text("counter = %d", counter);
+    
+    ImGui::Checkbox("Show ImGUI demo", &ShowDemo);
+    
+    ImGui::End();
+}
+
+void Settings::renderGUI(VkCommandBuffer commandBuffer) {
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 }

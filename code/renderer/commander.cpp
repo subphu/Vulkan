@@ -7,8 +7,8 @@
 
 Commander::~Commander() {}
 Commander::Commander() {
-    System &system   = System::instance();
-    m_device         = system.getRenderer()->m_device;
+    Renderer* renderer = System::Renderer();
+    m_device           = renderer->getDevice();
 }
 
 void Commander::cleanup() {
