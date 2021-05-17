@@ -42,6 +42,15 @@ public:
         TEX_ALBEDO_PATH, TEX_AO_PATH, TEX_METALLIC_PATH,
         TEX_NORMAL_PATH, TEX_ROUGNESS_PATH };
     
+    const std::string CUBEMAP_PATH[6] = {
+        "textures/cubemap/Lake/front.jpg",
+        "textures/cubemap/Lake/back.jpg",
+        "textures/cubemap/Lake/top.jpg",
+        "textures/cubemap/Lake/bottom.jpg",
+        "textures/cubemap/Lake/right.jpg",
+        "textures/cubemap/Lake/left.jpg"
+    };
+    
     const VkClearValue CLEARCOLOR = {0.1f, 0.1f, 0.1f, 1.0f};
     const VkClearValue CLEARDS    = {1.0f, 0.0};
    
@@ -72,6 +81,7 @@ public:
     
     Mesh* m_pMesh;
     Image* m_pTexAlbedo;
+    Image* m_pCubemap;
     std::vector<Image*> m_pTextures;
     
     Size<int> m_size;
@@ -82,6 +92,7 @@ public:
     std::vector<Shader*> m_pShaders;
     
     void createTexture();
+    void createCubemap();
     void createModel();
     
     void fillInput();

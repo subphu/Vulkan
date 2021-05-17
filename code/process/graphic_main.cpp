@@ -15,6 +15,7 @@ void GraphicMain::cleanup() {
     
     for (Image* texture : m_pTextures) texture->cleanup();
     for (Shader* shader : m_pShaders ) shader->cleanup();
+    m_pCubemap->cleanup();
     
     m_pMiscBuffer->cleanup();
     m_pMesh->cleanup();
@@ -28,6 +29,7 @@ void GraphicMain::setup(Window* pWindow) {
     m_pWindow = pWindow;
     fillInput();
     createTexture();
+    createCubemap();
     createModel();
     createBuffers();
     reset();
@@ -200,6 +202,14 @@ void GraphicMain::createTexture() {
         pTextures.push_back(pTexture);
     }
     { m_pTextures = pTextures; }
+}
+
+void GraphicMain::createCubemap() {
+    Image* pCubemap = new Image();
+    pCubemap->setupForCubemap(CUBEMAP_PATH);
+    pCubemap->createForCubemap();
+    pCubemap->copyCubemapToImage();
+    { m_pCubemap = pCubemap; }
 }
 
 void GraphicMain::createModel() {
