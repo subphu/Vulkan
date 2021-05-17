@@ -12,6 +12,8 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
+#include <array>
+#include <stack>
 #include <map>
 #include <math.h>
 
@@ -57,3 +59,20 @@ template<typename T> struct Size { T width, height; };
 
 typedef std::chrono::high_resolution_clock Time;
 typedef std::chrono::duration<float, std::chrono::seconds::period> TimeDif;
+
+
+struct Cleaner {
+    std::stack<std::function<void()>> stack;
+
+    void push(std::function<void()>&& function) {
+        stack.push(function);
+    }
+
+    void flush() {
+        while (!stack.empty()) {
+            std::function<void()> cleaning = stack.top();
+            cleaning();
+            stack.pop();
+        }
+    }
+};

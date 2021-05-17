@@ -5,7 +5,7 @@
 
 #include "common.h"
 
-std::vector<VkImage>                 GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain);
+std::vector<VkImage> GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain);
 
 uint32_t FindMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
