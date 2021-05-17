@@ -4,11 +4,13 @@
 #pragma once
 
 #include "window/window.h"
+#include "window/gui.h"
+#include "camera/camera.h"
+#include "mesh/mesh.h"
+
 #include "renderer/renderer.h"
 #include "renderer/commander.h"
 #include "renderer/swapchain.h"
-#include "camera/camera.h"
-#include "mesh/mesh.h"
 #include "resources/shader.h"
 
 #include "renderer/descriptor.h"
@@ -29,13 +31,12 @@ public:
     float duration2 = 0;
 
 private:
-    Window* m_pGUIWindow;
+    Window* m_pWindow;
+    GUI* m_pGui;
     Camera* m_pCamera;
     Renderer* m_pRenderer;
-    
-    std::vector<Window*>              m_pRenderWindows;
-    std::vector<GraphicMain*>         m_pGraphics;
-    std::vector<ComputeInterference*> m_pComputes;
+    GraphicMain* m_pGraphicMain;
+    ComputeInterference* m_pComputeInterference;
     
     
     size_t m_currentFrame = 0;
@@ -43,12 +44,15 @@ private:
     
     Misc m_misc{};
     
+    void cleanup();
+    
     void initWindow();
     void initVulkan();
     
     void recreateSwapchain();
     void recordCommandBuffer();
     
+    void createGUI();
     void createTexture();
     void createModel();
     void createShaders();

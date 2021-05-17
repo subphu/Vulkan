@@ -54,7 +54,6 @@ public:
     
     void draw();
     
-    void createDrawCommand();
     void drawCommand(Frame* pFrame);
     
     void setInterBuffer(Buffer* buffer);
@@ -89,5 +88,5 @@ public:
     void createBuffers();
     void createSwapchain();
     void createDescriptor();
-    void createPipeline();
+    void createPipelines();
 };

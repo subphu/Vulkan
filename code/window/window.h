@@ -31,7 +31,7 @@ public:
     VkSurfaceKHR getSurface();
     
     void create(GLuint width, GLuint height, const char* name);
-    void close();
+    void cleanup();
     
     
     bool isOpen();

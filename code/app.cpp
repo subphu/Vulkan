@@ -7,7 +7,7 @@
 #include "helper.h"
 #include "system.h"
 
-#define WIDTH   800
+#define WIDTH   900
 #define HEIGHT  600
 #define TEXSIZE 256
 #define WINDOW_X 50
@@ -19,64 +19,52 @@ void App::run() {
     m_pCamera = new Camera();
 //    mainLoop();
     mainLoopFps();
-    
-    VkInstance instance = System::instance().m_renderer->m_instance;
-    vkDestroySurfaceKHR(instance, m_pGUIWindow->getSurface(), nullptr);
-    
-    for (GraphicMain*         graphic : m_pGraphics) graphic->cleanup();
-    for (ComputeInterference* compute : m_pComputes) compute->cleanup();
-    for (Window* window : m_pRenderWindows) window->close();
-    
-    m_pRenderer->cleanUp();
-    m_pGUIWindow->close();
+    cleanup();
 }
 
+void App::cleanup() {
+    m_pGui->cleanup();
+    m_pGraphicMain->cleanup();
+    m_pComputeInterference->cleanup();
+    m_pWindow->cleanup();
+    m_pRenderer->cleanUp();
+}
 
 void App::initVulkan() {
     LOG("App::initVulkan");
-    System &system = System::instance();
     m_pRenderer = new Renderer();
-    system.m_renderer  = m_pRenderer;
+    System::instance().m_pRenderer = m_pRenderer;
     
     m_pRenderer->setupValidation(IS_DEBUG);
     m_pRenderer->createInstance(Window::getRequiredExtensions());
     m_pRenderer->createDebugMessenger();
     m_pRenderer->setupDeviceExtensions();
     
-    m_pGUIWindow->createSurface(m_pRenderer->m_instance);
+    m_pWindow->createSurface(m_pRenderer->m_instance);
     
-    for (Window* window : m_pRenderWindows)
-        window->createSurface(m_pRenderer->m_instance);
-    
-    m_pRenderer->pickPhysicalDevice(m_pGUIWindow->getSurface());
+    m_pRenderer->pickPhysicalDevice(m_pWindow->getSurface());
     m_pRenderer->createLogicalDevice();
     m_pRenderer->createDeviceQueue();
-    
     m_pRenderer->createCommander();
 
     createPipelineCompute();
     createPipelineGraphic();
+    createGUI();
 }
 
+void App::createGUI() {
+    m_pGui = new GUI();
+    m_pGui->setWindow(m_pWindow);
+    m_pGui->init(m_pGraphicMain->m_pSwapchain->m_renderPass);
+    System::instance().m_pGui = m_pGui;
+}
 
 void App::initWindow() {
     LOG("App::initWindow");
-    m_pGUIWindow = new Window();
-    m_pGUIWindow->create(WIDTH/2, HEIGHT, "Parameters");
-    m_pGUIWindow->setWindowPosition(WINDOW_X, WINDOW_Y);
-    m_pGUIWindow->enableInput();
-
-    Window* renderWindow1 = new Window();
-    renderWindow1->create(WIDTH, HEIGHT, "Interference 1D");
-    renderWindow1->setWindowPosition(WINDOW_X + WIDTH/2, WINDOW_Y);
-    renderWindow1->enableInput();
-    m_pRenderWindows.push_back(renderWindow1);
-    
-//    Window* renderWindow2 = new Window();
-//    renderWindow2->create(WIDTH, HEIGHT, "Manual");
-//    renderWindow2->setWindowPosition(WINDOW_X + WIDTH + WIDTH/2, WINDOW_Y);
-//    renderWindow2->enableInput();
-//    m_pRenderWindows.push_back(renderWindow2);
+    m_pWindow = new Window();
+    m_pWindow->create(WIDTH, HEIGHT, "Vulkan");
+    m_pWindow->setWindowPosition(WINDOW_X, WINDOW_Y);
+    m_pWindow->enableInput();
 }
 
 void App::createPipelineCompute() {
@@ -85,13 +73,13 @@ void App::createPipelineCompute() {
     compute1D->setShaderPath("shaders/SPV/interference1d.comp.spv");
     compute1D->setup(TEXSIZE);
     compute1D->dispatch();
-    m_pComputes.push_back(compute1D);
     
 //    ComputeInterference* compute2D = new ComputeInterference();
 //    compute2D->setShaderPath("shaders/SPV/interference2d.comp.spv");
 //    compute2D->setup(TEXSIZE);
 //    compute2D->dispatch();
-//    m_pComputes.push_back(compute2D);
+    
+    m_pComputeInterference = compute1D;
 }
 
 void App::createPipelineGraphic() {
@@ -102,10 +90,9 @@ void App::createPipelineGraphic() {
         new Shader("shaders/SPV/main1d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
         new Shader("shaders/SPV/main1d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
     });
-    graphic1->setInterBuffer(m_pComputes[0]->getOutputBuffer());
-    graphic1->setup(m_pRenderWindows[0]);
+    graphic1->setInterBuffer(m_pComputeInterference->getOutputBuffer());
+    graphic1->setup(m_pWindow);
     graphic1->m_misc.buffSize = TEXSIZE;
-    m_pGraphics.push_back(graphic1);
     
 //    GraphicMain* graphic2 = new GraphicMain();
 //    graphic2->setShaders({
@@ -115,14 +102,13 @@ void App::createPipelineGraphic() {
 //    graphic2->setInterBuffer(m_pComputes[1]->getOutputBuffer());
 //    graphic2->setup(m_pRenderWindows[1]);
 //    graphic2->m_misc.buffSize = TEXSIZE;
-//    m_pGraphics.push_back(graphic2);
+    
+    m_pGraphicMain = graphic1;
 }
 
 void App::update(long iteration) {
-    for (Window* window : m_pRenderWindows) {
-        window->pollEvents();
-        moveView(window);
-    }
+    m_pWindow->pollEvents();
+    moveView(m_pWindow);
     
     m_cameraMatrix.model = glm::mat4(1.0f);
     m_cameraMatrix.model = glm::translate(m_cameraMatrix.model, glm::vec3(0.f, -0.5f, 0.f));
@@ -130,23 +116,17 @@ void App::update(long iteration) {
     m_cameraMatrix.view = m_pCamera->getViewMatrix();
     m_cameraMatrix.proj = m_pCamera->getProjection((float) WIDTH / HEIGHT);
     
-    for (GraphicMain* graphic : m_pGraphics) {
-        graphic->m_cameraMatrix      = m_cameraMatrix;
-        graphic->m_misc.viewPosition = m_pCamera->getPosition();
-    }
+    m_pGraphicMain->m_cameraMatrix      = m_cameraMatrix;
+    m_pGraphicMain->m_misc.viewPosition = m_pCamera->getPosition();
 }
 
 void App::draw(long iteration) {
     auto start = Time::now();
-    for (GraphicMain* graphic : m_pGraphics) {
-        graphic->draw();
-        duration1 += TimeDif(Time::now() - start).count();
-    }
+    m_pGraphicMain->draw();
+    duration1 += TimeDif(Time::now() - start).count();
     
-    for (uint i = 0; i < m_pRenderWindows.size(); i++) {
-        if (m_pRenderWindows[i]->checkResized())
-            m_pGraphics[i]->reset();
-    }
+    if (m_pWindow->checkResized())
+        m_pGraphicMain->reset();
 }
 
 void App::moveView(Window* pWindow) {
@@ -180,11 +160,15 @@ void App::moveViewLock(Window* pWindow) {
 }
 
 void App::mainLoopFps() {
+    LOG("App::mainLoopFps");
     auto lastTime = Time::now();
     float pastTime = 0;
     long iteration = 0;
-    while (m_pGUIWindow->isOpen()) {
+    while (m_pWindow->isOpen()) {
         iteration++;
+        
+        m_pGui->draw();
+        
         update(iteration);
         draw(iteration);
         
@@ -206,12 +190,13 @@ void App::mainLoopFps() {
 }
 
 void App::mainLoop() {
+    LOG("App::mainLoop");
     auto lastTime = Time::now();
     float frameDelay = 1.f/60.f;
     float lag = frameDelay;
     
     long iteration = 0;
-    while (m_pGUIWindow->isOpen()) {
+    while (m_pWindow->isOpen()) {
         iteration++;
         update(iteration);
         lag -= frameDelay;

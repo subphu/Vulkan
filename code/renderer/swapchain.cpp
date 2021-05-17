@@ -153,6 +153,7 @@ void Swapchain::createRenderPass() {
 
 void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
     LOG("Swapchain::createFrames");
+    Commander*     pCommander    = System::instance().getCommander();
     VkSwapchainKHR swapchain     = m_swapchain;
     VkRenderPass   renderPass    = m_renderPass;
     VkExtent2D     extent        = m_extent;
@@ -161,10 +162,13 @@ void Swapchain::createFrames(VkDeviceSize uniformBufferSize) {
     std::vector<VkImage> swapchainImages = GetSwapchainImages(swapchain);
     uint32_t totalFrame = UINT32(swapchainImages.size());
     
+    std::vector<VkCommandBuffer> commandBuffers = pCommander->createCommandBuffers(totalFrame);
+    
     std::vector<Frame*> frames;
     for (size_t i = 0; i < totalFrame; i++) {
         Frame* frame = new Frame();
         frame->setSize({extent.width, extent.height});
+        frame->setCommandBuffer(commandBuffers[i]);
         frame->createDepthResource();
         frame->createImageResource(swapchainImages[i], surfaceFormat);
         frame->createFramebuffer(renderPass);

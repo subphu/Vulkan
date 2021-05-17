@@ -21,9 +21,6 @@ void GraphicMain::cleanup() {
     m_pSwapchain->cleanup();
     m_pPipeline->cleanup();
     m_pDescriptor->cleanup();
-    
-    Renderer* renderer = System::instance().m_renderer;
-    vkDestroySurfaceKHR(renderer->m_instance, m_pWindow->getSurface(), nullptr);
 }
 
 void GraphicMain::setup(Window* pWindow) {
@@ -37,28 +34,13 @@ void GraphicMain::setup(Window* pWindow) {
 }
 
 void GraphicMain::reset() {
+    LOG("GraphicMain::reset");
     if (m_pSwapchain  != nullptr) m_pSwapchain->cleanup();
     if (m_pPipeline   != nullptr) m_pPipeline->cleanup();
     if (m_pDescriptor != nullptr) m_pDescriptor->cleanup();
     createSwapchain();
     createDescriptor();
-    createPipeline();
-    createDrawCommand();
-}
-
-void GraphicMain::createDrawCommand() {
-    Commander* pCommander = System::instance().getCommander();
-    
-    Swapchain* pSwapchain = m_pSwapchain;
-    uint       totalFrame = pSwapchain->m_totalFrame;
-    
-    std::vector<VkCommandBuffer> commandBuffers = pCommander->createCommandBuffers(totalFrame);
-    
-    for (size_t i = 0; i < totalFrame; i++) {
-        Frame* pFrame = pSwapchain->m_frames[i];
-        pFrame->setCommandBuffer(commandBuffers[i]);
-        drawCommand(pFrame);
-    }
+    createPipelines();
 }
 
 void GraphicMain::drawCommand(Frame* pFrame) {
@@ -123,6 +105,8 @@ void GraphicMain::drawCommand(Frame* pFrame) {
 
     vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);
 
+    System::instance().getGUI()->render(commandBuffer);
+
     vkCmdEndRenderPass(commandBuffer);
     }
     result = vkEndCommandBuffer(commandBuffer);
@@ -153,6 +137,8 @@ void GraphicMain::draw() {
     Buffer*         miscBuffer      = m_pMiscBuffer;
     
     vkWaitForFences(device, 1, &commandFence, VK_TRUE, UINT64_MAX);
+    
+    drawCommand(frame);
     
     frame->updateUniformBuffer(&cameraMatrix, sizeof(CameraMatrix));
     miscBuffer->fillBufferFull(&misc);
@@ -245,9 +231,9 @@ void GraphicMain::createSwapchain() {
 void GraphicMain::createDescriptor() {
     Buffer* pMiscBuffer = m_pMiscBuffer;
     Buffer* pInterBuffer = m_pInterBuffer;
-    std::vector<Image*> pTextures = m_pTextures;
     Swapchain *swapchain = m_pSwapchain;
     std::vector<Frame*> frames = swapchain->m_frames;
+    std::vector<Image*> pTextures = m_pTextures;
     
     Descriptor* pDescriptor = new Descriptor();
     pDescriptor->setupLayout(L0, UINT32(frames.size()));
@@ -297,7 +283,7 @@ void GraphicMain::createDescriptor() {
     { m_pDescriptor = pDescriptor; }
 }
 
-void GraphicMain::createPipeline() {
+void GraphicMain::createPipelines() {
     Swapchain*  pSwapchain   = m_pSwapchain;
     Descriptor* pDdescriptor = m_pDescriptor;
     Mesh*       pMesh        = m_pMesh;

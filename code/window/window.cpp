@@ -34,8 +34,11 @@ VkSurfaceKHR Window::createSurface(VkInstance instance) {
     return m_surface;
 }
 
-void Window::close() {
+void Window::cleanup() {
     LOG("Window closed");
+    VkInstance instance = System::instance().getRenderer()->m_instance;
+    vkDestroySurfaceKHR(instance, m_surface, nullptr);
+    
     glfwSetWindowShouldClose(m_window, true);
     glfwDestroyWindow(m_window);
     glfwTerminate();
