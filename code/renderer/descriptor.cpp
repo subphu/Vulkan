@@ -8,8 +8,8 @@
 Descriptor::~Descriptor() {}
 Descriptor::Descriptor() {
     System &system   = System::instance();
-    m_device         = system.m_renderer->m_device;
-    m_physicalDevice = system.m_renderer->m_physicalDevice;
+    m_device         = system.getRenderer()->m_device;
+    m_physicalDevice = system.getRenderer()->m_physicalDevice;
 }
 
 void Descriptor::cleanup() {

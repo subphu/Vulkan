@@ -10,8 +10,8 @@
 Swapchain::~Swapchain() { }
 Swapchain::Swapchain() {
     System &system   = System::instance();
-    m_device         = system.m_renderer->m_device;
-    m_physicalDevice = system.m_renderer->m_physicalDevice;
+    m_device         = system.getRenderer()->m_device;
+    m_physicalDevice = system.getRenderer()->m_physicalDevice;
 }
 
 void Swapchain::cleanup() {
@@ -210,7 +210,7 @@ VkRenderPassBeginInfo Swapchain::getRenderBeginInfo() {
 
 std::vector<VkImage> Swapchain::GetSwapchainImages(VkSwapchainKHR swapchain) {
     System &system  = System::instance();
-    VkDevice device = system.m_renderer->m_device;
+    VkDevice device = system.getRenderer()->m_device;
     
     uint32_t count;
     vkGetSwapchainImagesKHR(device, swapchain, &count, nullptr);

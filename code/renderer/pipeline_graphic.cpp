@@ -8,8 +8,8 @@
 PipelineGraphic::~PipelineGraphic() {}
 PipelineGraphic::PipelineGraphic() {
     System &system   = System::instance();
-    m_device         = system.m_renderer->m_device;
-    m_physicalDevice = system.m_renderer->m_physicalDevice;
+    m_device         = system.getRenderer()->m_device;
+    m_physicalDevice = system.getRenderer()->m_physicalDevice;
 }
 
 void PipelineGraphic::cleanup() {
@@ -211,7 +211,7 @@ void PipelineGraphic::create(VkRenderPass renderPass) {
 
 
 VkFormat PipelineGraphic::ChooseDepthFormat() {
-    VkPhysicalDevice physicalDevice = System::instance().m_renderer->m_physicalDevice;
+    VkPhysicalDevice physicalDevice = System::instance().getRenderer()->m_physicalDevice;
     
     const std::vector<VkFormat>& candidates = {
         VK_FORMAT_D32_SFLOAT,

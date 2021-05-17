@@ -3,8 +3,7 @@
 
 #include "window.h"
 
-#define WINDOW_FAILED_MESSAGE "Failed to create GLFW window"
-#define EXIT_MESSAGE          "Window closed"
+#include "../system.h"
 
 Window::Window() { }
 Window::~Window() { }
@@ -17,7 +16,7 @@ void Window::create(GLuint width, GLuint height, const char* name) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     
     m_window = glfwCreateWindow(m_size.width, m_size.height, m_name, nullptr, nullptr);
-    if (m_window == NULL) exitFailure(WINDOW_FAILED_MESSAGE);
+    if (m_window == NULL) exitFailure("Failed to create GLFW window");
     
     glfwSetWindowUserPointer(m_window, this);
     glfwSetFramebufferSizeCallback(m_window, resizeCallback);
@@ -36,7 +35,7 @@ VkSurfaceKHR Window::createSurface(VkInstance instance) {
 }
 
 void Window::close() {
-    std::cout << EXIT_MESSAGE << std::endl;
+    LOG("Window closed");
     glfwSetWindowShouldClose(m_window, true);
     glfwDestroyWindow(m_window);
     glfwTerminate();

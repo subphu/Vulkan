@@ -8,7 +8,7 @@
 Commander::~Commander() {}
 Commander::Commander() {
     System &system   = System::instance();
-    m_device         = system.m_renderer->m_device;
+    m_device         = system.getRenderer()->m_device;
 }
 
 void Commander::cleanup() {
@@ -20,7 +20,7 @@ void Commander::setupPool(VkQueue queue, uint32_t queueIndex) {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueIndex;
-    poolInfo.flags            = 0;
+    poolInfo.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     m_poolInfo = poolInfo;
     m_queue    = queue;
 }

@@ -8,7 +8,7 @@
 Frame::~Frame() {}
 Frame::Frame() {
     System &system = System::instance();
-    m_device       = system.m_renderer->m_device;
+    m_device       = system.getRenderer()->m_device;
 }
 
 void Frame::cleanup() {
