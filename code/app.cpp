@@ -89,6 +89,10 @@ void App::createPipelineGraphic() {
         new Shader("shaders/SPV/main1d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
         new Shader("shaders/SPV/main1d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
     });
+    graphic1->setShaderCubemap({
+        new Shader("shaders/SPV/skybox.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader("shaders/SPV/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+    });
     graphic1->setInterBuffer(m_pComputeInterference->getOutputBuffer());
     graphic1->setup(m_pWindow);
     graphic1->m_misc.buffSize = TEXSIZE;

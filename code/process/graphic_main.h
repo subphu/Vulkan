@@ -43,12 +43,12 @@ public:
         TEX_NORMAL_PATH, TEX_ROUGNESS_PATH };
     
     const std::string CUBEMAP_PATH[6] = {
-        "textures/cubemap/Lake/front.jpg",
-        "textures/cubemap/Lake/back.jpg",
+        "textures/cubemap/Lake/right.jpg",
+        "textures/cubemap/Lake/left.jpg",
         "textures/cubemap/Lake/top.jpg",
         "textures/cubemap/Lake/bottom.jpg",
-        "textures/cubemap/Lake/right.jpg",
-        "textures/cubemap/Lake/left.jpg"
+        "textures/cubemap/Lake/front.jpg",
+        "textures/cubemap/Lake/back.jpg"
     };
     
     const VkClearValue CLEARCOLOR = {0.1f, 0.1f, 0.1f, 1.0f};
@@ -67,6 +67,7 @@ public:
     
     void setInterBuffer(Buffer* buffer);
     void setShaders(std::vector<Shader*> shaders);
+    void setShaderCubemap(std::vector<Shader*> shaders);
     
     Swapchain*   m_pSwapchain  = nullptr;
     CameraMatrix m_cameraMatrix{};
@@ -75,13 +76,18 @@ public:
     
 //private:
     
-    Window*          m_pWindow      = nullptr;
+    Window*          m_pWindow     = nullptr;
     Descriptor*      m_pDescriptor = nullptr;
     PipelineGraphic* m_pPipeline   = nullptr;
+    Descriptor*      m_pDescriptorCubemap = nullptr;
+    PipelineGraphic* m_pPipelineCubemap   = nullptr;
     
-    Mesh* m_pMesh;
+    Mesh*  m_pMesh;
     Image* m_pTexAlbedo;
+    
+    Mesh*  m_pMeshCube;
     Image* m_pCubemap;
+    
     std::vector<Image*> m_pTextures;
     
     Size<int> m_size;
@@ -90,6 +96,7 @@ public:
     Buffer* m_pInterBuffer;
     
     std::vector<Shader*> m_pShaders;
+    std::vector<Shader*> m_pShaderCubemap;
     
     void createTexture();
     void createCubemap();
@@ -99,5 +106,7 @@ public:
     void createBuffers();
     void createSwapchain();
     void createDescriptor();
-    void createPipelines();
+    void createDescriptorCubemap();
+    void createPipeline();
+    void createPipelineCubemap();
 };

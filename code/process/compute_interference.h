@@ -21,8 +21,6 @@ struct InterferenceDetails {
 class ComputeInterference {
     
 public:
-    const std::string COMP_SHADER_PATH = "shaders/SPV/interference2d.comp.spv";
-    
     ComputeInterference();
     ~ComputeInterference();
     

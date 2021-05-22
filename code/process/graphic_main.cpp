@@ -15,13 +15,17 @@ void GraphicMain::cleanup() {
     
     for (Image* texture : m_pTextures) texture->cleanup();
     for (Shader* shader : m_pShaders ) shader->cleanup();
+    for (Shader* shader : m_pShaderCubemap ) shader->cleanup();
     m_pCubemap->cleanup();
     
     m_pMiscBuffer->cleanup();
     m_pMesh->cleanup();
+    m_pMeshCube->cleanup();
     m_pSwapchain->cleanup();
     m_pPipeline->cleanup();
+    m_pPipelineCubemap->cleanup();
     m_pDescriptor->cleanup();
+    m_pDescriptorCubemap->cleanup();
 }
 
 void GraphicMain::setup(Window* pWindow) {
@@ -40,9 +44,13 @@ void GraphicMain::reset() {
     if (m_pSwapchain  != nullptr) m_pSwapchain->cleanup();
     if (m_pPipeline   != nullptr) m_pPipeline->cleanup();
     if (m_pDescriptor != nullptr) m_pDescriptor->cleanup();
+    if (m_pPipelineCubemap != nullptr) m_pPipelineCubemap->cleanup();
+    if (m_pDescriptorCubemap != nullptr) m_pDescriptorCubemap->cleanup();
     createSwapchain();
     createDescriptor();
-    createPipelines();
+    createPipeline();
+    createDescriptorCubemap();
+    createPipelineCubemap();
 }
 
 void GraphicMain::drawCommand(Frame* pFrame) {
@@ -52,17 +60,28 @@ void GraphicMain::drawCommand(Frame* pFrame) {
     VkPipelineLayout pipelineLayout = pPipeline->m_pipelineLayout;
     VkExtent2D       extent         = m_pSwapchain->m_extent;
     
+    VkPipeline       pipelineCube = m_pPipelineCubemap->m_pipeline;
+    VkPipelineLayout pipelineLayoutCube = m_pPipelineCubemap->m_pipelineLayout;
+    
     Mesh* pMesh = m_pMesh;
     VkDeviceSize offsets[]   = {0};
     VkBuffer vertexBuffers[] = {pMesh->m_vertexBuffer->m_buffer};
     VkBuffer indexBuffers    =  pMesh->m_indexBuffer->m_buffer;
     uint32_t indexSize       = UINT32(pMesh->m_indices.size());
     
+    Mesh* pMeshCube = m_pMeshCube;
+    VkBuffer vertexBuffersCube[] = {pMeshCube->m_vertexBuffer->m_buffer};
+    VkBuffer indexBuffersCube    =  pMeshCube->m_indexBuffer->m_buffer;
+    uint32_t indexSizeCube       = UINT32(pMeshCube->m_indices.size());
+    
     Descriptor* pDescriptor = m_pDescriptor;
     VkDescriptorSet bufferDescSet  = pDescriptor->getDescriptorSets(L1)[0];
     VkDescriptorSet textureDescSet = pDescriptor->getDescriptorSets(L2)[0];
     VkDescriptorSet frameDescSet   = pFrame->m_descriptorSet;
     VkCommandBuffer commandBuffer  = pFrame->m_commandBuffer;
+    
+    Descriptor* pDescriptorCube = m_pDescriptorCubemap;
+    VkDescriptorSet textureDescSetCube = pDescriptorCube->getDescriptorSets(L1)[0];
     
     float* clearColor = settings->ClearColor;
     std::array<VkClearValue, 2> clearValues{};
@@ -74,46 +93,59 @@ void GraphicMain::drawCommand(Frame* pFrame) {
     VkResult result = vkBeginCommandBuffer(commandBuffer, &commandBeginInfo);
     CHECK_VKRESULT(result, "failed to begin recording command buffer!");
     {
-    VkRenderPassBeginInfo renderBeginInfo = m_pSwapchain->getRenderBeginInfo();
-    renderBeginInfo.framebuffer     = pFrame->m_framebuffer;
-    renderBeginInfo.clearValueCount = UINT32(clearValues.size());
-    renderBeginInfo.pClearValues    = clearValues.data();
-    vkCmdBeginRenderPass(commandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    
-    VkViewport* viewport = new VkViewport();
-    viewport->x = 0.0f;
-    viewport->y = 0.0f;
-    viewport->width  = (float) m_size.width;
-    viewport->height = (float) m_size.height;
-    viewport->minDepth = 0.0f;
-    viewport->maxDepth = 1.0f;
-    
-    VkRect2D* scissor = new VkRect2D();
-    scissor->offset = {0, 0};
-    scissor->extent = extent;
-    
-    vkCmdSetViewport(commandBuffer, 0, 1, viewport);
-    vkCmdSetScissor (commandBuffer, 0, 1, scissor);
-    
-    vkCmdSetLineWidth(commandBuffer, 1.0f);
-    
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+        VkRenderPassBeginInfo renderBeginInfo = m_pSwapchain->getRenderBeginInfo();
+        renderBeginInfo.framebuffer     = pFrame->m_framebuffer;
+        renderBeginInfo.clearValueCount = UINT32(clearValues.size());
+        renderBeginInfo.pClearValues    = clearValues.data();
+        vkCmdBeginRenderPass(commandBuffer, &renderBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            pipelineLayout, S0, 1, &frameDescSet, 0, nullptr);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            pipelineLayout, S1, 1, &bufferDescSet, 0, nullptr);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            pipelineLayout, S2, 1, &textureDescSet, 0, nullptr);
+        VkViewport* viewport = new VkViewport();
+        viewport->x = 0.0f;
+        viewport->y = 0.0f;
+        viewport->width  = (float) m_size.width;
+        viewport->height = (float) m_size.height;
+        viewport->minDepth = 0.0f;
+        viewport->maxDepth = 1.0f;
         
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer  (commandBuffer, indexBuffers, 0, VK_INDEX_TYPE_UINT32);
+        VkRect2D* scissor = new VkRect2D();
+        scissor->offset = {0, 0};
+        scissor->extent = extent;
+        
+        vkCmdSetViewport(commandBuffer, 0, 1, viewport);
+        vkCmdSetScissor (commandBuffer, 0, 1, scissor);
+        
+        vkCmdSetLineWidth(commandBuffer, 1.0f);
+        {
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineCube);
+                
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayoutCube, L0, 1, &frameDescSet, 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayoutCube, L1, 1, &textureDescSetCube, 0, nullptr);
+            
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffersCube, offsets);
+            vkCmdBindIndexBuffer  (commandBuffer, indexBuffersCube, 0, VK_INDEX_TYPE_UINT32);
+            
+            vkCmdDrawIndexed(commandBuffer, indexSizeCube, 1, 0, 0, 0);
+        }
+        {
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+                
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout, L0, 1, &frameDescSet, 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout, L1, 1, &bufferDescSet, 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                    pipelineLayout, L2, 1, &textureDescSet, 0, nullptr);
+                
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer  (commandBuffer, indexBuffers, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer, indexSize, 1, 0, 0, 0);
+        }
+        settings->renderGUI(commandBuffer);
 
-    settings->renderGUI(commandBuffer);
-
-    vkCmdEndRenderPass(commandBuffer);
+        vkCmdEndRenderPass(commandBuffer);
     }
     result = vkEndCommandBuffer(commandBuffer);
     CHECK_VKRESULT(result, "failed to record command buffer!");
@@ -188,6 +220,7 @@ void GraphicMain::draw() {
 
 void GraphicMain::setInterBuffer(Buffer* buffer) { m_pInterBuffer = buffer; }
 void GraphicMain::setShaders(std::vector<Shader*> shaders) { m_pShaders = shaders; }
+void GraphicMain::setShaderCubemap(std::vector<Shader*> shaders) { m_pShaderCubemap = shaders; }
 
 // Private ==================================================
 
@@ -223,6 +256,11 @@ void GraphicMain::createModel() {
 //    m_pMesh->loadModel(MODEL_PATH.c_str());
     m_pMesh->cmdCreateVertexBuffer();
     m_pMesh->cmdCreateIndexBuffer();
+    
+    m_pMeshCube = new Mesh();
+    m_pMeshCube->createCube();
+    m_pMeshCube->cmdCreateVertexBuffer();
+    m_pMeshCube->cmdCreateIndexBuffer();
 }
 
 void GraphicMain::createBuffers() {
@@ -243,6 +281,7 @@ void GraphicMain::createSwapchain() {
 }
 
 void GraphicMain::createDescriptor() {
+    LOG("GraphicMain::createDescriptor");
     Buffer* pMiscBuffer = m_pMiscBuffer;
     Buffer* pInterBuffer = m_pInterBuffer;
     Swapchain *swapchain = m_pSwapchain;
@@ -297,7 +336,8 @@ void GraphicMain::createDescriptor() {
     { m_pDescriptor = pDescriptor; }
 }
 
-void GraphicMain::createPipelines() {
+void GraphicMain::createPipeline() {
+    LOG("GraphicMain::createPipeline");
     Swapchain*  pSwapchain   = m_pSwapchain;
     Descriptor* pDdescriptor = m_pDescriptor;
     Mesh*       pMesh        = m_pMesh;
@@ -324,5 +364,73 @@ void GraphicMain::createPipelines() {
     pPipeline->create(pSwapchain->m_renderPass);
     
     { m_pPipeline = pPipeline; }
+}
+
+void GraphicMain::createDescriptorCubemap() {
+    LOG("GraphicMain::createDescriptorCubemap");
+    Swapchain *swapchain = m_pSwapchain;
+    std::vector<Frame*> frames = swapchain->m_frames;
+    Image* pCubemap = m_pCubemap;
+    
+    Descriptor* pDescriptor = new Descriptor();
+    pDescriptor->setupLayout(L0, UINT32(frames.size()));
+    pDescriptor->addLayoutBindings(L0, B0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                   VK_SHADER_STAGE_VERTEX_BIT);
+    pDescriptor->createLayout(L0);
+    
+    pDescriptor->setupLayout(L1);
+    pDescriptor->addLayoutBindings(L1, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                   VK_SHADER_STAGE_FRAGMENT_BIT);
+    pDescriptor->createLayout(L1);
+    
+    pDescriptor->createPool();
+    pDescriptor->allocate(L0);
+    pDescriptor->allocate(L1);
+    
+    for (uint i = 0; i < frames.size(); i++) {
+        VkDescriptorBufferInfo bufferInfo = frames[i]->getBufferInfo();
+        pDescriptor->setupPointerBuffer(L0, i, B0, &bufferInfo);
+        pDescriptor->update(L0);
+        frames[i]->setDescriptorSet(pDescriptor->getDescriptorSets(L0)[i]);
+    }
+    
+    VkDescriptorImageInfo imageInfos = pCubemap->getImageInfo();
+    pDescriptor->setupPointerImage(L1, S0, B0, &imageInfos);
+    pDescriptor->update(L1);
+    
+    { m_pDescriptorCubemap = pDescriptor; }
+    
+}
+
+void GraphicMain::createPipelineCubemap() {
+    LOG("GraphicMain::createPipelineCubemap");
+    Swapchain*  pSwapchain   = m_pSwapchain;
+    Descriptor* pDdescriptor = m_pDescriptorCubemap;
+    Mesh*       pMesh        = m_pMeshCube;
+    
+    std::vector<Shader*> shaders = m_pShaderCubemap;
+    
+    PipelineGraphic* pPipeline = new PipelineGraphic();
+    pPipeline->setShaders(shaders);
+    pPipeline->setVertexInputInfo(pMesh->createVertexInputInfo());
+    
+    pPipeline->setupViewportInfo(pSwapchain->m_extent);
+    pPipeline->createPipelineLayout({
+        pDdescriptor->getDescriptorLayout(L0),
+        pDdescriptor->getDescriptorLayout(L1)
+    });
+    
+    pPipeline->setupInputAssemblyInfo();
+    pPipeline->setupRasterizationInfo();
+    pPipeline->m_rasterizationInfo->cullMode = VK_CULL_MODE_FRONT_BIT;
+    pPipeline->setupMultisampleInfo();
+    pPipeline->setupColorBlendInfo();
+    pPipeline->setupDepthStencilInfo();
+    pPipeline->m_depthStencilInfo->depthWriteEnable = VK_FALSE;
+    pPipeline->m_depthStencilInfo->depthTestEnable = VK_FALSE;
+    pPipeline->setupDynamicInfo();
+    pPipeline->create(pSwapchain->m_renderPass);
+    
+    { m_pPipelineCubemap = pPipeline; }
 }
 

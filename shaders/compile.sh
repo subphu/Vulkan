@@ -2,6 +2,8 @@ cd /Users/subrotoph/Developer/Vulkan/Vulkan/shaders
 /usr/local/bin/glslc shader.vert -o SPV/vert.spv
 /usr/local/bin/glslc shader.frag -o SPV/frag.spv
 /usr/local/bin/glslc shader.comp -o SPV/comp.spv
+/usr/local/bin/glslc skybox.vert -o SPV/skybox.vert.spv
+/usr/local/bin/glslc skybox.frag -o SPV/skybox.frag.spv
 
 /usr/local/bin/glslc compute/interference1d.comp -o SPV/interference1d.comp.spv
 /usr/local/bin/glslc compute/interference2d.comp -o SPV/interference2d.comp.spv

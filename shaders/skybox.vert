@@ -13,6 +13,6 @@ layout(location = 0) out vec3 fragCubeCoord;
 
 void main() {
     fragCubeCoord = inPosition;
-    gl_Position = proj * view * vec4(inPosition, 1.0);
+    gl_Position = proj * mat4(mat3(view)) * vec4(inPosition, 1.0);
 }
 
