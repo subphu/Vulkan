@@ -35,19 +35,19 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     
-    vec3  N = getNormal();
+    vec3  N = fragNormal;
     float theta1 = getTheta1(N);
     float theta2 = refractionAngle(n1, theta1, n2);
     float opd    = getOPD(d, theta2, n2);
-
-    uint idx = getIndex1D(opd);
+    
+    vec3  color  = deltaInterferences(opd);
     
     vec4 pbrColor = vec4(pbr(), 1.0);
 
-    outColor = imageData[idx];
+    outColor = pbrColor;
     
-//    float metallic  = texture(metallicMap, fragTexCoord).r;
-//    if (metallic > 0.5) {
-//        outColor = pbrColor * imageData[idx] * 2.4;
-//    }
+    float metallic  = texture(metallicMap, fragTexCoord).r;
+    if (metallic > 0.5) {
+        outColor = pbrColor * vec4(color, 1.0) * 2.4;
+    }
 }

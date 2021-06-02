@@ -2,7 +2,6 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 #include "../functions/constants.glsl"
-#include "../functions/interference.glsl"
 
 // Buffers ==================================================
 layout(set = 1, binding = 0) buffer outputBuffer {
@@ -30,21 +29,25 @@ layout(location = 2) in vec3 fragPosition;
 layout(location = 0) out vec4 outColor;
 
 // Functions ==================================================
+#include "../functions/interference.glsl"
 #include "../functions/render_function.glsl"
 #include "../functions/pbr.glsl"
 
 void main() {
     
-    vec3  N = fragNormal;
+    vec3  N = getNormal();
     float theta1 = getTheta1(N);
     float theta2 = refractionAngle(n1, theta1, n2);
     float opd    = getOPD(d, theta2, n2);
-    
-    vec3  color  = vec3(interferences(650e-9, 60e-9, opd),
-                        interferences(532e-9, 40e-9, opd),
-                        interferences(441e-9, 30e-9, opd));
+
+    uint idx = getIndex1D(opd);
+    outColor = imageData[idx];
     
     vec4 pbrColor = vec4(pbr(), 1.0);
-
-    outColor = vec4(color, 1.0);
+    outColor = pbrColor;
+    
+    float metallic  = texture(metallicMap, fragTexCoord).r;
+    if (metallic > 0.5) {
+        outColor = pbrColor * imageData[idx] * 2.4;
+    }
 }

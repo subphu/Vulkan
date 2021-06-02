@@ -48,8 +48,8 @@ vec3 deltaInterferences(float opd) {
     vec3 outColor = vec3(0.0);
     float tot = 0.0;
     float waveRange = 750. - 380.;
-    float sensitivity = 4.0 / waveRange;
-    for (float i=380. ; i<=750. ; i++) {
+    float sensitivity = 4.0 / 10.;
+    for (float i=380. ; i<=750. ; i+=37) {
         float lambda = i * 1e-9;
         float interference = calcInterference(lambda, opd);
         float waveScale = (i - 380.) / waveRange;

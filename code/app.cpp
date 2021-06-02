@@ -69,12 +69,12 @@ void App::initWindow() {
 void App::createPipelineCompute() {
     LOG("App::createPipelineCompute");
     ComputeInterference* compute1D = new ComputeInterference();
-    compute1D->setShaderPath("shaders/SPV/interference1d.comp.spv");
+    compute1D->setShaderPath("shaders/interference1d.comp.spv");
     compute1D->setup(TEXSIZE);
     compute1D->dispatch();
     
 //    ComputeInterference* compute2D = new ComputeInterference();
-//    compute2D->setShaderPath("shaders/SPV/interference2d.comp.spv");
+//    compute2D->setShaderPath("shaders/interference2d.comp.spv");
 //    compute2D->setup(TEXSIZE);
 //    compute2D->dispatch();
     
@@ -86,12 +86,12 @@ void App::createPipelineGraphic() {
     
     GraphicMain* graphic1 = new GraphicMain();
     graphic1->setShaders({
-        new Shader("shaders/SPV/main1d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-        new Shader("shaders/SPV/main1d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+        new Shader("shaders/main1d.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader("shaders/main1d.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
     });
     graphic1->setShaderCubemap({
-        new Shader("shaders/SPV/skybox.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-        new Shader("shaders/SPV/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+        new Shader("shaders/skybox.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+        new Shader("shaders/skybox.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
     });
     graphic1->setInterBuffer(m_pComputeInterference->getOutputBuffer());
     graphic1->setup(m_pWindow);
@@ -99,8 +99,8 @@ void App::createPipelineGraphic() {
     
 //    GraphicMain* graphic2 = new GraphicMain();
 //    graphic2->setShaders({
-//        new Shader("shaders/SPV/manual.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-//        new Shader("shaders/SPV/manual.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+//        new Shader("shaders/manual.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+//        new Shader("shaders/manual.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
 //    });
 //    graphic2->setInterBuffer(m_pComputes[1]->getOutputBuffer());
 //    graphic2->setup(m_pRenderWindows[1]);

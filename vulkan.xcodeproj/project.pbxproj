@@ -21,6 +21,7 @@
 		26592FEC252C578E00150894 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = 266FAC0B25165303004F42AA /* shaders */; };
 		26599FB125E39B990068C919 /* swapchain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26599FAF25E39B990068C919 /* swapchain.cpp */; };
 		265FA2BF254E7002009E5428 /* tiny_obj_loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */; };
+		266681682667C999004C86EA /* graphic_equirectangular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266681662667C999004C86EA /* graphic_equirectangular.cpp */; };
 		266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */; };
 		266A2509261B33C600AAF4C2 /* compute_interference.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A2507261B33C600AAF4C2 /* compute_interference.cpp */; };
 		266A250C261B5B6A00AAF4C2 /* descriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 266A250A261B5B6A00AAF4C2 /* descriptor.cpp */; };
@@ -31,6 +32,7 @@
 		267949D425FFB2B8001FA569 /* system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267949D225FFB2B8001FA569 /* system.cpp */; };
 		267D8904255EC6C7002E918C /* camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267D8902255EC6C7002E918C /* camera.cpp */; };
 		267D8907255EC8AB002E918C /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267D8906255EC8AB002E918C /* window.cpp */; };
+		26908227265923B6009BC9EF /* compute_equirectangular.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26908225265923B6009BC9EF /* compute_equirectangular.cpp */; };
 		2699921F26247EA3006F5802 /* graphic_main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2699921D26247EA3006F5802 /* graphic_main.cpp */; };
 		26BE145424ED699200F534B9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 26BE145324ED699200F534B9 /* main.cpp */; };
 		26BE14A824ED852C00F534B9 /* libglfw.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 26BE14A724ED852C00F534B9 /* libglfw.3.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -87,6 +89,29 @@
 		265FA2BD254E7002009E5428 /* tiny_obj_loader.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cpp; sourceTree = "<group>"; };
 		265FA2BE254E7002009E5428 /* tiny_obj_loader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		265FA2C0254E7102009E5428 /* models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = models; sourceTree = "<group>"; };
+		266681662667C999004C86EA /* graphic_equirectangular.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = graphic_equirectangular.cpp; sourceTree = "<group>"; };
+		266681672667C999004C86EA /* graphic_equirectangular.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = graphic_equirectangular.h; sourceTree = "<group>"; };
+		2666816B2667D157004C86EA /* constants.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = constants.glsl; sourceTree = "<group>"; };
+		2666816C2667D157004C86EA /* includes.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = includes.glsl; sourceTree = "<group>"; };
+		2666816D2667D157004C86EA /* spectrum.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = spectrum.glsl; sourceTree = "<group>"; };
+		2666816E2667D157004C86EA /* pbr.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = pbr.glsl; sourceTree = "<group>"; };
+		2666816F2667D157004C86EA /* render_function.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = render_function.glsl; sourceTree = "<group>"; };
+		266681702667D157004C86EA /* interference.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = interference.glsl; sourceTree = "<group>"; };
+		266681722667D157004C86EA /* manual.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = manual.frag; sourceTree = "<group>"; };
+		266681732667D157004C86EA /* main1d.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = main1d.frag; sourceTree = "<group>"; };
+		266681742667D157004C86EA /* main2d.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = main2d.frag; sourceTree = "<group>"; };
+		266681752667D157004C86EA /* manual.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = manual.vert; sourceTree = "<group>"; };
+		266681762667D157004C86EA /* main1d.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = main1d.vert; sourceTree = "<group>"; };
+		266681772667D157004C86EA /* main2d.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = main2d.vert; sourceTree = "<group>"; };
+		266681782667D157004C86EA /* compile.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = compile.sh; sourceTree = "<group>"; };
+		266681792667D157004C86EA /* shader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = shader.frag; sourceTree = "<group>"; };
+		2666817A2667D157004C86EA /* skybox.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = skybox.vert; sourceTree = "<group>"; };
+		2666817B2667D157004C86EA /* shader.comp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = shader.comp; sourceTree = "<group>"; };
+		2666817C2667D157004C86EA /* compile.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = compile.bat; sourceTree = "<group>"; };
+		2666817E2667D157004C86EA /* interference1d.comp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = interference1d.comp; sourceTree = "<group>"; };
+		2666817F2667D157004C86EA /* interference2d.comp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = interference2d.comp; sourceTree = "<group>"; };
+		266681802667D157004C86EA /* shader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = shader.vert; sourceTree = "<group>"; };
+		266681812667D157004C86EA /* skybox.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = skybox.frag; sourceTree = "<group>"; };
 		266A2501261B060E00AAF4C2 /* pipeline_compute.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pipeline_compute.cpp; sourceTree = "<group>"; };
 		266A2502261B060E00AAF4C2 /* pipeline_compute.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pipeline_compute.h; sourceTree = "<group>"; };
 		266A2507261B33C600AAF4C2 /* compute_interference.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = compute_interference.cpp; sourceTree = "<group>"; };
@@ -108,6 +133,9 @@
 		267D8905255EC8AB002E918C /* window.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
 		267D8906255EC8AB002E918C /* window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = window.cpp; sourceTree = "<group>"; };
 		267E55C82577E46100651094 /* helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helper.h; sourceTree = "<group>"; };
+		269082242658C7E9009BC9EF /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
+		26908225265923B6009BC9EF /* compute_equirectangular.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = compute_equirectangular.cpp; sourceTree = "<group>"; };
+		26908226265923B6009BC9EF /* compute_equirectangular.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compute_equirectangular.h; sourceTree = "<group>"; };
 		2699921D26247EA3006F5802 /* graphic_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = graphic_main.cpp; sourceTree = "<group>"; };
 		2699921E26247EA3006F5802 /* graphic_main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = graphic_main.h; sourceTree = "<group>"; };
 		26BE145324ED699200F534B9 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -157,6 +185,7 @@
 		2612195A24ED695900B2A2E3 = {
 			isa = PBXGroup;
 			children = (
+				269082242658C7E9009BC9EF /* readme.md */,
 				26450CD924FBD3F900841546 /* vulkan.entitlements */,
 				265FA2C0254E7102009E5428 /* models */,
 				26592FEA252C575A00150894 /* textures */,
@@ -213,6 +242,58 @@
 			path = tiny_obj_loader;
 			sourceTree = "<group>";
 		};
+		266681692667D121004C86EA /* shaders */ = {
+			isa = PBXGroup;
+			children = (
+				2666817C2667D157004C86EA /* compile.bat */,
+				266681782667D157004C86EA /* compile.sh */,
+				2666817D2667D157004C86EA /* compute */,
+				2666816A2667D157004C86EA /* functions */,
+				266681712667D157004C86EA /* PBR */,
+				2666817B2667D157004C86EA /* shader.comp */,
+				266681792667D157004C86EA /* shader.frag */,
+				266681802667D157004C86EA /* shader.vert */,
+				266681812667D157004C86EA /* skybox.frag */,
+				2666817A2667D157004C86EA /* skybox.vert */,
+			);
+			path = shaders;
+			sourceTree = "<group>";
+		};
+		2666816A2667D157004C86EA /* functions */ = {
+			isa = PBXGroup;
+			children = (
+				2666816B2667D157004C86EA /* constants.glsl */,
+				2666816C2667D157004C86EA /* includes.glsl */,
+				2666816D2667D157004C86EA /* spectrum.glsl */,
+				2666816E2667D157004C86EA /* pbr.glsl */,
+				2666816F2667D157004C86EA /* render_function.glsl */,
+				266681702667D157004C86EA /* interference.glsl */,
+			);
+			path = functions;
+			sourceTree = "<group>";
+		};
+		266681712667D157004C86EA /* PBR */ = {
+			isa = PBXGroup;
+			children = (
+				266681722667D157004C86EA /* manual.frag */,
+				266681732667D157004C86EA /* main1d.frag */,
+				266681742667D157004C86EA /* main2d.frag */,
+				266681752667D157004C86EA /* manual.vert */,
+				266681762667D157004C86EA /* main1d.vert */,
+				266681772667D157004C86EA /* main2d.vert */,
+			);
+			path = PBR;
+			sourceTree = "<group>";
+		};
+		2666817D2667D157004C86EA /* compute */ = {
+			isa = PBXGroup;
+			children = (
+				2666817E2667D157004C86EA /* interference1d.comp */,
+				2666817F2667D157004C86EA /* interference2d.comp */,
+			);
+			path = compute;
+			sourceTree = "<group>";
+		};
 		266A2506261B328500AAF4C2 /* process */ = {
 			isa = PBXGroup;
 			children = (
@@ -220,6 +301,10 @@
 				266A2508261B33C600AAF4C2 /* compute_interference.h */,
 				2699921D26247EA3006F5802 /* graphic_main.cpp */,
 				2699921E26247EA3006F5802 /* graphic_main.h */,
+				26908225265923B6009BC9EF /* compute_equirectangular.cpp */,
+				26908226265923B6009BC9EF /* compute_equirectangular.h */,
+				266681662667C999004C86EA /* graphic_equirectangular.cpp */,
+				266681672667C999004C86EA /* graphic_equirectangular.h */,
 			);
 			path = process;
 			sourceTree = "<group>";
@@ -267,6 +352,7 @@
 		26BE145224ED699200F534B9 /* code */ = {
 			isa = PBXGroup;
 			children = (
+				266681692667D121004C86EA /* shaders */,
 				26536DDC256B89030079DC42 /* libraries */,
 				26D08A60261DFBA300C2865A /* resources */,
 				266A2506261B328500AAF4C2 /* process */,
@@ -421,7 +507,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n$SRCROOT/shaders/compile.sh\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n$SRCROOT/code/shaders/compile.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -445,11 +531,13 @@
 				267D8907255EC8AB002E918C /* window.cpp in Sources */,
 				2634877825F60B5E00C5657D /* image.cpp in Sources */,
 				26D8DB7A26510815000C450E /* settings.cpp in Sources */,
+				26908227265923B6009BC9EF /* compute_equirectangular.cpp in Sources */,
 				267949CE25FCE966001FA569 /* buffer.cpp in Sources */,
 				26D8DBB726511295000C450E /* imgui.cpp in Sources */,
 				263613152607365A005DBA36 /* frame.cpp in Sources */,
 				2699921F26247EA3006F5802 /* graphic_main.cpp in Sources */,
 				26D8DBB526511295000C450E /* imgui_demo.cpp in Sources */,
+				266681682667C999004C86EA /* graphic_equirectangular.cpp in Sources */,
 				267949D425FFB2B8001FA569 /* system.cpp in Sources */,
 				26D8DBC426511295000C450E /* imgui_impl_vulkan.cpp in Sources */,
 				266A2503261B060E00AAF4C2 /* pipeline_compute.cpp in Sources */,
