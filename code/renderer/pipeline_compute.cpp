@@ -15,7 +15,6 @@ PipelineCompute::PipelineCompute() {
 void PipelineCompute::cleanup() {
     LOG("PipelineCompute::cleanup");
     m_shader->cleanup();
-    vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
     vkDestroyPipeline(m_device, m_pipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }
