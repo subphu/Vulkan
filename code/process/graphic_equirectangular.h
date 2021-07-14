@@ -25,17 +25,19 @@ public:
     ~GraphicEquirectangular();
     
     void cleanup();
-    void reset();
+    
+    void createAssets();
+    
     void setup();
     
     void draw();
     
-    void recordCommand(Frame* pFrame);
-    
-    
+    void recordCommand();
     
 private:
     
+    Cleaner m_cleaner;
+
     std::string m_equirecPath;
     
     Descriptor*      m_pDescriptor = nullptr;
@@ -43,15 +45,25 @@ private:
     
     Mesh*  m_pCube;
     Image* m_pHDR;
+    Image* m_pRenderTarget;
     
-    Size<int> m_size;
+    uint m_size;
     
     std::vector<Shader*> m_pShaders;
     
+    VkCommandBuffer m_cmdBuffer;
+    VkRenderPass m_renderPass;
+    VkFramebuffer m_framebuffer;
+    
     void createHDR();
     void createCube();
-    void createBuffers();
-    void createSwapchain();
+    
+    void createCmdBuffer();
+    
+    void createRenderPass();
+    void createFramebuffer();
+    void generateRenderPassBeginInfo();
+    
     void createDescriptor();
     void createPipeline();
     
