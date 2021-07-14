@@ -82,6 +82,13 @@ unsigned char* LoadImage(const std::string filename, int* width, int* height, in
     return nullptr;
 }
 
+float* LoadHDR(const std::string filename, int* width, int* height, int* channels) {
+    float *data = stbi_loadf(filename.c_str(), width, height, channels, STBI_default);
+    if (data) return data;
+    PRINTLN2("failed to load hdr image ", filename);
+    return nullptr;
+}
+
 uint32_t MaxMipLevel(int width, int height) {
     return UINT32(std::floor(std::log2(std::max(width, height)))) + 1;
 }
