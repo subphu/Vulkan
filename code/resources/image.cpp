@@ -81,6 +81,34 @@ void Image::setupForTexture(const std::string filepath) {
     }
 }
 
+void Image::setupForHDRTexture(const std::string filepath) {
+    LOG("Image::setupForHDRTexture");
+    int width, height, channels;
+    float*   data      = LoadHDR(filepath, &width, &height, &channels);
+    uint32_t mipLevels = MaxMipLevel(width, height);
+    
+    VkImageCreateInfo     imageInfo      = m_imageInfo;
+    VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
+    
+    imageInfo.extent.width  = width;
+    imageInfo.extent.height = height;
+    imageInfo.mipLevels     = mipLevels;
+    imageInfo.format        = VK_FORMAT_R32G32B32_SFLOAT;
+    imageInfo.usage         = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                              VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                              VK_IMAGE_USAGE_SAMPLED_BIT;
+    
+    imageViewInfo.format = VK_FORMAT_R32G32B32_SFLOAT;
+    imageViewInfo.subresourceRange.levelCount = mipLevels;
+    imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    
+    {
+        m_rawHDR        = data;
+        m_imageInfo     = imageInfo;
+        m_imageViewInfo = imageViewInfo;
+    }
+}
+
 void Image::setupForCubemap(const std::string *filepaths) {
     LOG("Image::setupForCubemap");
     int width = 0, height = 0, channels = 0;
@@ -89,14 +117,19 @@ void Image::setupForCubemap(const std::string *filepaths) {
     for (int i = 0; i < 6; ++i) {
         data.push_back(LoadImage(filepaths[i], &width, &height, &channels));
     }
-    uint32_t mipLevels = MaxMipLevel(width, height);
+    setupForCubemap({ (uint)width, (uint)height });
     
+    { m_rawCubemap    = data; }
+}
+
+void Image::setupForCubemap(Size<uint> size) {
     VkImageCreateInfo     imageInfo      = m_imageInfo;
     VkImageViewCreateInfo imageViewInfo  = m_imageViewInfo;
+    uint32_t mipLevels = MaxMipLevel(size.width, size.height);
     
     imageInfo.arrayLayers   = 6;
-    imageInfo.extent.width  = width;
-    imageInfo.extent.height = height;
+    imageInfo.extent.width  = size.width;
+    imageInfo.extent.height = size.height;
     imageInfo.mipLevels     = mipLevels;
     imageInfo.format        = VK_FORMAT_R8G8B8A8_SRGB;
     imageInfo.flags         = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
@@ -111,7 +144,6 @@ void Image::setupForCubemap(const std::string *filepaths) {
     imageViewInfo.subresourceRange.layerCount = 6;
     
     {
-        m_rawCubemap    = data;
         m_imageInfo     = imageInfo;
         m_imageViewInfo = imageViewInfo;
     }
@@ -161,20 +193,20 @@ void Image::createForSwapchain() {
 }
 
 void Image::createImage() {
-    LOG("createImage");
+    LOG("Image::createImage");
     VkResult result = vkCreateImage(m_device, &m_imageInfo, nullptr, &m_image);
     CHECK_VKRESULT(result, "failed to create image!");
 }
 
 void Image::createImageView() {
-    LOG("createImageView");
+    LOG("Image::createImageView");
     m_imageViewInfo.image = m_image;
     VkResult result = vkCreateImageView(m_device, &m_imageViewInfo, nullptr, &m_imageView);
     CHECK_VKRESULT(result, "failed to create image views!");
 }
 
 void Image::allocateImageMemory() {
-    LOG("allocateImageMemory");
+    LOG("Image::allocateImageMemory");
     VkDevice         device         = m_device;
     VkPhysicalDevice physicalDevice = m_physicalDevice;
     VkImage          image          = m_image;
@@ -202,7 +234,7 @@ void Image::allocateImageMemory() {
 }
 
 void Image::createSampler() {
-    LOG("createSampler");
+    LOG("Image::createSampler");
     VkDevice device    = m_device;
     float    mipLevels = m_imageInfo.mipLevels;
     
@@ -255,6 +287,24 @@ void Image::copyCubemapToImage() {
 void Image::copyRawDataToImage() {
     LOG("Image::copyRawDataToImage");
     unsigned char* rawData = m_rawData;
+    
+    VkDeviceSize imageSize = getImageSize();
+    
+    Buffer *tempBuffer = new Buffer();
+    tempBuffer->setup(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    tempBuffer->create();
+    tempBuffer->fillBufferFull(rawData);
+    
+    cmdTransitionToTransferDest();
+    cmdCopyBufferToImage(tempBuffer->m_buffer);
+    cmdGenerateMipmaps();
+    
+    tempBuffer->cleanup();
+}
+
+void Image::copyRawHDRToImage() {
+    LOG("Image::copyRawHDRToImage");
+    float* rawData = m_rawHDR;
     
     VkDeviceSize imageSize = getImageSize();
     

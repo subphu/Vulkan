@@ -19,7 +19,9 @@ public:
     void setupForDepth     (Size<uint32_t> size, uint32_t mipLevels);
     void setupForSwapchain (VkImage image, VkFormat imageFormat);
     void setupForTexture   (const std::string filepath);
+    void setupForHDRTexture(const std::string filepath);
     void setupForCubemap   (const std::string *filepaths);
+    void setupForCubemap   (Size<uint> size);
     
     void create             ();
     void createForTexture   ();
@@ -31,6 +33,7 @@ public:
     void allocateImageMemory();
     void createSampler      ();
     
+    void copyRawHDRToImage  ();
     void copyRawDataToImage ();
     void copyCubemapToImage ();
     
@@ -46,11 +49,15 @@ public:
     unsigned int     getChannelSize();
     VkDescriptorImageInfo getImageInfo();
     
+    VkImageCreateInfo     m_imageInfo{};
+    VkImageViewCreateInfo m_imageViewInfo{};
+    
     
 private:
     
     unsigned char* m_desc;
     unsigned char* m_rawData;
+    float        * m_rawHDR;
     std::vector<unsigned char*> m_rawCubemap;
     
     VkDevice         m_device         = VK_NULL_HANDLE;
@@ -59,9 +66,6 @@ private:
     VkImage          m_image          = VK_NULL_HANDLE;
     VkImageView      m_imageView      = VK_NULL_HANDLE;
     VkDeviceMemory   m_imageMemory    = VK_NULL_HANDLE;
-    
-    VkImageCreateInfo     m_imageInfo{};
-    VkImageViewCreateInfo m_imageViewInfo{};
     
     // For Texture
     VkSampler m_sampler = VK_NULL_HANDLE;
