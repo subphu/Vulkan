@@ -23,7 +23,7 @@ void Renderer::setupValidation(bool isEnable) {
     if (!isEnable) return;
     USE_FUNC(DebugCallback);
 
-    std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+    std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" }; //VK_LAYER_LUNARG_monitor
     VkDebugUtilsMessengerCreateInfoEXT debugInfo{};
     debugInfo.sType  = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     debugInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -192,8 +192,8 @@ VkSurfaceFormatKHR Renderer::getSwapchainSurfaceFormat() {
 VkPresentModeKHR Renderer::getSwapchainPresentMode() {
     const std::vector<VkPresentModeKHR>& availablePresentModes = m_presentModes;
     for (const auto& availablePresentMode : availablePresentModes) {
-//        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+//        if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
             return availablePresentMode;
     }
     return VK_PRESENT_MODE_FIFO_KHR;

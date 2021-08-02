@@ -41,7 +41,6 @@ public:
     void setShaders(std::vector<Shader*> shaders);
     void setVertexInputInfo(VkPipelineVertexInputStateCreateInfo* vertexInputInfo);
     
-    void setupPushConstant(uint size);
     void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
     
     void setupViewportInfo(VkExtent2D swapchainExtent);

@@ -17,3 +17,4 @@ unsigned char* LoadImage(const std::string filename, int* width, int* height, in
 float* LoadHDR(const std::string filename, int* width, int* height, int* channels);
 
 uint32_t MaxMipLevel(int width, int height);
+

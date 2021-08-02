@@ -4,20 +4,16 @@
 #pragma once
 
 #include "window/window.h"
-#include "window/settings.h"
 #include "camera/camera.h"
 #include "mesh/mesh.h"
 
 #include "renderer/renderer.h"
 #include "renderer/commander.h"
-#include "renderer/swapchain.h"
 #include "resources/shader.h"
 
 #include "renderer/descriptor.h"
 #include "renderer/pipeline_graphic.h"
-#include "renderer/pipeline_compute.h"
 
-#include "process/compute_interference.h"
 #include "process/graphic_main.h"
 
 
@@ -32,17 +28,14 @@ public:
 
 private:
     Window* m_pWindow;
-    Settings* m_pSettings;
     Camera* m_pCamera;
     Renderer* m_pRenderer;
     GraphicMain* m_pGraphicMain;
-    ComputeInterference* m_pComputeInterference;
     
     
     size_t m_currentFrame = 0;
     CameraMatrix m_cameraMatrix{};
     
-    Misc m_misc{};
     
     void cleanup();
     
@@ -59,12 +52,8 @@ private:
     void createDescriptor();
     
     void createPipelineGraphic();
-    void createPipelineCompute();
     
-    void mainLoop();
-    void update(long iteration);
-    void draw(long iteration);
+    void process();
     
     void moveView(Window* pWindow);
-    void moveViewLock(Window* pWindow);
 };

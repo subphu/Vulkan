@@ -18,14 +18,6 @@ void PipelineGraphic::cleanup() {
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }
 
-void PipelineGraphic::setupPushConstant(uint size) {
-    VkPushConstantRange constantRange{};
-    constantRange.size = size;
-    constantRange.offset = 0;
-    constantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    { m_constantRange = constantRange; }
-}
-
 void PipelineGraphic::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts) {
     LOG("PipelineGraphic::createPipelineLayout");
     VkDevice device = m_device;

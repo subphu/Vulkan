@@ -10,8 +10,6 @@
 
 #include <unordered_map>
 
-#include "../libraries/tiny_obj_loader/tiny_obj_loader.h"
-
 #include "mesh.h"
 
 #include "../system.h"
@@ -25,15 +23,9 @@ void Mesh::cleanup() {
 }
 
 void Mesh::createPlane() {
-    m_positions = {{-1., 0., 1.}, {1., 0., 1.}, {1., 0., -1.}, {-1., 0., -1.}};
-    m_normals   = {{ 0., 1., 0.}, {0., 1., 0.}, {0., 1.,  0.}, { 0., 1.,  0.}};
-    m_texCoords = {{0, 1}, {1, 1}, {1, 0}, {0, 0}};
-    m_indices   = { 0, 1, 2, 2, 3, 0 };
-}
-
-void Mesh::createQuad() {
-    m_positions = {{.5, .5, 0.}, {-.5, .5, 0.}, {-.5,-.5, 0.}, {.5,-.5, 0.}};
-    m_normals   = {{ 0., 0., 1.}, {0., 0., 1.}, {0., 0., 1.}, { 0., 0., 1.}};
+    m_positions = {{-2., -1., 2.}, {2., -1., 2.}, {2., -1., -2.}, {-2., -1., -2.}};
+    m_normals   = {{ 0., 1., 0.}, { 0., 1., 0.}, { 0., 1., 0.}, { 0., 1.,  0.}};
+    m_colors    = {{ 1., 1., 1.}, { 1., 1., 1.}, { 1., 1., 1.}, { 1., 1., 1.}};
     m_texCoords = {{0, 1}, {1, 1}, {1, 0}, {0, 0}};
     m_indices   = { 0, 1, 2, 2, 3, 0 };
 }
@@ -43,6 +35,10 @@ void Mesh::createCube() {
         {-.5,  .5,  .5}, {-.5, -.5,  .5}, { .5,  .5,  .5}, { .5, -.5,  .5},
         { .5,  .5, -.5}, { .5, -.5, -.5}, {-.5,  .5, -.5}, {-.5, -.5, -.5}
     };
+    glm::vec3 cubeColors[8] = {
+        {1., 1., 1.}, {0., 0., 1.}, {1., 0., 0.}, {0., 1., 0.},
+        {1., 1., 1.}, {0., 0., 1.}, {1., 0., 0.}, {0., 1., 0.}
+    };
     unsigned int cubeIndices[] = {
         6, 7, 0, 0, 7, 1,   2, 3, 4, 4, 3, 5,
         1, 7, 3, 3, 7, 5,   6, 0, 4, 4, 0, 2,
@@ -51,6 +47,7 @@ void Mesh::createCube() {
 
     for (int i = 0; i < 36; i++) {
         glm::vec3 vertex = cubeVertices[cubeIndices[i]];
+        glm::vec3 color  = cubeColors[cubeIndices[i]];
 
         glm::vec3 normal = { .0, .0, .0 };
         int side = i / 6;
@@ -65,6 +62,7 @@ void Mesh::createCube() {
 
         m_positions.emplace_back(vertex);
         m_normals  .emplace_back(normal);
+        m_colors   .emplace_back(color);
         m_texCoords.emplace_back(texture);
     }
     
@@ -75,93 +73,8 @@ void Mesh::createCube() {
     };
 }
 
-void Mesh::createSphere(int wedge, int segment) {
-    float x, y, z, xz;
-    float s, t;
-
-    float segmentStep = -2 * PI / segment;  // counter-clockwise
-    float wedgeStep = PI / wedge;
-    float segmentAngle, wedgeAngle;
-
-    for(int i = 0; i <= wedge; i++) {
-        wedgeAngle = i * wedgeStep;             // starting from 0 to pi
-        y  = cosf(wedgeAngle);                  // r * cos(u)
-        xz = sinf(wedgeAngle);                  // r * sin(u)
-
-        for(int j = 0; j <= segment; j++) {
-            segmentAngle = j * segmentStep;     // starting from 0 to 2pi
-            x = xz * cosf(segmentAngle);        // r * sin(u) * cos(v)
-            z = xz * sinf(segmentAngle);        // r * sin(u) * sin(v)
-            
-            m_positions.emplace_back(glm::vec3(x, y, z));
-            m_normals  .emplace_back(glm::vec3(x, y, z));
-
-            s = (float)j / segment;             // vertex tex coord (s, t)
-            t = (float)i / wedge;               // range between [0, 1]
-            m_texCoords.emplace_back(glm::vec2(s, t));
-        }
-    }
-    
-    int w1, w2;
-    int segmentVertices = segment + 1;
-    for(int i = 0; i < wedge; i++) {
-        w1 = i  * segmentVertices;
-        w2 = w1 + segmentVertices;
-
-        for(uint j = 0; j < segment; j++) {
-            uint d = j + 1;
-            m_indices.insert(m_indices.end(), { w1+j, w2+j, w1+d });
-            m_indices.insert(m_indices.end(), { w1+d, w2+j, w2+d });
-        }
-    }
-}
-
-void Mesh::loadModel(const char* filename) {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::unordered_map<size_t, uint32_t> uniqueVertices;
-    std::string warn, err;
-    
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename)) {
-        throw std::runtime_error(warn + err);
-    }
-    
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            glm::vec3 position = glm::vec3(
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
-            );
-            
-            glm::vec3 normal = glm::vec3(
-                 attrib.normals[3 * index.normal_index + 0],
-                 attrib.normals[3 * index.normal_index + 1],
-                 attrib.normals[3 * index.normal_index + 2]
-            );
-            
-            glm::vec2 texCoord = glm::vec2(
-                attrib.texcoords[2 * index.texcoord_index + 0],
-                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-            );
-
-            size_t hash = std::hash<glm::vec3>()(position) ^
-                         (std::hash<glm::vec2>()(texCoord) << 1);
-            if (uniqueVertices.count(hash) == 0) {
-                uniqueVertices[hash] = UINT32(m_positions.size());
-                m_positions.emplace_back(glm::vec3(position.x, position.y, position.z));
-                m_normals  .emplace_back(glm::vec3(normal.x, normal.y, normal.z));
-                m_texCoords.emplace_back(glm::vec2(texCoord.x, texCoord.y));
-            }
-
-            m_indices.push_back(uniqueVertices[hash]);
-        }
-    }
-}
-
 void Mesh::cmdCreateVertexBuffer() {
-    VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofTexCoords();
+    VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofColors();
     
     Buffer* tempBuffer = new Buffer();
     tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -173,15 +86,14 @@ void Mesh::cmdCreateVertexBuffer() {
         shift += sizeofPosition;
         tempBuffer->fillBuffer(&m_normals  [i], sizeofNormal  , shift);
         shift += sizeofNormal;
-        tempBuffer->fillBuffer(&m_texCoords[i], sizeofTexCoord, shift);
-        shift += sizeofTexCoord;
+        tempBuffer->fillBuffer(&m_colors   [i], sizeofColor   , shift);
+        shift += sizeofColor;
     }
     
     Buffer* vertexBuffer = new Buffer();
     vertexBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vertexBuffer->create();
     vertexBuffer->cmdCopyFromBuffer(tempBuffer->m_buffer, bufferSize);
-    
     
     tempBuffer->cleanup();
     
@@ -207,7 +119,7 @@ void Mesh::cmdCreateIndexBuffer() {
 }
 
 VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {
-    uint32_t stride = sizeofPosition + sizeofNormal + sizeofTexCoord;
+    uint32_t stride = sizeofPosition + sizeofNormal + sizeofColor;
     
     bindingDescription.binding = 0;
     bindingDescription.stride = stride;
@@ -227,7 +139,7 @@ VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {
     
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[2].offset = sizeofPosition + sizeofNormal;
     
     stateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -246,5 +158,6 @@ glm::mat4 Mesh::getMatrix() { return m_model; }
 
 uint32_t Mesh::sizeofPositions() { return sizeofPosition * (uint32_t) m_positions.size(); }
 uint32_t Mesh::sizeofNormals  () { return sizeofNormal   * (uint32_t) m_normals.size(); }
+uint32_t Mesh::sizeofColors   () { return sizeofColor    * (uint32_t) m_colors.size(); }
 uint32_t Mesh::sizeofTexCoords() { return sizeofTexCoord * (uint32_t) m_texCoords.size(); }
 uint32_t Mesh::sizeofIndices  () { return sizeofIndex    * (uint32_t) m_indices.size(); }

@@ -5,11 +5,9 @@
 
 #include "../common.h"
 #include "commander.h"
-#include "swapchain.h"
 #include "../resources/buffer.h"
 #include "../resources/image.h"
 
-class Swapchain;
 class Buffer;
 class Image;
 

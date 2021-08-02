@@ -5,19 +5,15 @@
 
 #include "common.h"
 #include "renderer/renderer.h"
-#include "renderer/swapchain.h"
 #include "renderer/commander.h"
-#include "window/settings.h"
 
 class System {
     
 public:
     Renderer* m_pRenderer = nullptr;
-    Settings* m_pSettings = nullptr;
     
     static Renderer * Renderer () { return Instance().m_pRenderer; }
     static Commander* Commander() { return Instance().m_pRenderer->getCommander(); }
-    static Settings * Settings () { return Instance().m_pSettings; }
     
     static System& Instance() {
         static System instance; // Guaranteed to be destroyed. Instantiated on first use.
