@@ -38,7 +38,7 @@ void Swapchain::setup(Size<int> size, VkSurfaceKHR surface) {
     VkSurfaceFormatKHR surfaceFormat = renderer->getSwapchainSurfaceFormat();
     VkPresentModeKHR   presentMode   = renderer->getSwapchainPresentMode();
     uint32_t graphicFamilyIndex = renderer->getGraphicQueueIndex();
-    uint32_t presentFamilyIndex = renderer->getPresentQueueIndex(surface);
+    uint32_t presentFamilyIndex = renderer->getPresentQueueIndex();
     
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities);

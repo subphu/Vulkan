@@ -41,7 +41,7 @@ public:
     uint32_t m_graphicQueueIndex = 0;
     uint32_t m_presentQueueIndex = 0;
     uint32_t getGraphicQueueIndex();
-    uint32_t getPresentQueueIndex(VkSurfaceKHR surface);
+    uint32_t getPresentQueueIndex();
 
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     VkPhysicalDevice getPhysicalDevice();

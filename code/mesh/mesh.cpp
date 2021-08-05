@@ -77,7 +77,7 @@ void Mesh::cmdCreateVertexBuffer() {
     VkDeviceSize bufferSize = sizeofPositions() + sizeofNormals() + sizeofColors();
     
     Buffer* tempBuffer = new Buffer();
-    tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     tempBuffer->create();
     
     uint32_t shift = 0;
@@ -90,32 +90,18 @@ void Mesh::cmdCreateVertexBuffer() {
         shift += sizeofColor;
     }
     
-    Buffer* vertexBuffer = new Buffer();
-    vertexBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    vertexBuffer->create();
-    vertexBuffer->cmdCopyFromBuffer(tempBuffer->m_buffer, bufferSize);
-    
-    tempBuffer->cleanup();
-    
-    { m_vertexBuffer = vertexBuffer; }
+    { m_vertexBuffer = tempBuffer; }
 }
 
 void Mesh::cmdCreateIndexBuffer() {
     VkDeviceSize bufferSize = sizeofIndices();
     
     Buffer* tempBuffer = new Buffer();
-    tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    tempBuffer->setup(bufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     tempBuffer->create();
     tempBuffer->fillBufferFull(m_indices.data());
     
-    Buffer* indexBuffer = new Buffer();
-    indexBuffer->setup(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-    indexBuffer->create();
-    indexBuffer->cmdCopyFromBuffer(tempBuffer->m_buffer, bufferSize);
-    
-    tempBuffer->cleanup();
-    
-    { m_indexBuffer = indexBuffer; }
+    { m_indexBuffer = tempBuffer; }
 }
 
 VkPipelineVertexInputStateCreateInfo* Mesh::createVertexInputInfo() {

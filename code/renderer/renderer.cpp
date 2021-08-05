@@ -200,8 +200,7 @@ VkPresentModeKHR Renderer::getSwapchainPresentMode() {
 }
 
 uint32_t Renderer::getGraphicQueueIndex() { return m_graphicQueueIndex; }
-uint32_t Renderer::getPresentQueueIndex(VkSurfaceKHR surface) {
-    return FindPresentQueueIndex(m_physicalDevice, surface); }
+uint32_t Renderer::getPresentQueueIndex() { return m_presentQueueIndex; }
 
 VkInstance       Renderer::getInstance()       { return m_instance; }
 VkPhysicalDevice Renderer::getPhysicalDevice() { return m_physicalDevice; }

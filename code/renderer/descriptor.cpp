@@ -71,7 +71,6 @@ void Descriptor::createLayout(uint id) {
 void Descriptor::createPool() {
     LOG("Descriptor::createPool");
     VkDevice device = m_device;
-    VkDescriptorSetDataMap descDataMap = m_dataMap;
     std::vector<VkDescriptorPoolSize> poolSizes = getPoolSizes();
     
     VkDescriptorPoolCreateInfo poolInfo{};

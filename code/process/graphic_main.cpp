@@ -161,7 +161,6 @@ void GraphicMain::draw() {
     VkSemaphore     renderSemaphore = frame->m_renderSemaphore;
     
     vkWaitForFences(device, 1, &commandFence, VK_TRUE, UINT64_MAX);
-    std::vector<VkCommandBuffer> commandBuffers = System::Commander()->createCommandBuffers(2);
 
     drawCommand(frame);
     
@@ -228,7 +227,7 @@ void GraphicMain::createSwapchain() {
     VkSurfaceFormatKHR surfaceFormat = renderer->getSwapchainSurfaceFormat();
     VkPresentModeKHR   presentMode   = renderer->getSwapchainPresentMode();
     uint32_t graphicFamilyIndex = renderer->getGraphicQueueIndex();
-    uint32_t presentFamilyIndex = renderer->getPresentQueueIndex(surface);
+    uint32_t presentFamilyIndex = renderer->getPresentQueueIndex();
     
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface, &capabilities);
